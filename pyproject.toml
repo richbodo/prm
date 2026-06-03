@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prm"
+version = "0.1.0.dev0"
+description = "Personal Relationship Manager — a local-only PNA reference design (v0.1 ingestor)"
+requires-python = ">=3.10"
+# Runtime deps are deliberately tiny (see plans/v0.1-implementation-plan.md §5):
+#   vobjectx — the maintained fork of vobject; used only as the vCard *lexer* (line folding,
+#   itemN grouping, real-world quirks). The older `vobject` is API-compatible and is accepted as a
+#   fallback by the parser, so the package runs today on either.
+dependencies = [
+    "vobjectx>=0.9; python_version >= '3.10'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+prm = "cli.prm_import:main"
+
+[tool.setuptools]
+packages = ["cli", "cli.parsers", "core"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
