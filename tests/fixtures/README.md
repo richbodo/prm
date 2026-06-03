@@ -20,6 +20,7 @@ contact sources to one canonical shape (internal jCard), so the fixtures' job is
 | --- | --- | --- |
 | [`google_takeout/`](google_takeout/) | zip of vCard **3.0** under `Contacts/` | ✅ built — 6 fixtures |
 | [`apple_icloud/`](apple_icloud/) | single vCard **3.0** `.vcf` (LF endings, `PRODID`/`REV`, `X-ABLabel`) | ✅ built — 1 export, 4 contacts |
+| [`linkedin/`](linkedin/) | vendor **CSV** — `Connections.csv` (3-line preamble, ~98% no email, no phone/UID) | ✅ built — 20 connections |
 | [`facebook/`](facebook/) | DYI **JSON** — friends: name + connected-timestamp only (no URL/email/id) | ✅ built — 2 fixtures (incl. mojibake variant) |
 | vendor CSV (Google CSV, Outlook CSV, …) | per-vendor column mapping | ⏳ planned — drop samples in `incoming/` |
 

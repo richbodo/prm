@@ -1,0 +1,24 @@
+Notes:
+"When exporting your connection data, you may notice that some of the email addresses are missing. You will only see email addresses for connections who have allowed their connections to see or download their email address using this setting."
+
+First Name,Last Name,URL,Email Address,Company,Position,Connected On
+Ada,Lovelace,https://www.linkedin.com/in/adalovelace,,Analytical Engines,Mathematician,10 Dec 2019
+Grace,Hopper,https://www.linkedin.com/in/gracehopper,grace.hopper@example.org,US Navy,Rear Admiral,03 Feb 2018
+Alan,Turing,https://www.linkedin.com/in/alanturing,,National Physical Laboratory,Researcher,21 Jun 2020
+Katherine,Johnson,https://www.linkedin.com/in/katherinejohnson,,NASA,Aerospace Technologist,14 Mar 2017
+Edsger,Dijkstra,https://www.linkedin.com/in/ewdijkstra,,Eindhoven University,Professor,09 Nov 2016
+Barbara,Liskov,https://www.linkedin.com/in/barbaraliskov,barbara.liskov@example.com,MIT,Institute Professor,27 Aug 2021
+Donald,Knuth,https://www.linkedin.com/in/donaldknuth,,Stanford University,Professor Emeritus,02 May 2015
+Margaret,Hamilton,https://www.linkedin.com/in/margarethamilton,,Hamilton Technologies,CEO,18 Jan 2019
+Tim,Berners-Lee,https://www.linkedin.com/in/timbl,,W3C,Director,30 Sep 2014
+Radia,Perlman,https://www.linkedin.com/in/radiaperlman,,,,11 Jul 2022
+Vint,Cerf,https://www.linkedin.com/in/vintcerf,,Google,VP & Chief Internet Evangelist,05 Apr 2013
+Frances,Allen,https://www.linkedin.com/in/francesallen,,IBM,Fellow,23 Oct 2016
+John,McCarthy,https://www.linkedin.com/in/johnmccarthy,,Stanford University,Professor,08 Feb 2012
+Adele,Goldberg,https://www.linkedin.com/in/adelegoldberg,,ParcPlace Systems,Co-founder,19 Jun 2018
+,,https://www.linkedin.com/in/private-member-1a2b3c,,Confidential,,01 Jan 2023
+Ken,Thompson,https://www.linkedin.com/in/kenthompson,,Bell Labs,Researcher,12 Dec 2011
+Dennis,Ritchie,https://www.linkedin.com/in/dmr,,Bell Labs,Researcher,12 Dec 2011
+Shafi,Goldwasser,https://www.linkedin.com/in/shafigoldwasser,,MIT,Professor,07 Mar 2020
+,,https://www.linkedin.com/in/private-member-4d5e6f,,,,15 Aug 2022
+Leslie,Lamport,https://www.linkedin.com/in/leslielamport,,Microsoft Research,Scientist,29 Nov 2017

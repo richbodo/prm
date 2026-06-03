@@ -1,0 +1,41 @@
+{
+  "description": "Synthetic LinkedIn Connections.csv: 3-line Notes preamble before the header, email blank for most rows, no phone/UID, profile URL as the near-stable id, some name-withheld rows. Ada Lovelace (no email) is a fuzzy name+company cross-source hook; Grace Hopper (with email) is a confident cross-source hook.",
+  "csv_file": "Connections.csv",
+  "line_ending": "CRLF",
+  "preamble_lines": 3,
+  "columns": [
+    "First Name",
+    "Last Name",
+    "URL",
+    "Email Address",
+    "Company",
+    "Position",
+    "Connected On"
+  ],
+  "data_rows": 20,
+  "with_name": 18,
+  "with_url": 20,
+  "with_email": 2,
+  "with_company": 18,
+  "with_position": 17,
+  "fns": [
+    "Ada Lovelace",
+    "Adele Goldberg",
+    "Alan Turing",
+    "Barbara Liskov",
+    "Dennis Ritchie",
+    "Donald Knuth",
+    "Edsger Dijkstra",
+    "Frances Allen",
+    "Grace Hopper",
+    "John McCarthy",
+    "Katherine Johnson",
+    "Ken Thompson",
+    "Leslie Lamport",
+    "Margaret Hamilton",
+    "Radia Perlman",
+    "Shafi Goldwasser",
+    "Tim Berners-Lee",
+    "Vint Cerf"
+  ]
+}

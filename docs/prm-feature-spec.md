@@ -235,6 +235,28 @@ per-vendor API connectors. This PRM is the querier: the place a person consolida
 network, shapes their own private understanding of it, and lets an AI help keep that
 understanding current.
 
+## Thin sources and the friend-reconciliation checklist (use case)
+
+Not every source carries real contact data. Facebook's export gives only a friend's **name and the
+date you connected**; LinkedIn often gives only a name and a **profile URL** — no email, phone, or
+stable id. Treated naively, this is junk. Treated as a **reconciliation checklist**, it is the
+opposite: a complete, origin-tagged roster of *who is in the network and where each person came
+from* — the raw boundary of the user's social graph.
+
+The PRM keeps these thin records as first-class contacts (stable id by content hash; provenance
+records the source and connected-date). From there the user, working with an AI, walks the checklist
+down: research each person's public data, ask the user clarifying questions, and **triage toward the
+people the user actually knows**. The user feeds context back as **private tags, notes, and
+relationships** — "met them through B", "family of contact C", "lapsed, deprioritize". That context
+is exactly the user-authored **private overlay** (v0.2) and the kind of thing the **delegated
+public-data gathering** loop (v0.3) helps populate.
+
+All of it is **private, local-only relationship data (INV-1)** — it never leaves the device. The
+checklist is how a pile of dataless names becomes a deliberately curated network root, which is the
+whole point of reclaiming the root of one's personal network. It also sets the bar for ingestion:
+the pipeline must accept a source that offers *only a name*, give it a durable identity, and never
+silently merge it with anyone (name-only matches stay propose-only — see AC-PRM-B).
+
 ## Roadmap
 
 **v0.1 — Ingest, view, and AI-assisted dedup**
@@ -283,7 +305,7 @@ one writer (the ingester), one reader-and-viewer (the workspace), and one AI-dri
 (dedup) riding on the MCP surface — which is also the seam every later version (private overlay,
 custom schema, public-data gathering, outreach) will build on.
 
-## Safe AI writes to user-owned data (resolved design)
+## Safe AI writes to private data (resolved design)
 
 Treat the root of a personal network as the most important data the user has. The goal is **not**
 to forbid AI writes but to make them safe: **the controls exist, the user understands them, and the
@@ -318,7 +340,7 @@ no direct-commit tool for review-required data) — the same lock as "AI writes 
 definitions" (INV-3/INV-4).
 
 **Substrate: append-only log + snapshot ring, over the native store.** Underneath all three tiers:
-a **snapshot/backup ring** of the owned store taken before any apply (realizes AC-9), an
+a **snapshot/backup ring** of the private store taken before any apply (realizes AC-9), an
 **append-only audit log** of applied changes (a JSONL file is its own append-only log), and
 **changesets stored as text/JSON** so review renders a real diff. These primitives give
 reversibility, review, and full history directly — **no version-control system required**.
@@ -335,7 +357,7 @@ If one appears, reconsider then.
 
 ## Invariants (additions)
 
-- **INV-10** AI/MCP writes to user-owned data are governed by a declared per-data-class **write
+- **INV-10** AI/MCP writes to private data are governed by a declared per-data-class **write
   policy** (`review-required` | `append-only` | `free-write`). The default for any data class or
   user-defined field is the most protective tier.
 - **INV-11** No AI/MCP path may perform a *review-required* write directly. It may only stage a
@@ -352,7 +374,7 @@ PNT's MCP private surface is read-only today (AC-MCP-A); this PRM is the design 
 *writes*. The tiered safe-write model above is a genuine gap in the toolkit and a candidate to
 contribute upstream as new ACs — provisionally:
 
-- **AC-PRM-E (proposed):** AI/MCP writes to user-owned data MUST be governed by a declared
+- **AC-PRM-E (proposed):** AI/MCP writes to private data MUST be governed by a declared
   per-data-class write policy with the three tiers above; defaults MUST be the most protective tier;
   all AI writes MUST be reversible and audited.
 - **AC-PRM-F (proposed):** An MCP tool MUST NOT directly commit a review-required write; it MUST
@@ -364,11 +386,11 @@ demonstrates it.
 
 ## Open questions still carried into planning
 
-- **Where exactly do dedup/merge decisions live?** They are durable user-owned metadata (the
+- **Where exactly do dedup/merge decisions live?** They are durable private metadata (the
   assertion "these records are the same person") that MUST survive re-import (INV-5, AC-PRM-B).
-  v0.1 models them as a minimal **owned/identity store** separate from the raw mirrored Shared DB —
-  the seed of the full private overlay that arrives in v0.2. Crucially, dedup therefore writes the
-  *owned* store, **never** the raw Shared DB, so INV-2 stays intact.
+  v0.1 models them as a minimal **private store** (`private.db`) separate from the raw mirrored
+  Shared DB — the seed of the full private overlay that arrives in v0.2. Crucially, dedup therefore
+  writes the *private* store, **never** the raw Shared DB, so INV-2 stays intact.
 - **Proposal/audit substrate** — settled: text/JSON changesets + a JSONL append-only audit log + a
   SQLite snapshot ring, implemented natively (no VCS). Revisit a version-control backend only if a
   future version stores divergently-edited flat-text canonical artifacts.

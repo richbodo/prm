@@ -13,13 +13,13 @@ CardDAV) writes a read-only **Shared DB** with stable contact IDs and per-field 
 **local web workspace** is for **search and view**. An **MCP server** exposes read tools, and an
 **AI deduplicates** via a propose → review → apply flow: the AI stages a merge **changeset**, the
 user approves it in the workspace "like merging a PR." Merge decisions live in a minimal
-**owned/identity store** (separate from the raw Shared DB) and survive re-import. Realizes the
+**private store** (separate from the raw Shared DB) and survive re-import. Realizes the
 **review-required** safe-write tier + snapshot ring + append-only audit log.
 *Details: [`../plans/v0.1-implementation-plan.md`](../plans/v0.1-implementation-plan.md).*
 
 ## v0.2 — Private overlay, custom schema, AI-write tiers
 
-Grow the owned store into the full **Private DB**: **groups, tags, freeform notes**. On that
+Grow the v0.1 private store into the full **Private DB**: **groups, tags, freeform notes**. On that
 foundation, the user-authored **custom relationship schema** — arbitrary typed fields, defined and
 edited **only** in the workspace (INV-3). Each field carries an **AI-write policy**
 (`review-required` | `append-only` | `free-write`), defaulting to the most protective tier
@@ -36,7 +36,10 @@ public signals — and runs as a **daily check** over a chosen group. Writes lan
 **append-only** tier (provenance-stamped observations, never overwriting user data), bounded by a
 per-run **quota** and recorded in the **audit log** (INV-13) for later review. Plus **AI-assisted
 organization**: the user talks to the LLM about organizing contacts; it gathers public info or asks
-questions, proposes groupings, and appends notes.
+questions, proposes groupings, and appends notes. A natural first target is the **friend-reconciliation
+checklist** — the origin-tagged roster of dataless contacts (Facebook names, LinkedIn-URL-only) that
+v0.1 ingests and v0.2 lets the user annotate; here the AI researches and triages them down to the
+people the user actually knows. See the use-case note in [`prm-feature-spec.md`](prm-feature-spec.md).
 
 ## v0.4 — Delegated gathering: outreach (querier side)
 
