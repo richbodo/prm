@@ -36,7 +36,10 @@ public signals — and runs as a **daily check** over a chosen group. Writes lan
 **append-only** tier (provenance-stamped observations, never overwriting user data), bounded by a
 per-run **quota** and recorded in the **audit log** (INV-13) for later review. Plus **AI-assisted
 organization**: the user talks to the LLM about organizing contacts; it gathers public info or asks
-questions, proposes groupings, and appends notes.
+questions, proposes groupings, and appends notes. A natural first target is the **friend-reconciliation
+checklist** — the origin-tagged roster of dataless contacts (Facebook names, LinkedIn-URL-only) that
+v0.1 ingests and v0.2 lets the user annotate; here the AI researches and triages them down to the
+people the user actually knows. See the use-case note in [`prm-feature-spec.md`](prm-feature-spec.md).
 
 ## v0.4 — Delegated gathering: outreach (querier side)
 

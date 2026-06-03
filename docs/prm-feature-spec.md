@@ -235,6 +235,28 @@ per-vendor API connectors. This PRM is the querier: the place a person consolida
 network, shapes their own private understanding of it, and lets an AI help keep that
 understanding current.
 
+## Thin sources and the friend-reconciliation checklist (use case)
+
+Not every source carries real contact data. Facebook's export gives only a friend's **name and the
+date you connected**; LinkedIn often gives only a name and a **profile URL** — no email, phone, or
+stable id. Treated naively, this is junk. Treated as a **reconciliation checklist**, it is the
+opposite: a complete, origin-tagged roster of *who is in the network and where each person came
+from* — the raw boundary of the user's social graph.
+
+The PRM keeps these thin records as first-class contacts (stable id by content hash; provenance
+records the source and connected-date). From there the user, working with an AI, walks the checklist
+down: research each person's public data, ask the user clarifying questions, and **triage toward the
+people the user actually knows**. The user feeds context back as **private tags, notes, and
+relationships** — "met them through B", "family of contact C", "lapsed, deprioritize". That context
+is exactly the user-authored **private overlay** (v0.2) and the kind of thing the **delegated
+public-data gathering** loop (v0.3) helps populate.
+
+All of it is **private, local-only relationship data (INV-1)** — it never leaves the device. The
+checklist is how a pile of dataless names becomes a deliberately curated network root, which is the
+whole point of reclaiming the root of one's personal network. It also sets the bar for ingestion:
+the pipeline must accept a source that offers *only a name*, give it a durable identity, and never
+silently merge it with anyone (name-only matches stay propose-only — see AC-PRM-B).
+
 ## Roadmap
 
 **v0.1 — Ingest, view, and AI-assisted dedup**
