@@ -1,0 +1,22 @@
+{
+  "description": "Real-DYI variant: top-level 'friends_v2' key and Facebook UTF-8-as-latin1 mojibake. 'name' holds the corrupted bytes; 'recovered' is what name.encode('latin-1').decode('utf-8') should yield.",
+  "json_file": "friends-export-variant.json",
+  "top_level_key": "friends_v2",
+  "friend_count": 3,
+  "mojibake": true,
+  "names_raw": [
+    "JosÃ© ÃoÃ±o",
+    "BjÃ¸rn MÃ¼ller",
+    "RenÃ©e Dubois"
+  ],
+  "names_recovered": [
+    "José Ñoño",
+    "Bjørn Müller",
+    "Renée Dubois"
+  ],
+  "connected_on": {
+    "José Ñoño": "2020-08-10",
+    "Bjørn Müller": "2021-05-03",
+    "Renée Dubois": "2021-08-26"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "friends": [
+    {
+      "name": "Ada Lovelace",
+      "timestamp": 1576022400
+    },
+    {
+      "name": "John Doe",
+      "timestamp": 1645392000
+    },
+    {
+      "name": "Jane Smith",
+      "timestamp": 1678915200
+    },
+    {
+      "name": "José Ñoño",
+      "timestamp": 1597017600
+    },
+    {
+      "name": "田中 太郎",
+      "timestamp": 1612137600
+    },
+    {
+      "name": "Mary O'Brien",
+      "timestamp": 1500000000
+    }
+  ]
+}
