@@ -283,7 +283,7 @@ one writer (the ingester), one reader-and-viewer (the workspace), and one AI-dri
 (dedup) riding on the MCP surface — which is also the seam every later version (private overlay,
 custom schema, public-data gathering, outreach) will build on.
 
-## Safe AI writes to user-owned data (resolved design)
+## Safe AI writes to private data (resolved design)
 
 Treat the root of a personal network as the most important data the user has. The goal is **not**
 to forbid AI writes but to make them safe: **the controls exist, the user understands them, and the
@@ -318,7 +318,7 @@ no direct-commit tool for review-required data) — the same lock as "AI writes 
 definitions" (INV-3/INV-4).
 
 **Substrate: append-only log + snapshot ring, over the native store.** Underneath all three tiers:
-a **snapshot/backup ring** of the owned store taken before any apply (realizes AC-9), an
+a **snapshot/backup ring** of the private store taken before any apply (realizes AC-9), an
 **append-only audit log** of applied changes (a JSONL file is its own append-only log), and
 **changesets stored as text/JSON** so review renders a real diff. These primitives give
 reversibility, review, and full history directly — **no version-control system required**.
@@ -335,7 +335,7 @@ If one appears, reconsider then.
 
 ## Invariants (additions)
 
-- **INV-10** AI/MCP writes to user-owned data are governed by a declared per-data-class **write
+- **INV-10** AI/MCP writes to private data are governed by a declared per-data-class **write
   policy** (`review-required` | `append-only` | `free-write`). The default for any data class or
   user-defined field is the most protective tier.
 - **INV-11** No AI/MCP path may perform a *review-required* write directly. It may only stage a
@@ -352,7 +352,7 @@ PNT's MCP private surface is read-only today (AC-MCP-A); this PRM is the design 
 *writes*. The tiered safe-write model above is a genuine gap in the toolkit and a candidate to
 contribute upstream as new ACs — provisionally:
 
-- **AC-PRM-E (proposed):** AI/MCP writes to user-owned data MUST be governed by a declared
+- **AC-PRM-E (proposed):** AI/MCP writes to private data MUST be governed by a declared
   per-data-class write policy with the three tiers above; defaults MUST be the most protective tier;
   all AI writes MUST be reversible and audited.
 - **AC-PRM-F (proposed):** An MCP tool MUST NOT directly commit a review-required write; it MUST
@@ -364,11 +364,11 @@ demonstrates it.
 
 ## Open questions still carried into planning
 
-- **Where exactly do dedup/merge decisions live?** They are durable user-owned metadata (the
+- **Where exactly do dedup/merge decisions live?** They are durable private metadata (the
   assertion "these records are the same person") that MUST survive re-import (INV-5, AC-PRM-B).
-  v0.1 models them as a minimal **owned/identity store** separate from the raw mirrored Shared DB —
-  the seed of the full private overlay that arrives in v0.2. Crucially, dedup therefore writes the
-  *owned* store, **never** the raw Shared DB, so INV-2 stays intact.
+  v0.1 models them as a minimal **private store** (`private.db`) separate from the raw mirrored
+  Shared DB — the seed of the full private overlay that arrives in v0.2. Crucially, dedup therefore
+  writes the *private* store, **never** the raw Shared DB, so INV-2 stays intact.
 - **Proposal/audit substrate** — settled: text/JSON changesets + a JSONL append-only audit log + a
   SQLite snapshot ring, implemented natively (no VCS). Revisit a version-control backend only if a
   future version stores divergently-edited flat-text canonical artifacts.
