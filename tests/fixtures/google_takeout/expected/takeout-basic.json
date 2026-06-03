@@ -1,0 +1,16 @@
+{
+  "description": "Modern foldered layout; 3 clean vCard 3.0 records with UIDs; no photos.",
+  "vcf_files": [
+    "Takeout/Contacts/All Contacts/All Contacts.vcf"
+  ],
+  "external_images": [],
+  "contact_count": 3,
+  "with_uid": 3,
+  "without_uid": 0,
+  "with_embedded_photo": 0,
+  "fns": [
+    "Ada Lovelace",
+    "Alan Turing",
+    "Grace Hopper"
+  ]
+}

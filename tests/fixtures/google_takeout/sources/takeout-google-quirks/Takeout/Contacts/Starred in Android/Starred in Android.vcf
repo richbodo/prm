@@ -1,0 +1,19 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Ñoño;José;;;
+FN:José Ñoño
+ORG:Café Müller
+item1.EMAIL;TYPE=INTERNET:jose.nono@example.com
+item1.X-ABLabel:Work
+item2.EMAIL;TYPE=INTERNET:jose@example.org
+item2.X-ABLabel:Personal
+item3.TEL:+1-555-0110
+item3.X-ABLabel:Mobile
+BDAY:1985-07-21
+X-PHONETIC-FIRST-NAME:Ho-SAY
+X-PHONETIC-LAST-NAME:NYO-nyo
+NOTE:Met at the 2019 distributed-systems workshop in Lisbon; introduced by 
+ a mutual colleague. Prefers email over phone. This note is intentionally l
+ ong so it exceeds the 75-octet line limit and forces the parser to reassem
+ ble a folded NOTE property across several continuation lines.
+END:VCARD

@@ -1,0 +1,17 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Shannon;Claude;Elwood;;
+FN:Claude Shannon
+ORG:Bell Labs
+EMAIL;TYPE=INTERNET,Work:claude.shannon@example.com
+TEL;TYPE=WORK:+1-555-0130
+UID:urn:uuid:1eaf0000-0000-4000-8000-000000000030
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:von Neumann;John;;;
+FN:John von Neumann
+EMAIL;TYPE=INTERNET,Work:john.vonneumann@example.org
+TEL;TYPE=HOME:+1-555-0131
+UID:urn:uuid:1eaf0000-0000-4000-8000-000000000031
+END:VCARD

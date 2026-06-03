@@ -1,0 +1,15 @@
+{
+  "description": "Older flat layout: Contacts/All Contacts.vcf with no per-label subfolder.",
+  "vcf_files": [
+    "Takeout/Contacts/All Contacts.vcf"
+  ],
+  "external_images": [],
+  "contact_count": 2,
+  "with_uid": 2,
+  "without_uid": 0,
+  "with_embedded_photo": 0,
+  "fns": [
+    "Claude Shannon",
+    "John von Neumann"
+  ]
+}
