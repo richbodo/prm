@@ -1,0 +1,27 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+ORG:Analytical Engines
+TITLE:Mathematician
+EMAIL;TYPE=INTERNET,Work:ada.lovelace@example.com
+TEL;TYPE=CELL:+1-555-0101
+UID:urn:uuid:ada00000-0000-4000-8000-000000000001
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Grace;Brewster;RADM;
+FN:Grace Hopper
+ORG:US Navy
+EMAIL;TYPE=INTERNET,Work:grace.hopper@example.org
+TEL;TYPE=WORK:+1-555-0102
+UID:urn:uuid:9c001000-0000-4000-8000-000000000002
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Alan;Mathison;;
+FN:Alan Turing
+EMAIL;TYPE=INTERNET,Home:alan.turing@example.com
+TEL;TYPE=HOME:+1-555-0103
+UID:urn:uuid:a1a17000-0000-4000-8000-000000000003
+END:VCARD

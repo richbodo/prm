@@ -1,0 +1,6 @@
+# Built zip archives are derived artifacts — rebuild with `python build.py`.
+build/
+
+# Python caches
+__pycache__/
+*.pyc

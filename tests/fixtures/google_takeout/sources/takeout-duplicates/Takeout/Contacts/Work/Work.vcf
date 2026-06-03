@@ -1,0 +1,21 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+ORG:Analytical Engines
+item1.EMAIL;TYPE=INTERNET:ADA.LOVELACE@EXAMPLE.COM
+item1.X-ABLabel:Work
+item2.TEL:+1-555-0101
+item2.X-ABLabel:CELL
+item3.TEL:+1-555-9999
+item3.X-ABLabel:WORK
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;Byron;;
+FN:Ada B. Lovelace
+item1.EMAIL;TYPE=INTERNET:ada@analyticalengines.example
+item1.X-ABLabel:Personal
+item2.TEL:+1-555-0101
+item2.X-ABLabel:CELL
+END:VCARD

@@ -1,0 +1,16 @@
+{
+  "description": "Photo referenced as an external image file named after the contact display name (legacy/heuristic matching; embedded base64 is the modern norm).",
+  "vcf_files": [
+    "Takeout/Contacts/All Contacts/All Contacts.vcf"
+  ],
+  "external_images": [
+    "Takeout/Contacts/All Contacts/Ada Lovelace.png"
+  ],
+  "contact_count": 1,
+  "with_uid": 1,
+  "without_uid": 0,
+  "with_embedded_photo": 0,
+  "fns": [
+    "Ada Lovelace"
+  ]
+}

@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:3.0
+N:O'Brien;Mary;;;
+FN:Mary O'Brien
+ORG:O'Brien & Co.
+TITLE:Director
+item1.EMAIL;TYPE=INTERNET:mary.obrien@example.com
+item1.X-ABLabel:Work
+item2.TEL:+1-555-0112
+item2.X-ABLabel:WORK
+END:VCARD

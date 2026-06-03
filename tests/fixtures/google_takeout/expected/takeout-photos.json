@@ -1,0 +1,15 @@
+{
+  "description": "Embedded PHOTO;ENCODING=b base64 image (modern norm), mixed with a no-photo record.",
+  "vcf_files": [
+    "Takeout/Contacts/All Contacts/All Contacts.vcf"
+  ],
+  "external_images": [],
+  "contact_count": 2,
+  "with_uid": 2,
+  "without_uid": 0,
+  "with_embedded_photo": 1,
+  "fns": [
+    "Edsger Dijkstra",
+    "Katherine Johnson"
+  ]
+}
