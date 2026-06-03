@@ -8,8 +8,8 @@ manifests can be regenerated and diffed in review.
 
 All data here is SYNTHETIC. Names are historical computing figures; emails use the reserved
 ``example.com``/``example.org`` domains (RFC 2606) and phone numbers use the 555-01xx fictional
-block (NANP). No real contact data is ever committed to this repo — drop real exports in
-``tests/fixtures/incoming/`` (gitignored) instead.
+block (NANP). No real contact data is ever committed to this repo — drop real exports in the
+repo-root ``ignore-data/`` (gitignored) instead.
 
 What the corpus deliberately exercises (the real-world quirks the ingester must survive):
   * vCard **3.0** — the version Google Takeout actually emits.
@@ -17,6 +17,9 @@ What the corpus deliberately exercises (the real-world quirks the ingester must 
   * Google's ``itemN.PROP`` / ``itemN.X-ABLabel`` property-grouping convention.
   * Contacts with **no UID** — the common case for Takeout, which forces the
     email/content-hash stable-id fallback (INV-5).
+  * A **name-less card** (no ``N``/``FN`` at all) — ~33% of a real export; identity must fall back
+    to the email and the projection must tolerate a missing display name.
+  * ``CATEGORIES`` — Google's label/group membership, present even in ``All Contacts.vcf``.
   * Unicode names and apostrophes.
   * Photos embedded as base64 (``PHOTO;ENCODING=b``) and, separately, referenced as external
     image files named after the contact (a documented heuristic; see README).
@@ -93,12 +96,16 @@ def fold(line: str) -> str:
 
 
 class Contact:
-    """A synthetic contact. ``emails``/``tels`` may be grouped Google-style via ``itemN``."""
+    """A synthetic contact. ``emails``/``tels`` may be grouped Google-style via ``itemN``.
+
+    ``fn`` and ``n`` may be ``None`` to model a **name-less** card (no ``FN``/``N`` emitted) — the
+    common Takeout case where a contact is identified only by email/phone.
+    """
 
     def __init__(
         self,
-        fn,
-        n,                       # (family, given, additional, prefix, suffix)
+        fn,                      # display name, or None for a name-less card
+        n,                       # (family, given, additional, prefix, suffix), or None
         uid=None,
         emails=None,             # list of (label, address); label drives itemN grouping if grouped=True
         tels=None,               # list of (type, number)
@@ -106,6 +113,7 @@ class Contact:
         title=None,
         bday=None,
         note=None,
+        categories=None,         # list of label/group names -> CATEGORIES:a,b
         extras=None,             # list of raw vCard lines (already property:value)
         photo_png=None,          # bytes -> embedded as PHOTO;ENCODING=b
         grouped=False,           # use itemN.EMAIL + itemN.X-ABLabel grouping
@@ -119,14 +127,17 @@ class Contact:
         self.title = title
         self.bday = bday
         self.note = note
+        self.categories = categories or []
         self.extras = extras or []
         self.photo_png = photo_png
         self.grouped = grouped
 
     def to_vcard(self) -> str:
         lines = ["BEGIN:VCARD", "VERSION:3.0"]
-        lines.append("N:" + ";".join(self.n))
-        lines.append("FN:" + self.fn)
+        if self.n is not None:
+            lines.append("N:" + ";".join(self.n))
+        if self.fn is not None:
+            lines.append("FN:" + self.fn)
         if self.org:
             lines.append("ORG:" + self.org)
         if self.title:
@@ -150,6 +161,8 @@ class Contact:
 
         if self.bday:
             lines.append("BDAY:" + self.bday)
+        if self.categories:
+            lines.append("CATEGORIES:" + ",".join(self.categories))
         for extra in self.extras:
             lines.append(extra)
         if self.note:
@@ -253,6 +266,20 @@ def mary(uid=None):
     )
 
 
+def noname():
+    # Real Takeout case (~33% of cards): no N/FN at all. Identified only by a grouped email, and a
+    # member of two groups via CATEGORIES. Forces identity onto the email (no name to hash) and the
+    # projection to render without a display name.
+    return Contact(
+        fn=None,
+        n=None,
+        uid=None,
+        emails=[("Work", "unknown.contact@example.com")],
+        categories=["myContacts", "Ruby Code Club"],
+        grouped=True,
+    )
+
+
 def katherine():
     return Contact(
         fn="Katherine Johnson",
@@ -340,11 +367,12 @@ def build_fixture_specs():
     specs["takeout-google-quirks"] = {
         "description": (
             "Google's itemN.X-ABLabel grouping, folded NOTE, unicode (José Ñoño / 田中太郎), "
-            "apostrophe names, no UID (forces stable-id fallback), and the same person across "
+            "apostrophe names, no UID (forces stable-id fallback), a name-less email-only card with "
+            "CATEGORIES group membership, and the same person across "
             "All Contacts / My Contacts / a label folder."
         ),
         "vcards": {
-            "Takeout/Contacts/All Contacts/All Contacts.vcf": [jose(), tanaka(), mary()],
+            "Takeout/Contacts/All Contacts/All Contacts.vcf": [jose(), tanaka(), mary(), noname()],
             "Takeout/Contacts/My Contacts/My Contacts.vcf": [mary()],
             "Takeout/Contacts/Starred in Android/Starred in Android.vcf": [jose()],
         },
@@ -407,15 +435,22 @@ def expected_for(spec) -> dict:
     contact_count = 0
     with_embedded_photo = 0
     with_uid = 0
+    without_name = 0
+    with_categories = 0
     fns = []
     for path in vcf_files:
         for c in spec["vcards"][path]:
             contact_count += 1
-            fns.append(c.fn)
+            if c.fn:
+                fns.append(c.fn)
+            else:
+                without_name += 1
             if c.uid:
                 with_uid += 1
             if c.photo_png is not None:
                 with_embedded_photo += 1
+            if c.categories:
+                with_categories += 1
     return {
         "description": spec["description"],
         "vcf_files": vcf_files,
@@ -423,6 +458,8 @@ def expected_for(spec) -> dict:
         "contact_count": contact_count,
         "with_uid": with_uid,
         "without_uid": contact_count - with_uid,
+        "without_name": without_name,
+        "with_categories": with_categories,
         "with_embedded_photo": with_embedded_photo,
         "fns": sorted(fns),
     }

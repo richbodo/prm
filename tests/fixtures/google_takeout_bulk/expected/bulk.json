@@ -1,0 +1,23 @@
+{
+  "description": "Synthetic large Google Takeout 'All Contacts.vcf' for scale/DB testing. Distributions derived from a real 1000-contact export (validated 2026-06-04). vCard 3.0, CRLF, zero UIDs; ~33% name-less cards; CATEGORIES, itemN.X-ABLabel email grouping, and a sparse long-tail of TEL/URL/ORG/BDAY/PHOTO/X-PHONETIC.",
+  "default_count": 1000,
+  "vcf_file": "Takeout/Contacts/All Contacts/All Contacts.vcf",
+  "version": "3.0",
+  "line_ending": "CRLF",
+  "total_cards": 1000,
+  "uid_count": 0,
+  "named_cards": 675,
+  "nameless_cards": 325,
+  "cards_with_email": 901,
+  "grouped_email_lines": 744,
+  "bare_email_lines": 157,
+  "x_ablabel_lines": 907,
+  "tel_lines": 115,
+  "url_lines": 48,
+  "categories_cards": 209,
+  "note_cards": 35,
+  "org_cards": 12,
+  "photo_cards": 49,
+  "bday_cards": 11,
+  "phonetic_cards": 9
+}

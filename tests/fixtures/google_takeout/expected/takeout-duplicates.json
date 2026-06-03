@@ -8,6 +8,8 @@
   "contact_count": 3,
   "with_uid": 1,
   "without_uid": 2,
+  "without_name": 0,
+  "with_categories": 0,
   "with_embedded_photo": 0,
   "fns": [
     "Ada B. Lovelace",

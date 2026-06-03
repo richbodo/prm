@@ -1,5 +1,0 @@
-# Never commit real contact exports dropped here (protects INV-1: private data stays local).
-# Ignore everything in this directory except this file and the README.
-*
-!.gitignore
-!README.md

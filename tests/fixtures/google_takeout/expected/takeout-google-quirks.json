@@ -1,14 +1,16 @@
 {
-  "description": "Google's itemN.X-ABLabel grouping, folded NOTE, unicode (José Ñoño / 田中太郎), apostrophe names, no UID (forces stable-id fallback), and the same person across All Contacts / My Contacts / a label folder.",
+  "description": "Google's itemN.X-ABLabel grouping, folded NOTE, unicode (José Ñoño / 田中太郎), apostrophe names, no UID (forces stable-id fallback), a name-less email-only card with CATEGORIES group membership, and the same person across All Contacts / My Contacts / a label folder.",
   "vcf_files": [
     "Takeout/Contacts/All Contacts/All Contacts.vcf",
     "Takeout/Contacts/My Contacts/My Contacts.vcf",
     "Takeout/Contacts/Starred in Android/Starred in Android.vcf"
   ],
   "external_images": [],
-  "contact_count": 5,
+  "contact_count": 6,
   "with_uid": 0,
-  "without_uid": 5,
+  "without_uid": 6,
+  "without_name": 1,
+  "with_categories": 1,
   "with_embedded_photo": 0,
   "fns": [
     "José Ñoño",

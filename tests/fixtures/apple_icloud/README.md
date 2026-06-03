@@ -1,7 +1,7 @@
 # Apple iCloud — contact fixtures
 
 Synthetic Apple iCloud / Contacts.app vCard export, used to test the PRM ingester (v0.1 M1).
-Generated and fake; **no real export is committed** (real ones go in [`../incoming/`](../incoming/)).
+Generated and fake; **no real export is committed** (real ones go in [`../../../ignore-data/`](../../../ignore-data/)).
 
 ## What a real Apple export looks like
 

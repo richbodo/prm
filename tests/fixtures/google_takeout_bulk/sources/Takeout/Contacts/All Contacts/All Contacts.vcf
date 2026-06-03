@@ -1,0 +1,6667 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Grace;;;
+FN:Grace Allen
+item1.EMAIL;type=INTERNET:grace.allen0@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:niklaus.hopper1@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1001
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Barbara;;;
+FN:Barbara Hejlsberg
+item1.EMAIL;type=INTERNET:barbara.hejlsberg2@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Frances;;;
+FN:Frances Perlman
+item2.TEL:+1-555-1003
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Bjarne;;;
+FN:Bjarne Allen
+item1.EMAIL;type=INTERNET:bjarne.allen4@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1004
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Linus;;;
+FN:Linus Lamarr
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.truong6@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1006
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.sparckjones7@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Donald;;;
+FN:Donald Hejlsberg
+item1.EMAIL;type=INTERNET:donald.hejlsberg8@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Adele;;;
+FN:Adele Goldberg
+item2.TEL:+1-555-1009
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.borg10@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Edsger;;;
+FN:Edsger Liskov
+EMAIL;type=INTERNET;type=pref:edsger.liskov11@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.wing12@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1012
+item2.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Karen;;;
+FN:Karen Johnson
+item1.EMAIL;type=INTERNET:karen.johnson13@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.lamport14@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Niklaus;;;
+FN:Niklaus Berners-Lee
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Guido;;;
+FN:Guido McCarthy
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.turing17@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.johnson18@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Ada;;;
+FN:Ada Cerf
+item1.EMAIL;type=INTERNET:ada.cerf19@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Adele;;;
+FN:Adele Thompson
+item1.EMAIL;type=INTERNET:adele.thompson20@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:vint.ritchie21@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.lovelace22@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Niklaus;;;
+FN:Niklaus Ritchie
+item1.EMAIL;type=INTERNET:niklaus.ritchie23@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1023
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.wirth24@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.hopper25@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:bjarne.torvalds26@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;John;;;
+FN:John Lovelace
+item1.EMAIL;type=INTERNET:john.lovelace27@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;John;;;
+FN:John McCarthy
+item1.EMAIL;type=INTERNET:john.mccarthy28@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Niklaus;;;
+FN:Niklaus Wing
+item1.EMAIL;type=INTERNET:niklaus.wing29@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Donald;;;
+FN:Donald Berners-Lee
+item1.EMAIL;type=INTERNET:donald.bernerslee30@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Tim;;;
+FN:Tim Berners-Lee
+item1.EMAIL;type=INTERNET:tim.bernerslee31@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.knuth32@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Niklaus;;;
+FN:Niklaus McCarthy
+item1.EMAIL;type=INTERNET:niklaus.mccarthy33@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.cerf34@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Frances;;;
+FN:Frances Wilkes
+item1.EMAIL;type=INTERNET:frances.wilkes35@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Frances;;;
+FN:Frances Perlman
+item1.EMAIL;type=INTERNET:frances.perlman36@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Sophie;;;
+FN:Sophie Perlman
+EMAIL;type=INTERNET;type=pref:sophie.perlman37@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ken;;;
+FN:Ken Hamilton
+item1.EMAIL;type=INTERNET:ken.hamilton38@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:katherine.hopper39@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Karen;;;
+FN:Karen Wirth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Frances;;;
+FN:Frances Spärck Jones
+item1.EMAIL;type=INTERNET:frances.sparckjones41@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.engelbart42@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Shafi;;;
+FN:Shafi Ritchie
+item1.EMAIL;type=INTERNET:shafi.ritchie43@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1043
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.hejlsberg44@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.lovelace45@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/ken45
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Niklaus;;;
+FN:Niklaus Borg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Alan;;;
+FN:Alan Perlman
+item1.EMAIL;type=INTERNET:alan.perlman47@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:sophie.turing48@example.com
+item2.TEL:+1-555-1048
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Tim;;;
+FN:Tim Borg
+item1.EMAIL;type=INTERNET:tim.borg49@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Edsger;;;
+FN:Edsger Hopper
+item1.EMAIL;type=INTERNET:edsger.hopper50@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Leslie;;;
+FN:Leslie Perlman
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Donald;;;
+FN:Donald Cerf
+item1.EMAIL;type=INTERNET:donald.cerf52@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Niklaus;;;
+FN:Niklaus Lamarr
+item1.EMAIL;type=INTERNET:niklaus.lamarr53@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.lovelace54@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Grace;;;
+FN:Grace Hopper
+item1.EMAIL;type=INTERNET:grace.hopper55@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Niklaus;;;
+FN:Niklaus Hopper
+EMAIL;type=INTERNET;type=pref:niklaus.hopper56@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Grace;;;
+FN:Grace Wirth
+item1.EMAIL;type=INTERNET:grace.wirth57@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Bjarne;;;
+FN:Bjarne Cerf
+item1.EMAIL;type=INTERNET:bjarne.cerf58@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Katherine;;;
+FN:Katherine Perlman
+item1.EMAIL;type=INTERNET:katherine.perlman59@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Barbara;;;
+FN:Barbara Easley
+item1.EMAIL;type=INTERNET:barbara.easley60@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.turing61@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Dennis;;;
+FN:Dennis Lamport
+item1.EMAIL;type=INTERNET:dennis.lamport62@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.lamport63@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Barbara;;;
+FN:Barbara Easley
+item1.EMAIL;type=INTERNET:barbara.easley64@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1064
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Radia;;;
+FN:Radia Goldberg
+EMAIL;type=INTERNET;type=pref:radia.goldberg65@example.com
+CATEGORIES:Family,business_contacts
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.ritchie66@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Shafi;;;
+FN:Shafi Johnson
+item1.EMAIL;type=INTERNET:shafi.johnson67@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Hedy;;;
+FN:Hedy Goldberg
+item1.EMAIL;type=INTERNET:hedy.goldberg68@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.lovelace69@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Anita;;;
+FN:Anita Lamarr
+X-PHONETIC-FIRST-NAME:Anita
+X-PHONETIC-LAST-NAME:Lamarr
+item1.EMAIL;type=INTERNET:anita.lamarr70@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Edsger;;;
+FN:Edsger Easley
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Katherine;;;
+FN:Katherine Knuth
+item1.EMAIL;type=INTERNET:katherine.knuth72@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Guido;;;
+FN:Guido Wing
+item1.EMAIL;type=INTERNET:guido.wing73@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/guido73
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Guido;;;
+FN:Guido Cerf
+EMAIL;type=INTERNET;type=pref:guido.cerf74@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Edsger;;;
+FN:Edsger Spärck Jones
+EMAIL;type=INTERNET;type=pref:edsger.sparckjones75@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Annie;;;
+FN:Annie Lamarr
+item1.EMAIL;type=INTERNET:annie.lamarr76@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.hejlsberg77@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.knuth78@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Vint;;;
+FN:Vint Perlman
+item1.EMAIL;type=INTERNET:vint.perlman79@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Ada;;;
+FN:Ada Wing
+item1.EMAIL;type=INTERNET:ada.wing80@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.hamilton81@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.wilkes82@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Anita;;;
+FN:Anita Johnson
+item1.EMAIL;type=INTERNET:anita.johnson83@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Hopper;;;
+FN:Hopper Lovelace
+X-PHONETIC-FIRST-NAME:Hopper
+X-PHONETIC-LAST-NAME:Lovelace
+item1.EMAIL;type=INTERNET:hopper.lovelace84@example.com
+item1.X-ABLabel:INTERNET
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Hopper;;;
+FN:Hopper Dijkstra
+item1.EMAIL;type=INTERNET:hopper.dijkstra85@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1085
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Ada;;;
+FN:Ada Easley
+item1.EMAIL;type=INTERNET:ada.easley86@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Grace;;;
+FN:Grace Dijkstra
+item1.EMAIL;type=INTERNET:grace.dijkstra87@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Anita;;;
+FN:Anita Truong
+item1.EMAIL;type=INTERNET:anita.truong88@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Donald;;;
+FN:Donald Easley
+item1.EMAIL;type=INTERNET:donald.easley89@example.com
+item1.X-ABLabel:_$!<Other>!$_
+NOTE:Imported contact.
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:niklaus.wirth90@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Hopper;;;
+FN:Hopper Johnson
+item1.EMAIL;type=INTERNET:hopper.johnson91@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.johnson92@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Niklaus;;;
+FN:Niklaus Allen
+EMAIL;type=INTERNET;type=pref:niklaus.allen93@example.com
+NOTE:Imported contact.
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.wirth94@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:karen.bernerslee95@example.com
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Ken;;;
+FN:Ken McCarthy
+EMAIL;type=INTERNET;type=pref:ken.mccarthy96@example.com
+item2.TEL:+1-555-1096
+item2.X-ABLabel:_$!<Mobile>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:radia.hamilton97@example.com
+item2.TEL:+1-555-1097
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.bernerslee98@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Dennis;;;
+FN:Dennis Borg
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.lamarr100@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.hopper101@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Tim;;;
+FN:Tim Hejlsberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.ritchie103@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Radia;;;
+FN:Radia Allen
+item1.EMAIL;type=INTERNET:radia.allen104@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1104
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:hedy.goldberg105@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.lovelace106@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;André;;;
+FN:André Lovelace
+item1.EMAIL;type=INTERNET:andré.lovelace107@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1107
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.easley108@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Frances;;;
+FN:Frances Hopper
+item1.EMAIL;type=INTERNET:frances.hopper109@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:tim.dijkstra110@example.com
+item3.URL:https://example.org/tim110
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Ken;;;
+FN:Ken Perlman
+EMAIL;type=INTERNET;type=pref:ken.perlman111@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Radia;;;
+FN:Radia Hamilton
+item1.EMAIL;type=INTERNET:radia.hamilton112@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Karen;;;
+FN:Karen Borg
+item1.EMAIL;type=INTERNET:karen.borg113@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.hamilton114@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Radia;;;
+FN:Radia Liskov
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Frances;;;
+FN:Frances Allen
+item1.EMAIL;type=INTERNET:frances.allen116@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.goldberg117@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Bjarne;;;
+FN:Bjarne Lamarr
+EMAIL;type=INTERNET;type=pref:bjarne.lamarr118@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.lovelace119@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1119
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Katherine;;;
+FN:Katherine Hamilton
+item1.EMAIL;type=INTERNET:katherine.hamilton120@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Ada;;;
+FN:Ada Berners-Lee
+item1.EMAIL;type=INTERNET:ada.bernerslee121@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Leslie;;;
+FN:Leslie Wilkes
+item1.EMAIL;type=INTERNET:leslie.wilkes122@example.com
+item1.X-ABLabel:INTERNET
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.easley123@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Linus;;;
+FN:Linus Allen
+item1.EMAIL;type=INTERNET:linus.allen124@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Katherine;;;
+FN:Katherine Perlman
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Hopper;;;
+FN:Hopper Goldberg
+item1.EMAIL;type=INTERNET:hopper.goldberg126@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:shafi.mccarthy127@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Radia;;;
+FN:Radia Borg
+item1.EMAIL;type=INTERNET:radia.borg128@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Radia;;;
+FN:Radia Spärck Jones
+item1.EMAIL;type=INTERNET:radia.sparckjones129@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1129
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Grace;;;
+FN:Grace Lovelace
+item1.EMAIL;type=INTERNET:grace.lovelace130@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.turing131@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.liskov132@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:tim.wing133@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Hopper;;;
+FN:Hopper Wing
+item1.EMAIL;type=INTERNET:hopper.wing134@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Radia;;;
+FN:Radia Thompson
+item1.EMAIL;type=INTERNET:radia.thompson135@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Adele;;;
+FN:Adele Wilkes
+item1.EMAIL;type=INTERNET:adele.wilkes136@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Leslie;;;
+FN:Leslie Torvalds
+item1.EMAIL;type=INTERNET:leslie.torvalds137@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.lovelace138@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Grace;;;
+FN:Grace Easley
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Sophie;;;
+FN:Sophie Torvalds
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.goldwasser141@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Leslie;;;
+FN:Leslie Goldberg
+item1.EMAIL;type=INTERNET:leslie.goldberg142@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Sophie;;;
+FN:Sophie Allen
+item1.EMAIL;type=INTERNET:sophie.allen143@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Frances;;;
+FN:Frances Allen
+EMAIL;type=INTERNET;type=pref:frances.allen144@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Anita;;;
+FN:Anita Truong
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:vint.goldberg146@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.easley147@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1147
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Edsger;;;
+FN:Edsger Dijkstra
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Ken;;;
+FN:Ken Lamarr
+item1.EMAIL;type=INTERNET:ken.lamarr149@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.wing150@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1150
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Bjarne;;;
+FN:Bjarne Hamilton
+item1.EMAIL;type=INTERNET:bjarne.hamilton151@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Radia;;;
+FN:Radia Spärck Jones
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Donald;;;
+FN:Donald Kernighan
+item2.TEL:+1-555-1153
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;André;;;
+FN:André Thompson
+item1.EMAIL;type=INTERNET:andré.thompson154@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Bjarne;;;
+FN:Bjarne Lamarr
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Frances;;;
+FN:Frances Lamport
+item1.EMAIL;type=INTERNET:frances.lamport156@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.turing157@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Tim;;;
+FN:Tim Perlman
+item1.EMAIL;type=INTERNET:tim.perlman158@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Adele;;;
+FN:Adele Borg
+item1.EMAIL;type=INTERNET:adele.borg159@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Katherine;;;
+FN:Katherine Engelbart
+item1.EMAIL;type=INTERNET:katherine.engelbart160@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Hopper;;;
+FN:Hopper Engelbart
+item1.EMAIL;type=INTERNET:hopper.engelbart161@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;André;;;
+FN:André Torvalds
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Karen;;;
+FN:Karen Lovelace
+item1.EMAIL;type=INTERNET:karen.lovelace163@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Alan;;;
+FN:Alan Torvalds
+item1.EMAIL;type=INTERNET:alan.torvalds164@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Margaret;;;
+FN:Margaret Johnson
+EMAIL;type=INTERNET;type=pref:margaret.johnson165@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Grace;;;
+FN:Grace Easley
+item1.EMAIL;type=INTERNET:grace.easley166@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1166
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Brian;;;
+FN:Brian Berners-Lee
+item1.EMAIL;type=INTERNET:brian.bernerslee167@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.turing168@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Katherine;;;
+FN:Katherine Lovelace
+item1.EMAIL;type=INTERNET:katherine.lovelace169@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.cerf170@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Adele;;;
+FN:Adele Johnson
+X-PHONETIC-FIRST-NAME:Adele
+X-PHONETIC-LAST-NAME:Johnson
+ORG:Johnson Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:adele.johnson171@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:ada.easley172@example.com
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Alan;;;
+FN:Alan Dijkstra
+item1.EMAIL;type=INTERNET:alan.dijkstra173@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1173
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Ken;;;
+FN:Ken Dijkstra
+item1.EMAIL;type=INTERNET:ken.dijkstra174@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1174
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.ritchie175@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.lamport176@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Linus;;;
+FN:Linus Ritchie
+item1.EMAIL;type=INTERNET:linus.ritchie177@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Tim;;;
+FN:Tim Wirth
+item1.EMAIL;type=INTERNET:tim.wirth178@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Ken;;;
+FN:Ken Knuth
+EMAIL;type=INTERNET;type=pref:ken.knuth179@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Bjarne;;;
+FN:Bjarne Hopper
+item1.EMAIL;type=INTERNET:bjarne.hopper180@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/bjarne180
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Tim;;;
+FN:Tim Lamport
+item1.EMAIL;type=INTERNET:tim.lamport181@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.wilkes182@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.goldwasser183@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:grace.truong184@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;John;;;
+FN:John Allen
+item1.EMAIL;type=INTERNET:john.allen185@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Barbara;;;
+FN:Barbara Wirth
+item3.URL:https://example.org/barbara186
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;John;;;
+FN:John Ritchie
+item1.EMAIL;type=INTERNET:john.ritchie187@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;André;;;
+FN:André McCarthy
+item1.EMAIL;type=INTERNET:andré.mccarthy188@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Dennis;;;
+FN:Dennis Cerf
+item1.EMAIL;type=INTERNET:dennis.cerf189@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Edsger;;;
+FN:Edsger Lamarr
+EMAIL;type=INTERNET;type=pref:edsger.lamarr190@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Linus;;;
+FN:Linus Borg
+item1.EMAIL;type=INTERNET:linus.borg191@example.com
+item1.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Karen;;;
+FN:Karen Truong
+item1.EMAIL;type=INTERNET:karen.truong192@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1192
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Grace;;;
+FN:Grace Berners-Lee
+EMAIL;type=INTERNET;type=pref:grace.bernerslee193@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Karen;;;
+FN:Karen Lamport
+item1.EMAIL;type=INTERNET:karen.lamport194@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Sophie;;;
+FN:Sophie Perlman
+item1.EMAIL;type=INTERNET:sophie.perlman195@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Tim;;;
+FN:Tim Hamilton
+EMAIL;type=INTERNET;type=pref:tim.hamilton196@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Guido;;;
+FN:Guido Turing
+item1.EMAIL;type=INTERNET:guido.turing197@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Dennis;;;
+FN:Dennis Thompson
+item1.EMAIL;type=INTERNET:dennis.thompson198@example.com
+item1.X-ABLabel:INTERNET
+NOTE:Imported contact.
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Dennis;;;
+FN:Dennis Turing
+EMAIL;type=INTERNET;type=pref:dennis.turing199@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Alan;;;
+FN:Alan Lamport
+EMAIL;type=INTERNET;type=pref:alan.lamport200@example.com
+item2.TEL:+1-555-1200
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Hopper;;;
+FN:Hopper Kernighan
+item1.EMAIL;type=INTERNET:hopper.kernighan201@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Ken;;;
+FN:Ken Turing
+item1.EMAIL;type=INTERNET:ken.turing202@example.com
+item1.X-ABLabel:_$!<Work>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ken;;;
+FN:Ken Hamilton
+item1.EMAIL;type=INTERNET:ken.hamilton203@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Ken;;;
+FN:Ken Goldwasser
+item1.EMAIL;type=INTERNET:ken.goldwasser204@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Donald;;;
+FN:Donald Wing
+item1.EMAIL;type=INTERNET:donald.wing205@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.cerf206@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Guido;;;
+FN:Guido Dijkstra
+item1.EMAIL;type=INTERNET:guido.dijkstra207@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Katherine;;;
+FN:Katherine McCarthy
+EMAIL;type=INTERNET;type=pref:katherine.mccarthy208@example.com
+item2.TEL:+1-555-1208
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Radia;;;
+FN:Radia Liskov
+item1.EMAIL;type=INTERNET:radia.liskov209@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Ken;;;
+FN:Ken Thompson
+item1.EMAIL;type=INTERNET:ken.thompson210@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Linus;;;
+FN:Linus Turing
+item1.EMAIL;type=INTERNET:linus.turing211@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.hopper212@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.thompson213@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1213
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Donald;;;
+FN:Donald Lamarr
+item1.EMAIL;type=INTERNET:donald.lamarr214@example.com
+item1.X-ABLabel:_$!<Work>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+ORG:Thompson Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:grace.thompson215@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:katherine.kernighan216@example.com
+item1.X-ABLabel:_$!<Other>!$_
+NOTE:Imported contact.
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Leslie;;;
+FN:Leslie Allen
+item1.EMAIL;type=INTERNET:leslie.allen217@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1217
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.truong218@example.com
+item1.X-ABLabel:_$!<Other>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Leslie;;;
+FN:Leslie Hamilton
+item1.EMAIL;type=INTERNET:leslie.hamilton219@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.johnson220@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Bjarne;;;
+FN:Bjarne Goldwasser
+item1.EMAIL;type=INTERNET:bjarne.goldwasser221@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Margaret;;;
+FN:Margaret Easley
+item2.TEL:+1-555-1222
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Ken;;;
+FN:Ken Turing
+item1.EMAIL;type=INTERNET:ken.turing223@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Sophie;;;
+FN:Sophie McCarthy
+item1.EMAIL;type=INTERNET:sophie.mccarthy224@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,going out peninsula
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Brian;;;
+FN:Brian Wing
+item1.EMAIL;type=INTERNET:brian.wing225@example.com
+item1.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;André;;;
+FN:André Wilkes
+item1.EMAIL;type=INTERNET:andré.wilkes226@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.allen227@example.com
+item1.X-ABLabel:_$!<Work>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Ken;;;
+FN:Ken Wing
+item1.EMAIL;type=INTERNET:ken.wing228@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;John;;;
+FN:John Thompson
+item1.EMAIL;type=INTERNET:john.thompson229@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:bjarne.goldwasser230@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Hopper;;;
+FN:Hopper Knuth
+item1.EMAIL;type=INTERNET:hopper.knuth231@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.wilkes232@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.knuth233@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Brian;;;
+FN:Brian Allen
+item1.EMAIL;type=INTERNET:brian.allen234@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Frances;;;
+FN:Frances Knuth
+item1.EMAIL;type=INTERNET:frances.knuth235@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Edsger;;;
+FN:Edsger Lamport
+item1.EMAIL;type=INTERNET:edsger.lamport236@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;John;;;
+FN:John Thompson
+EMAIL;type=INTERNET;type=pref:john.thompson237@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Radia;;;
+FN:Radia Dijkstra
+item1.EMAIL;type=INTERNET:radia.dijkstra238@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.torvalds239@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Anita;;;
+FN:Anita Hopper
+item1.EMAIL;type=INTERNET:anita.hopper240@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Niklaus;;;
+FN:Niklaus Hamilton
+item1.EMAIL;type=INTERNET:niklaus.hamilton241@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.cerf242@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.wirth243@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Guido;;;
+FN:Guido Hamilton
+item1.EMAIL;type=INTERNET:guido.hamilton244@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Alan;;;
+FN:Alan Johnson
+item1.EMAIL;type=INTERNET:alan.johnson245@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Bjarne;;;
+FN:Bjarne Hejlsberg
+item1.EMAIL;type=INTERNET:bjarne.hejlsberg246@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/bjarne246
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Leslie;;;
+FN:Leslie Hamilton
+item1.EMAIL;type=INTERNET:leslie.hamilton247@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Grace;;;
+FN:Grace Liskov
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Alan;;;
+FN:Alan Wing
+item1.EMAIL;type=INTERNET:alan.wing249@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Tim;;;
+FN:Tim Knuth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.liskov251@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Adele;;;
+FN:Adele Hopper
+item1.EMAIL;type=INTERNET:adele.hopper252@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Bjarne;;;
+FN:Bjarne Hopper
+item1.EMAIL;type=INTERNET:bjarne.hopper253@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1253
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Niklaus;;;
+FN:Niklaus Turing
+EMAIL;type=INTERNET;type=pref:niklaus.turing254@example.com
+CATEGORIES:Family,garage_sale
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Grace;;;
+FN:Grace Ritchie
+item1.EMAIL;type=INTERNET:grace.ritchie255@example.com
+item1.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Frances;;;
+FN:Frances Wing
+item1.EMAIL;type=INTERNET:frances.wing256@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1256
+item2.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Barbara;;;
+FN:Barbara Cerf
+item1.EMAIL;type=INTERNET:barbara.cerf257@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,garage_sale
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Grace;;;
+FN:Grace Borg
+item1.EMAIL;type=INTERNET:grace.borg258@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/grace258
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:hedy.goldwasser259@example.com
+item2.TEL:+1-555-1259
+item2.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:frances.lamarr260@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.truong261@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Tim;;;
+FN:Tim Engelbart
+item1.EMAIL;type=INTERNET:tim.engelbart262@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Margaret;;;
+FN:Margaret Easley
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.ritchie264@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/adele264
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Karen;;;
+FN:Karen Berners-Lee
+item1.EMAIL;type=INTERNET:karen.bernerslee265@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1265
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Bjarne;;;
+FN:Bjarne Engelbart
+item1.EMAIL;type=INTERNET:bjarne.engelbart266@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.bernerslee267@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,myContacts
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.johnson268@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Tim;;;
+FN:Tim Lovelace
+EMAIL;type=INTERNET;type=pref:tim.lovelace269@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.hejlsberg270@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Grace;;;
+FN:Grace Engelbart
+item1.EMAIL;type=INTERNET:grace.engelbart271@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Ken;;;
+FN:Ken Turing
+item1.EMAIL;type=INTERNET:ken.turing272@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Barbara;;;
+FN:Barbara Perlman
+item1.EMAIL;type=INTERNET:barbara.perlman273@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Grace;;;
+FN:Grace Ritchie
+item1.EMAIL;type=INTERNET:grace.ritchie274@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Sophie;;;
+FN:Sophie Easley
+item1.EMAIL;type=INTERNET:sophie.easley275@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1275
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Margaret;;;
+FN:Margaret Wirth
+item1.EMAIL;type=INTERNET:margaret.wirth276@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Niklaus;;;
+FN:Niklaus Hopper
+item1.EMAIL;type=INTERNET:niklaus.hopper277@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Linus;;;
+FN:Linus Thompson
+item1.EMAIL;type=INTERNET:linus.thompson278@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1278
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Sophie;;;
+FN:Sophie Engelbart
+item1.EMAIL;type=INTERNET:sophie.engelbart279@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.lamport280@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1280
+item2.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Leslie;;;
+FN:Leslie Johnson
+EMAIL;type=INTERNET;type=pref:leslie.johnson281@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.allen282@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:alan.engelbart283@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Margaret;;;
+FN:Margaret Cerf
+item1.EMAIL;type=INTERNET:margaret.cerf284@example.com
+item1.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.torvalds285@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Donald;;;
+FN:Donald Thompson
+item1.EMAIL;type=INTERNET:donald.thompson286@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.goldwasser287@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;André;;;
+FN:André Wing
+item1.EMAIL;type=INTERNET:andré.wing288@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.hamilton289@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;John;;;
+FN:John Wing
+item1.EMAIL;type=INTERNET:john.wing290@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Donald;;;
+FN:Donald Johnson
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Guido;;;
+FN:Guido Turing
+item1.EMAIL;type=INTERNET:guido.turing292@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.goldwasser293@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.hejlsberg294@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/grace294
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Linus;;;
+FN:Linus Dijkstra
+item1.EMAIL;type=INTERNET:linus.dijkstra295@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/linus295
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:katherine.lamport296@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Dennis;;;
+FN:Dennis Lovelace
+item1.EMAIL;type=INTERNET:dennis.lovelace297@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Annie;;;
+FN:Annie Engelbart
+item1.EMAIL;type=INTERNET:annie.engelbart298@example.com
+item1.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.engelbart299@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.perlman300@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.allen301@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.borg302@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Anita;;;
+FN:Anita Goldberg
+item1.EMAIL;type=INTERNET:anita.goldberg303@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Brian;;;
+FN:Brian Knuth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Karen;;;
+FN:Karen Ritchie
+item1.EMAIL;type=INTERNET:karen.ritchie305@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Ken;;;
+FN:Ken Dijkstra
+item1.EMAIL;type=INTERNET:ken.dijkstra306@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Ada;;;
+FN:Ada Perlman
+EMAIL;type=INTERNET;type=pref:ada.perlman307@example.com
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.ritchie308@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Grace;;;
+FN:Grace McCarthy
+item1.EMAIL;type=INTERNET:grace.mccarthy309@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;André;;;
+FN:André Engelbart
+item1.EMAIL;type=INTERNET:andré.engelbart310@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:brian.wing311@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.torvalds312@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.lamarr313@example.com
+item1.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Guido;;;
+FN:Guido Turing
+item1.EMAIL;type=INTERNET:guido.turing314@example.com
+item1.X-ABLabel:_$!<Home>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:andré.knuth315@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Ada;;;
+FN:Ada Berners-Lee
+item1.EMAIL;type=INTERNET:ada.bernerslee316@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Katherine;;;
+FN:Katherine Engelbart
+item1.EMAIL;type=INTERNET:katherine.engelbart317@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1317
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Alan;;;
+FN:Alan Lovelace
+item1.EMAIL;type=INTERNET:alan.lovelace318@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1318
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.lamarr319@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:bjarne.lamport320@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Edsger;;;
+FN:Edsger Wilkes
+item2.TEL:+1-555-1321
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Guido;;;
+FN:Guido Dijkstra
+EMAIL;type=INTERNET;type=pref:guido.dijkstra322@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:vint.knuth323@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.hopper324@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.wilkes325@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.wilkes326@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Hopper;;;
+FN:Hopper Lovelace
+EMAIL;type=INTERNET;type=pref:hopper.lovelace327@example.com
+item2.TEL:+1-555-1327
+item2.X-ABLabel:_$!<Mobile>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Donald;;;
+FN:Donald Ritchie
+item1.EMAIL;type=INTERNET:donald.ritchie328@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.turing329@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Frances;;;
+FN:Frances Goldwasser
+item1.EMAIL;type=INTERNET:frances.goldwasser330@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1330
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Shafi;;;
+FN:Shafi Allen
+item1.EMAIL;type=INTERNET:shafi.allen331@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Annie;;;
+FN:Annie McCarthy
+item1.EMAIL;type=INTERNET:annie.mccarthy332@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Katherine;;;
+FN:Katherine Wing
+item1.EMAIL;type=INTERNET:katherine.wing333@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Radia;;;
+FN:Radia Berners-Lee
+EMAIL;type=INTERNET;type=pref:radia.bernerslee334@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:niklaus.johnson335@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Hedy;;;
+FN:Hedy Knuth
+item1.EMAIL;type=INTERNET:hedy.knuth336@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Radia;;;
+FN:Radia Easley
+item1.EMAIL;type=INTERNET:radia.easley337@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Edsger;;;
+FN:Edsger Liskov
+item1.EMAIL;type=INTERNET:edsger.liskov338@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Ada;;;
+FN:Ada Kernighan
+item1.EMAIL;type=INTERNET:ada.kernighan339@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1339
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;André;;;
+FN:André Perlman
+item1.EMAIL;type=INTERNET:andré.perlman340@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.dijkstra341@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Hedy;;;
+FN:Hedy Hopper
+EMAIL;type=INTERNET;type=pref:hedy.hopper342@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.torvalds343@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:donald.sparckjones344@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.hejlsberg345@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:bjarne.allen346@example.com
+CATEGORIES:going out peninsula
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Radia;;;
+FN:Radia Knuth
+item1.EMAIL;type=INTERNET:radia.knuth347@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.allen348@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Niklaus;;;
+FN:Niklaus Hejlsberg
+item1.EMAIL;type=INTERNET:niklaus.hejlsberg349@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Dennis;;;
+FN:Dennis Dijkstra
+item1.EMAIL;type=INTERNET:dennis.dijkstra350@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Grace;;;
+FN:Grace Easley
+EMAIL;type=INTERNET;type=pref:grace.easley351@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Margaret;;;
+FN:Margaret Hopper
+item1.EMAIL;type=INTERNET:margaret.hopper352@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Anita;;;
+FN:Anita Allen
+item1.EMAIL;type=INTERNET:anita.allen353@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.goldwasser354@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Ada;;;
+FN:Ada Engelbart
+EMAIL;type=INTERNET;type=pref:ada.engelbart355@example.com
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Donald;;;
+FN:Donald Goldberg
+ORG:Goldberg Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:donald.goldberg356@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Ken;;;
+FN:Ken Engelbart
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.thompson358@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Ada;;;
+FN:Ada Lamport
+item1.EMAIL;type=INTERNET:ada.lamport359@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.dijkstra360@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Sophie;;;
+FN:Sophie Hamilton
+ORG:Hamilton Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:sophie.hamilton361@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.liskov362@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/ada362
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+item3.URL:https://example.org/ada363
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.bernerslee364@example.com
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.liskov365@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/guido365
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:myContacts
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.ritchie366@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1366
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.turing367@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Vint;;;
+FN:Vint Hejlsberg
+item1.EMAIL;type=INTERNET:vint.hejlsberg368@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Hedy;;;
+FN:Hedy Ritchie
+EMAIL;type=INTERNET;type=pref:hedy.ritchie369@example.com
+item3.URL:https://example.org/hedy369
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Guido;;;
+FN:Guido Lamport
+item1.EMAIL;type=INTERNET:guido.lamport370@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item2.TEL:+1-555-1371
+item2.X-ABLabel:_$!<Work>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Niklaus;;;
+FN:Niklaus Dijkstra
+item2.TEL:+1-555-1372
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.bernerslee373@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Margaret;;;
+FN:Margaret Truong
+item1.EMAIL;type=INTERNET:margaret.truong374@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.goldwasser375@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Margaret;;;
+FN:Margaret Goldberg
+item1.EMAIL;type=INTERNET:margaret.goldberg376@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1376
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.allen377@example.com
+item2.TEL:+1-555-1377
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Barbara;;;
+FN:Barbara Lovelace
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Tim;;;
+FN:Tim Johnson
+item1.EMAIL;type=INTERNET:tim.johnson379@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Adele;;;
+FN:Adele Goldwasser
+item1.EMAIL;type=INTERNET:adele.goldwasser380@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Radia;;;
+FN:Radia Perlman
+item1.EMAIL;type=INTERNET:radia.perlman381@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Adele;;;
+FN:Adele Lovelace
+EMAIL;type=INTERNET;type=pref:adele.lovelace382@example.com
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Vint;;;
+FN:Vint Torvalds
+item1.EMAIL;type=INTERNET:vint.torvalds383@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Margaret;;;
+FN:Margaret Perlman
+EMAIL;type=INTERNET;type=pref:margaret.perlman384@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.wilkes385@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1385
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.lovelace386@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:alan.hopper387@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;André;;;
+FN:André Engelbart
+item1.EMAIL;type=INTERNET:andré.engelbart388@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Grace;;;
+FN:Grace Goldberg
+item1.EMAIL;type=INTERNET:grace.goldberg389@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Ken;;;
+FN:Ken Ritchie
+EMAIL;type=INTERNET;type=pref:ken.ritchie390@example.com
+item2.TEL:+1-555-1390
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:katherine.truong391@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Anita;;;
+FN:Anita Cerf
+item1.EMAIL;type=INTERNET:anita.cerf392@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Alan;;;
+FN:Alan Hopper
+item1.EMAIL;type=INTERNET:alan.hopper393@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/alan393
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Tim;;;
+FN:Tim Torvalds
+item1.EMAIL;type=INTERNET:tim.torvalds394@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.hejlsberg395@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Tim;;;
+FN:Tim Goldberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.thompson397@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Margaret;;;
+FN:Margaret Berners-Lee
+item1.EMAIL;type=INTERNET:margaret.bernerslee398@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.goldwasser399@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.liskov400@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Vint;;;
+FN:Vint Kernighan
+EMAIL;type=INTERNET;type=pref:vint.kernighan401@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item2.TEL:+1-555-1402
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Adele;;;
+FN:Adele Engelbart
+item1.EMAIL;type=INTERNET:adele.engelbart403@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Ken;;;
+FN:Ken Turing
+item1.EMAIL;type=INTERNET:ken.turing404@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Leslie;;;
+FN:Leslie Hejlsberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Tim;;;
+FN:Tim Wilkes
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Grace;;;
+FN:Grace Wirth
+item1.EMAIL;type=INTERNET:grace.wirth407@example.com
+item1.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.hamilton408@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Annie;;;
+FN:Annie Turing
+item1.EMAIL;type=INTERNET:annie.turing409@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/annie409
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.wing410@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Sophie;;;
+FN:Sophie Wilkes
+item1.EMAIL;type=INTERNET:sophie.wilkes411@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1411
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.hamilton412@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.hopper413@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:john.hopper414@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.torvalds415@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.wilkes416@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.wilkes417@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ada;;;
+FN:Ada Hamilton
+EMAIL;type=INTERNET;type=pref:ada.hamilton418@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.lamarr419@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.cerf420@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1420
+item2.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.lamport421@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1421
+item2.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/leslie421
+item3.X-ABLabel:_$!<HomePage>!$_
+NOTE:Imported contact.
+CATEGORIES:garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.borg422@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Ada;;;
+FN:Ada Borg
+X-PHONETIC-FIRST-NAME:Ada
+X-PHONETIC-LAST-NAME:Borg
+item1.EMAIL;type=INTERNET:ada.borg423@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.hamilton424@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Tim;;;
+FN:Tim Spärck Jones
+item1.EMAIL;type=INTERNET:tim.sparckjones425@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Ken;;;
+FN:Ken Thompson
+EMAIL;type=INTERNET;type=pref:ken.thompson426@example.com
+NOTE:Imported contact.
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Anita;;;
+FN:Anita Borg
+item1.EMAIL;type=INTERNET:anita.borg427@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:vint.torvalds428@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Shafi;;;
+FN:Shafi Berners-Lee
+item1.EMAIL;type=INTERNET:shafi.bernerslee429@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/shafi429
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Shafi;;;
+FN:Shafi Engelbart
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;John;;;
+FN:John Ritchie
+item1.EMAIL;type=INTERNET:john.ritchie431@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.goldberg432@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Brian;;;
+FN:Brian Lamarr
+item1.EMAIL;type=INTERNET:brian.lamarr433@example.com
+item1.X-ABLabel:_$!<Home>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Edsger;;;
+FN:Edsger Goldwasser
+X-PHONETIC-FIRST-NAME:Edsger
+X-PHONETIC-LAST-NAME:Goldwasser
+item1.EMAIL;type=INTERNET:edsger.goldwasser434@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Donald;;;
+FN:Donald Turing
+EMAIL;type=INTERNET;type=pref:donald.turing435@example.com
+item2.TEL:+1-555-1435
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Karen;;;
+FN:Karen Ritchie
+item1.EMAIL;type=INTERNET:karen.ritchie436@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1436
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Adele;;;
+FN:Adele Cerf
+item1.EMAIL;type=INTERNET:adele.cerf437@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/adele437
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Hopper;;;
+FN:Hopper Torvalds
+EMAIL;type=INTERNET;type=pref:hopper.torvalds438@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.knuth439@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Leslie;;;
+FN:Leslie Turing
+item1.EMAIL;type=INTERNET:leslie.turing440@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.mccarthy441@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Donald;;;
+FN:Donald Johnson
+EMAIL;type=INTERNET;type=pref:donald.johnson442@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Edsger;;;
+FN:Edsger Perlman
+ORG:Perlman Labs;
+TITLE:Researcher
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Anita;;;
+FN:Anita Ritchie
+item1.EMAIL;type=INTERNET:anita.ritchie444@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;John;;;
+FN:John Perlman
+item1.EMAIL;type=INTERNET:john.perlman445@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Adele;;;
+FN:Adele Cerf
+item1.EMAIL;type=INTERNET:adele.cerf446@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Adele;;;
+FN:Adele Spärck Jones
+item1.EMAIL;type=INTERNET:adele.sparckjones447@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Annie;;;
+FN:Annie Dijkstra
+item1.EMAIL;type=INTERNET:annie.dijkstra448@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Tim;;;
+FN:Tim Perlman
+item1.EMAIL;type=INTERNET:tim.perlman449@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Adele;;;
+FN:Adele Perlman
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Annie;;;
+FN:Annie Hopper
+item1.EMAIL;type=INTERNET:annie.hopper451@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1451
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Katherine;;;
+FN:Katherine Easley
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.goldberg453@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Margaret;;;
+FN:Margaret Wing
+item1.EMAIL;type=INTERNET:margaret.wing454@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/margaret454
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.lamport455@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1455
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Karen;;;
+FN:Karen Thompson
+item1.EMAIL;type=INTERNET:karen.thompson456@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.lamarr457@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.dijkstra458@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.engelbart459@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.mccarthy460@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;André;;;
+FN:André Easley
+item1.EMAIL;type=INTERNET:andré.easley461@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Grace;;;
+FN:Grace Hamilton
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Leslie;;;
+FN:Leslie Cerf
+item1.EMAIL;type=INTERNET:leslie.cerf463@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Annie;;;
+FN:Annie Kernighan
+EMAIL;type=INTERNET;type=pref:annie.kernighan464@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.goldberg465@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Katherine;;;
+FN:Katherine Engelbart
+item1.EMAIL;type=INTERNET:katherine.engelbart466@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.lovelace467@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Vint;;;
+FN:Vint Wing
+item1.EMAIL;type=INTERNET:vint.wing468@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Ken;;;
+FN:Ken Dijkstra
+item1.EMAIL;type=INTERNET:ken.dijkstra469@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.cerf470@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.truong471@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.wilkes472@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Alan;;;
+FN:Alan Johnson
+item1.EMAIL;type=INTERNET:alan.johnson473@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Barbara;;;
+FN:Barbara Wirth
+item1.EMAIL;type=INTERNET:barbara.wirth474@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Hopper;;;
+FN:Hopper Cerf
+item1.EMAIL;type=INTERNET:hopper.cerf475@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:barbara.knuth476@example.com
+NOTE:Imported contact.
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Adele;;;
+FN:Adele Spärck Jones
+item1.EMAIL;type=INTERNET:adele.sparckjones477@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/adele477
+item3.X-ABLabel:_$!<HomePage>!$_
+NOTE:Imported contact.
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Leslie;;;
+FN:Leslie Wilkes
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Vint;;;
+FN:Vint Easley
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Frances;;;
+FN:Frances Hamilton
+item1.EMAIL;type=INTERNET:frances.hamilton480@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.dijkstra481@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:katherine.thompson482@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Hopper;;;
+FN:Hopper Truong
+item1.EMAIL;type=INTERNET:hopper.truong483@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.kernighan484@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.hopper485@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Margaret;;;
+FN:Margaret McCarthy
+item1.EMAIL;type=INTERNET:margaret.mccarthy486@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Edsger;;;
+FN:Edsger Goldberg
+item1.EMAIL;type=INTERNET:edsger.goldberg487@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Margaret;;;
+FN:Margaret Wilkes
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;André;;;
+FN:André Wilkes
+item1.EMAIL;type=INTERNET:andré.wilkes489@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Edsger;;;
+FN:Edsger Perlman
+item1.EMAIL;type=INTERNET:edsger.perlman490@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1490
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Leslie;;;
+FN:Leslie Lovelace
+item1.EMAIL;type=INTERNET:leslie.lovelace491@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Katherine;;;
+FN:Katherine Hejlsberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Radia;;;
+FN:Radia Lovelace
+item1.EMAIL;type=INTERNET:radia.lovelace493@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Niklaus;;;
+FN:Niklaus Truong
+item1.EMAIL;type=INTERNET:niklaus.truong494@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/niklaus494
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Brian;;;
+FN:Brian Wing
+item1.EMAIL;type=INTERNET:brian.wing495@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:linus.allen496@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.hopper497@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.johnson498@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/donald498
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Adele;;;
+FN:Adele Spärck Jones
+item1.EMAIL;type=INTERNET:adele.sparckjones499@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Vint;;;
+FN:Vint Spärck Jones
+EMAIL;type=INTERNET;type=pref:vint.sparckjones500@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:frances.knuth501@example.com
+item2.TEL:+1-555-1501
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Edsger;;;
+FN:Edsger Liskov
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.wing503@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.truong504@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.liskov505@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.turing506@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Vint;;;
+FN:Vint Goldwasser
+item1.EMAIL;type=INTERNET:vint.goldwasser507@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:radia.sparckjones508@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.borg509@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1509
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Edsger;;;
+FN:Edsger Dijkstra
+item2.TEL:+1-555-1510
+item2.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/edsger510
+item3.X-ABLabel:_$!<HomePage>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Donald;;;
+FN:Donald Liskov
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Guido;;;
+FN:Guido Spärck Jones
+EMAIL;type=INTERNET;type=pref:guido.sparckjones512@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Anita;;;
+FN:Anita Lovelace
+item1.EMAIL;type=INTERNET:anita.lovelace513@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;André;;;
+FN:André Liskov
+EMAIL;type=INTERNET;type=pref:andré.liskov514@example.com
+CATEGORIES:Ruby Code Club,myContacts
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Niklaus;;;
+FN:Niklaus Borg
+item1.EMAIL;type=INTERNET:niklaus.borg515@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Margaret;;;
+FN:Margaret Lovelace
+EMAIL;type=INTERNET;type=pref:margaret.lovelace516@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.thompson517@example.com
+CATEGORIES:going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Frances;;;
+FN:Frances Wirth
+item2.TEL:+1-555-1518
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Hedy;;;
+FN:Hedy Knuth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Alan;;;
+FN:Alan Goldberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Ada;;;
+FN:Ada Torvalds
+item1.EMAIL;type=INTERNET:ada.torvalds521@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.turing522@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Guido;;;
+FN:Guido Allen
+item1.EMAIL;type=INTERNET:guido.allen523@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;André;;;
+FN:André Dijkstra
+item1.EMAIL;type=INTERNET:andré.dijkstra524@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1524
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Karen;;;
+FN:Karen Knuth
+item1.EMAIL;type=INTERNET:karen.knuth525@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.lovelace526@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Donald;;;
+FN:Donald Knuth
+EMAIL;type=INTERNET;type=pref:donald.knuth527@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Radia;;;
+FN:Radia Engelbart
+item1.EMAIL;type=INTERNET:radia.engelbart528@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Barbara;;;
+FN:Barbara Torvalds
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Sophie;;;
+FN:Sophie Wilkes
+item1.EMAIL;type=INTERNET:sophie.wilkes530@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1530
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Niklaus;;;
+FN:Niklaus Ritchie
+item1.EMAIL;type=INTERNET:niklaus.ritchie531@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1531
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Sophie;;;
+FN:Sophie Dijkstra
+item1.EMAIL;type=INTERNET:sophie.dijkstra532@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:sophie.perlman533@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Margaret;;;
+FN:Margaret Allen
+EMAIL;type=INTERNET;type=pref:margaret.allen534@example.com
+item2.TEL:+1-555-1534
+item2.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Alan;;;
+FN:Alan Hamilton
+EMAIL;type=INTERNET;type=pref:alan.hamilton535@example.com
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Shafi;;;
+FN:Shafi Engelbart
+item1.EMAIL;type=INTERNET:shafi.engelbart536@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:margaret.borg537@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:shafi.lamport538@example.com
+item2.TEL:+1-555-1538
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Alan;;;
+FN:Alan Perlman
+EMAIL;type=INTERNET;type=pref:alan.perlman539@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Katherine;;;
+FN:Katherine Allen
+item1.EMAIL;type=INTERNET:katherine.allen540@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Leslie;;;
+FN:Leslie Cerf
+item1.EMAIL;type=INTERNET:leslie.cerf541@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1541
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Karen;;;
+FN:Karen Lamport
+EMAIL;type=INTERNET;type=pref:karen.lamport542@example.com
+item3.URL:https://example.org/karen542
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Dennis;;;
+FN:Dennis Lamport
+item1.EMAIL;type=INTERNET:dennis.lamport543@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Shafi;;;
+FN:Shafi Dijkstra
+item1.EMAIL;type=INTERNET:shafi.dijkstra544@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Ada;;;
+FN:Ada Torvalds
+item1.EMAIL;type=INTERNET:ada.torvalds545@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.knuth546@example.com
+BDAY:1970-01-01
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Edsger;;;
+FN:Edsger Hopper
+EMAIL;type=INTERNET;type=pref:edsger.hopper547@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Linus;;;
+FN:Linus Torvalds
+EMAIL;type=INTERNET;type=pref:linus.torvalds548@example.com
+item2.TEL:+1-555-1548
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Guido;;;
+FN:Guido Perlman
+EMAIL;type=INTERNET;type=pref:guido.perlman549@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Linus;;;
+FN:Linus Liskov
+EMAIL;type=INTERNET;type=pref:linus.liskov550@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.lamarr551@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Grace;;;
+FN:Grace Lamport
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Bjarne;;;
+FN:Bjarne Berners-Lee
+item1.EMAIL;type=INTERNET:bjarne.bernerslee553@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1553
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Dennis;;;
+FN:Dennis Allen
+item1.EMAIL;type=INTERNET:dennis.allen554@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Karen;;;
+FN:Karen Turing
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Margaret;;;
+FN:Margaret Goldwasser
+item1.EMAIL;type=INTERNET:margaret.goldwasser556@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Annie;;;
+FN:Annie Kernighan
+EMAIL;type=INTERNET;type=pref:annie.kernighan557@example.com
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Shafi;;;
+FN:Shafi Spärck Jones
+item1.EMAIL;type=INTERNET:shafi.sparckjones558@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Sophie;;;
+FN:Sophie Engelbart
+item1.EMAIL;type=INTERNET:sophie.engelbart559@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.johnson560@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Dennis;;;
+FN:Dennis Hamilton
+EMAIL;type=INTERNET;type=pref:dennis.hamilton561@example.com
+item3.URL:https://example.org/dennis561
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Hopper;;;
+FN:Hopper Johnson
+item1.EMAIL;type=INTERNET:hopper.johnson562@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/hopper562
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;André;;;
+FN:André Knuth
+item1.EMAIL;type=INTERNET:andré.knuth563@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.kernighan564@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.lovelace565@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Karen;;;
+FN:Karen Berners-Lee
+item1.EMAIL;type=INTERNET:karen.bernerslee566@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Vint;;;
+FN:Vint Hamilton
+item1.EMAIL;type=INTERNET:vint.hamilton567@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.wirth568@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.bernerslee569@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.hamilton570@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/ken570
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:edsger.lamarr571@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Edsger;;;
+FN:Edsger Truong
+item1.EMAIL;type=INTERNET:edsger.truong572@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.turing573@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1573
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Barbara;;;
+FN:Barbara Easley
+item1.EMAIL;type=INTERNET:barbara.easley574@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:leslie.dijkstra575@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Anita;;;
+FN:Anita Hejlsberg
+item1.EMAIL;type=INTERNET:anita.hejlsberg576@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Leslie;;;
+FN:Leslie Lovelace
+item1.EMAIL;type=INTERNET:leslie.lovelace577@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:going out peninsula,local
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Dennis;;;
+FN:Dennis Lamarr
+item1.EMAIL;type=INTERNET:dennis.lamarr578@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.allen579@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;John;;;
+FN:John Hejlsberg
+item1.EMAIL;type=INTERNET:john.hejlsberg580@example.com
+item1.X-ABLabel:_$!<Other>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Donald;;;
+FN:Donald Kernighan
+item1.EMAIL;type=INTERNET:donald.kernighan581@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.dijkstra582@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;André;;;
+FN:André Hamilton
+item1.EMAIL;type=INTERNET:andré.hamilton583@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Guido;;;
+FN:Guido Thompson
+EMAIL;type=INTERNET;type=pref:guido.thompson584@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Leslie;;;
+FN:Leslie Thompson
+item1.EMAIL;type=INTERNET:leslie.thompson585@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Katherine;;;
+FN:Katherine Johnson
+EMAIL;type=INTERNET;type=pref:katherine.johnson586@example.com
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Vint;;;
+FN:Vint Dijkstra
+item1.EMAIL;type=INTERNET:vint.dijkstra587@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Brian;;;
+FN:Brian Goldwasser
+item1.EMAIL;type=INTERNET:brian.goldwasser588@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.liskov589@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Katherine;;;
+FN:Katherine Lovelace
+item1.EMAIL;type=INTERNET:katherine.lovelace590@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/katherine590
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.wilkes591@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Sophie;;;
+FN:Sophie Perlman
+item1.EMAIL;type=INTERNET:sophie.perlman592@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Radia;;;
+FN:Radia Wirth
+item1.EMAIL;type=INTERNET:radia.wirth593@example.com
+item1.X-ABLabel:_$!<Work>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:adele.bernerslee594@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.goldwasser595@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.lovelace596@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.hamilton597@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Guido;;;
+FN:Guido Dijkstra
+item1.EMAIL;type=INTERNET:guido.dijkstra598@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Katherine;;;
+FN:Katherine Perlman
+item1.EMAIL;type=INTERNET:katherine.perlman599@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Adele;;;
+FN:Adele Truong
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.lovelace601@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ada;;;
+FN:Ada Hamilton
+item1.EMAIL;type=INTERNET:ada.hamilton602@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;John;;;
+FN:John Wing
+item1.EMAIL;type=INTERNET:john.wing603@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Donald;;;
+FN:Donald Wilkes
+EMAIL;type=INTERNET;type=pref:donald.wilkes604@example.com
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.sparckjones605@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Linus;;;
+FN:Linus Lovelace
+item1.EMAIL;type=INTERNET:linus.lovelace606@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Edsger;;;
+FN:Edsger Goldwasser
+item1.EMAIL;type=INTERNET:edsger.goldwasser607@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Leslie;;;
+FN:Leslie Goldwasser
+EMAIL;type=INTERNET;type=pref:leslie.goldwasser608@example.com
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Edsger;;;
+FN:Edsger Goldberg
+item1.EMAIL;type=INTERNET:edsger.goldberg609@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Tim;;;
+FN:Tim Kernighan
+item1.EMAIL;type=INTERNET:tim.kernighan610@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;John;;;
+FN:John Ritchie
+item1.EMAIL;type=INTERNET:john.ritchie611@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Anita;;;
+FN:Anita Wing
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Katherine;;;
+FN:Katherine Allen
+X-PHONETIC-FIRST-NAME:Katherine
+X-PHONETIC-LAST-NAME:Allen
+item1.EMAIL;type=INTERNET:katherine.allen613@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:edsger.liskov614@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Hedy;;;
+FN:Hedy Johnson
+item1.EMAIL;type=INTERNET:hedy.johnson615@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;André;;;
+FN:André Torvalds
+item1.EMAIL;type=INTERNET:andré.torvalds616@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.bernerslee617@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/ken617
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.goldwasser618@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.hamilton619@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.wilkes620@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Niklaus;;;
+FN:Niklaus Thompson
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Leslie;;;
+FN:Leslie Dijkstra
+item1.EMAIL;type=INTERNET:leslie.dijkstra622@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1622
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Karen;;;
+FN:Karen Johnson
+item1.EMAIL;type=INTERNET:karen.johnson623@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1623
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.wilkes624@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Radia;;;
+FN:Radia Engelbart
+item2.TEL:+1-555-1625
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;André;;;
+FN:André Wing
+item1.EMAIL;type=INTERNET:andré.wing626@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Bjarne;;;
+FN:Bjarne Hamilton
+item1.EMAIL;type=INTERNET:bjarne.hamilton627@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Guido;;;
+FN:Guido Thompson
+EMAIL;type=INTERNET;type=pref:guido.thompson628@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.allen629@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:bjarne.perlman630@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Guido;;;
+FN:Guido Dijkstra
+item1.EMAIL;type=INTERNET:guido.dijkstra631@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.truong632@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.hejlsberg633@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Niklaus;;;
+FN:Niklaus Wilkes
+EMAIL;type=INTERNET;type=pref:niklaus.wilkes634@example.com
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.cerf635@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Alan;;;
+FN:Alan Spärck Jones
+EMAIL;type=INTERNET;type=pref:alan.sparckjones636@example.com
+item3.URL:https://example.org/alan636
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Karen;;;
+FN:Karen Dijkstra
+item1.EMAIL;type=INTERNET:karen.dijkstra637@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:anita.hejlsberg638@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.ritchie639@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Hopper;;;
+FN:Hopper Goldwasser
+item2.TEL:+1-555-1640
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.goldberg641@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Radia;;;
+FN:Radia Wirth
+item1.EMAIL;type=INTERNET:radia.wirth642@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:annie.johnson643@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Ada;;;
+FN:Ada Perlman
+item1.EMAIL;type=INTERNET:ada.perlman644@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;John;;;
+FN:John Turing
+item2.TEL:+1-555-1645
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.torvalds646@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1646
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:ken.wirth647@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Ada;;;
+FN:Ada Thompson
+item1.EMAIL;type=INTERNET:ada.thompson648@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Frances;;;
+FN:Frances Hopper
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Grace;;;
+FN:Grace Lamport
+item1.EMAIL;type=INTERNET:grace.lamport650@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1650
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Barbara;;;
+FN:Barbara McCarthy
+item1.EMAIL;type=INTERNET:barbara.mccarthy651@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Niklaus;;;
+FN:Niklaus Lamport
+item1.EMAIL;type=INTERNET:niklaus.lamport652@example.com
+item1.X-ABLabel:_$!<Work>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Barbara;;;
+FN:Barbara McCarthy
+item1.EMAIL;type=INTERNET:barbara.mccarthy653@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Adele;;;
+FN:Adele Johnson
+EMAIL;type=INTERNET;type=pref:adele.johnson654@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.knuth655@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Margaret;;;
+FN:Margaret Lamarr
+item1.EMAIL;type=INTERNET:margaret.lamarr656@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Frances;;;
+FN:Frances Goldberg
+item1.EMAIL;type=INTERNET:frances.goldberg657@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Ken;;;
+FN:Ken Engelbart
+EMAIL;type=INTERNET;type=pref:ken.engelbart658@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.liskov659@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Vint;;;
+FN:Vint Hopper
+item1.EMAIL;type=INTERNET:vint.hopper660@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1660
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:alan.hejlsberg661@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Margaret;;;
+FN:Margaret Lamarr
+item1.EMAIL;type=INTERNET:margaret.lamarr662@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:guido.lovelace663@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Shafi;;;
+FN:Shafi Hopper
+item1.EMAIL;type=INTERNET:shafi.hopper664@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/shafi664
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Annie;;;
+FN:Annie Ritchie
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.lovelace666@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Anita;;;
+FN:Anita Allen
+item1.EMAIL;type=INTERNET:anita.allen667@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Anita;;;
+FN:Anita Truong
+item1.EMAIL;type=INTERNET:anita.truong668@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:vint.turing669@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Edsger;;;
+FN:Edsger Perlman
+item1.EMAIL;type=INTERNET:edsger.perlman670@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1670
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:Ruby Code Club,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Katherine;;;
+FN:Katherine Ritchie
+item1.EMAIL;type=INTERNET:katherine.ritchie671@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1671
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;André;;;
+FN:André Liskov
+item1.EMAIL;type=INTERNET:andré.liskov672@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Guido;;;
+FN:Guido Wing
+item1.EMAIL;type=INTERNET:guido.wing673@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.perlman674@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:bjarne.hamilton675@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Annie;;;
+FN:Annie Wing
+item1.EMAIL;type=INTERNET:annie.wing676@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Radia;;;
+FN:Radia Lamarr
+EMAIL;type=INTERNET;type=pref:radia.lamarr677@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.liskov678@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Annie;;;
+FN:Annie Turing
+item1.EMAIL;type=INTERNET:annie.turing679@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Barbara;;;
+FN:Barbara Hopper
+EMAIL;type=INTERNET;type=pref:barbara.hopper680@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.thompson681@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Hedy;;;
+FN:Hedy Hejlsberg
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Adele;;;
+FN:Adele Torvalds
+item1.EMAIL;type=INTERNET:adele.torvalds683@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/adele683
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Hedy;;;
+FN:Hedy Engelbart
+item1.EMAIL;type=INTERNET:hedy.engelbart684@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Sophie;;;
+FN:Sophie Wilkes
+item1.EMAIL;type=INTERNET:sophie.wilkes685@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Grace;;;
+FN:Grace Goldberg
+EMAIL;type=INTERNET;type=pref:grace.goldberg686@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.kernighan687@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;André;;;
+FN:André Turing
+item1.EMAIL;type=INTERNET:andré.turing688@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.borg689@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Annie;;;
+FN:Annie Cerf
+item1.EMAIL;type=INTERNET:annie.cerf690@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.johnson691@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Donald;;;
+FN:Donald Goldberg
+item1.EMAIL;type=INTERNET:donald.goldberg692@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Donald;;;
+FN:Donald Lovelace
+item1.EMAIL;type=INTERNET:donald.lovelace693@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:brian.borg694@example.com
+CATEGORIES:Family
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.perlman695@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Barbara;;;
+FN:Barbara Johnson
+item1.EMAIL;type=INTERNET:barbara.johnson696@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Barbara;;;
+FN:Barbara Engelbart
+EMAIL;type=INTERNET;type=pref:barbara.engelbart697@example.com
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Grace;;;
+FN:Grace Dijkstra
+item1.EMAIL;type=INTERNET:grace.dijkstra698@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Barbara;;;
+FN:Barbara Engelbart
+EMAIL;type=INTERNET;type=pref:barbara.engelbart699@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Shafi;;;
+FN:Shafi Turing
+item1.EMAIL;type=INTERNET:shafi.turing700@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1700
+item2.X-ABLabel:_$!<Mobile>!$_
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:ada.knuth701@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Shafi;;;
+FN:Shafi Berners-Lee
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.wing703@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Edsger;;;
+FN:Edsger Wing
+item1.EMAIL;type=INTERNET:edsger.wing704@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Anita;;;
+FN:Anita Thompson
+item1.EMAIL;type=INTERNET:anita.thompson705@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Hopper;;;
+FN:Hopper Borg
+item1.EMAIL;type=INTERNET:hopper.borg706@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Linus;;;
+FN:Linus Torvalds
+item1.EMAIL;type=INTERNET:linus.torvalds707@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ada;;;
+FN:Ada Hamilton
+item1.EMAIL;type=INTERNET:ada.hamilton708@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Hopper;;;
+FN:Hopper Easley
+item1.EMAIL;type=INTERNET:hopper.easley709@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Leslie;;;
+FN:Leslie Knuth
+item1.EMAIL;type=INTERNET:leslie.knuth710@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.ritchie711@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1711
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Grace;;;
+FN:Grace Dijkstra
+item1.EMAIL;type=INTERNET:grace.dijkstra712@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1712
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Alan;;;
+FN:Alan Truong
+item1.EMAIL;type=INTERNET:alan.truong713@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1713
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Radia;;;
+FN:Radia Torvalds
+item2.TEL:+1-555-1714
+item2.X-ABLabel:_$!<Work>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.engelbart715@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.turing716@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.lamport717@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Niklaus;;;
+FN:Niklaus Knuth
+item3.URL:https://example.org/niklaus718
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;André;;;
+FN:André Engelbart
+item1.EMAIL;type=INTERNET:andré.engelbart719@example.com
+item1.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Ada;;;
+FN:Ada Wilkes
+item1.EMAIL;type=INTERNET:ada.wilkes720@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;André;;;
+FN:André Truong
+item1.EMAIL;type=INTERNET:andré.truong721@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Margaret;;;
+FN:Margaret Ritchie
+EMAIL;type=INTERNET;type=pref:margaret.ritchie722@example.com
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:niklaus.liskov723@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Vint;;;
+FN:Vint Lovelace
+item1.EMAIL;type=INTERNET:vint.lovelace724@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/vint724
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:tim.lovelace725@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1725
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.hopper726@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;André;;;
+FN:André Kernighan
+item1.EMAIL;type=INTERNET:andré.kernighan727@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Adele;;;
+FN:Adele Knuth
+CATEGORIES:business_contacts,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Frances;;;
+FN:Frances Hamilton
+item1.EMAIL;type=INTERNET:frances.hamilton729@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.dijkstra730@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.truong731@example.com
+item1.X-ABLabel:_$!<Home>!$_
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Ken;;;
+FN:Ken Hamilton
+item1.EMAIL;type=INTERNET:ken.hamilton732@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,Ruby Code Club
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Ada;;;
+FN:Ada Hopper
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Shafi;;;
+FN:Shafi Hopper
+EMAIL;type=INTERNET;type=pref:shafi.hopper734@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Hedy;;;
+FN:Hedy Perlman
+item1.EMAIL;type=INTERNET:hedy.perlman735@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Katherine;;;
+FN:Katherine Ritchie
+item1.EMAIL;type=INTERNET:katherine.ritchie736@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Anita;;;
+FN:Anita Easley
+item1.EMAIL;type=INTERNET:anita.easley737@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Hopper;;;
+FN:Hopper Wilkes
+X-PHONETIC-FIRST-NAME:Hopper
+X-PHONETIC-LAST-NAME:Wilkes
+NOTE:Imported contact.
+CATEGORIES:business_contacts,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Adele;;;
+FN:Adele Knuth
+CATEGORIES:Ruby Code Club,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Ken;;;
+FN:Ken Dijkstra
+item1.EMAIL;type=INTERNET:ken.dijkstra740@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Vint;;;
+FN:Vint Goldberg
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Margaret;;;
+FN:Margaret Lamarr
+item1.EMAIL;type=INTERNET:margaret.lamarr742@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1742
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Niklaus;;;
+FN:Niklaus Hejlsberg
+item1.EMAIL;type=INTERNET:niklaus.hejlsberg743@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.dijkstra744@example.com
+item2.TEL:+1-555-1744
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Frances;;;
+FN:Frances Truong
+item1.EMAIL;type=INTERNET:frances.truong745@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Katherine;;;
+FN:Katherine Lamarr
+item1.EMAIL;type=INTERNET:katherine.lamarr746@example.com
+item1.X-ABLabel:INTERNET
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Alan;;;
+FN:Alan Thompson
+item1.EMAIL;type=INTERNET:alan.thompson747@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.truong748@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1748
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Sophie;;;
+FN:Sophie Goldwasser
+item1.EMAIL;type=INTERNET:sophie.goldwasser749@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/sophie749
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Ada;;;
+FN:Ada Kernighan
+item1.EMAIL;type=INTERNET:ada.kernighan750@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Linus;;;
+FN:Linus Hamilton
+item1.EMAIL;type=INTERNET:linus.hamilton751@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/linus751
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.engelbart752@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Vint;;;
+FN:Vint Borg
+item1.EMAIL;type=INTERNET:vint.borg753@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Katherine;;;
+FN:Katherine Dijkstra
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.kernighan755@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1755
+item2.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Shafi;;;
+FN:Shafi Hamilton
+item1.EMAIL;type=INTERNET:shafi.hamilton756@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:vint.goldberg757@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/vint757
+item3.X-ABLabel:_$!<HomePage>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Ada;;;
+FN:Ada Allen
+item2.TEL:+1-555-1758
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.liskov759@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.hamilton760@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Hedy;;;
+FN:Hedy Liskov
+EMAIL;type=INTERNET;type=pref:hedy.liskov761@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+ORG:Spärck Jones Labs;
+TITLE:Researcher
+EMAIL;type=INTERNET;type=pref:john.sparckjones762@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Barbara;;;
+FN:Barbara Lamport
+item1.EMAIL;type=INTERNET:barbara.lamport763@example.com
+item1.X-ABLabel:_$!<Work>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:hedy.johnson764@example.com
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.wing765@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:niklaus.engelbart766@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Tim;;;
+FN:Tim Knuth
+item1.EMAIL;type=INTERNET:tim.knuth767@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Edsger;;;
+FN:Edsger Wilkes
+ORG:Wilkes Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:edsger.wilkes768@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.perlman769@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.goldberg770@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:alan.bernerslee771@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.wing772@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.hamilton773@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Linus;;;
+FN:Linus McCarthy
+item1.EMAIL;type=INTERNET:linus.mccarthy774@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.lovelace775@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1775
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Donald;;;
+FN:Donald Goldberg
+item1.EMAIL;type=INTERNET:donald.goldberg776@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.borg777@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Radia;;;
+FN:Radia Lovelace
+item1.EMAIL;type=INTERNET:radia.lovelace778@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Annie;;;
+FN:Annie Johnson
+item1.EMAIL;type=INTERNET:annie.johnson779@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1779
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Leslie;;;
+FN:Leslie Allen
+item1.EMAIL;type=INTERNET:leslie.allen780@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:john.lamport781@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Guido;;;
+FN:Guido Wirth
+item1.EMAIL;type=INTERNET:guido.wirth782@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.hamilton783@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Brian;;;
+FN:Brian Berners-Lee
+item1.EMAIL;type=INTERNET:brian.bernerslee784@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:shafi.wilkes785@example.com
+item1.X-ABLabel:INTERNET
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Karen;;;
+FN:Karen Dijkstra
+item1.EMAIL;type=INTERNET:karen.dijkstra786@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Hopper;;;
+FN:Hopper Turing
+item1.EMAIL;type=INTERNET:hopper.turing787@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:annie.easley788@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Margaret;;;
+FN:Margaret Lamarr
+item1.EMAIL;type=INTERNET:margaret.lamarr789@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.mccarthy790@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1790
+item2.X-ABLabel:_$!<Mobile>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:bjarne.torvalds791@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;John;;;
+FN:John Perlman
+item1.EMAIL;type=INTERNET:john.perlman792@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Niklaus;;;
+FN:Niklaus Berners-Lee
+item1.EMAIL;type=INTERNET:niklaus.bernerslee793@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1793
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Dennis;;;
+FN:Dennis Wirth
+item1.EMAIL;type=INTERNET:dennis.wirth794@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1794
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Linus;;;
+FN:Linus Ritchie
+EMAIL;type=INTERNET;type=pref:linus.ritchie795@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Barbara;;;
+FN:Barbara Hejlsberg
+item1.EMAIL;type=INTERNET:barbara.hejlsberg796@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Annie;;;
+FN:Annie Wirth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.liskov798@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Brian;;;
+FN:Brian Perlman
+EMAIL;type=INTERNET;type=pref:brian.perlman799@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Edsger;;;
+FN:Edsger Perlman
+ORG:Perlman Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:edsger.perlman800@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Ken;;;
+FN:Ken Perlman
+item1.EMAIL;type=INTERNET:ken.perlman801@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1801
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Margaret;;;
+FN:Margaret Hamilton
+item1.EMAIL;type=INTERNET:margaret.hamilton802@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Guido;;;
+FN:Guido Wing
+item1.EMAIL;type=INTERNET:guido.wing803@example.com
+item1.X-ABLabel:_$!<Work>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Hopper;;;
+FN:Hopper Dijkstra
+EMAIL;type=INTERNET;type=pref:hopper.dijkstra804@example.com
+BDAY:1970-01-01
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Barbara;;;
+FN:Barbara Goldberg
+item1.EMAIL;type=INTERNET:barbara.goldberg805@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Hopper;;;
+FN:Hopper Lamarr
+item1.EMAIL;type=INTERNET:hopper.lamarr806@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/hopper806
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Sophie;;;
+FN:Sophie Allen
+ORG:Allen Labs;
+TITLE:Researcher
+EMAIL;type=INTERNET;type=pref:sophie.allen807@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Edsger;;;
+FN:Edsger Lamport
+item1.EMAIL;type=INTERNET:edsger.lamport808@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Karen;;;
+FN:Karen Truong
+item1.EMAIL;type=INTERNET:karen.truong809@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:donald.ritchie810@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Bjarne;;;
+FN:Bjarne Perlman
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Adele;;;
+FN:Adele Perlman
+item1.EMAIL;type=INTERNET:adele.perlman812@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Margaret;;;
+FN:Margaret Allen
+EMAIL;type=INTERNET;type=pref:margaret.allen813@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Sophie;;;
+FN:Sophie Spärck Jones
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:frances.johnson815@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1815
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.hopper816@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.liskov817@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Niklaus;;;
+FN:Niklaus Engelbart
+item1.EMAIL;type=INTERNET:niklaus.engelbart818@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Dennis;;;
+FN:Dennis Spärck Jones
+EMAIL;type=INTERNET;type=pref:dennis.sparckjones819@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Anita;;;
+FN:Anita Thompson
+item1.EMAIL;type=INTERNET:anita.thompson820@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1820
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Katherine;;;
+FN:Katherine Knuth
+item1.EMAIL;type=INTERNET:katherine.knuth821@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Dennis;;;
+FN:Dennis Wilkes
+item1.EMAIL;type=INTERNET:dennis.wilkes822@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:radia.kernighan823@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Katherine;;;
+FN:Katherine Wilkes
+item1.EMAIL;type=INTERNET:katherine.wilkes824@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Vint;;;
+FN:Vint Liskov
+item1.EMAIL;type=INTERNET:vint.liskov825@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Adele;;;
+FN:Adele Turing
+item1.EMAIL;type=INTERNET:adele.turing826@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+ORG:Dijkstra Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:donald.dijkstra827@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/donald827
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Hopper;;;
+FN:Hopper Lamarr
+item1.EMAIL;type=INTERNET:hopper.lamarr828@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Grace;;;
+FN:Grace Thompson
+item1.EMAIL;type=INTERNET:grace.thompson829@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1829
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Leslie;;;
+FN:Leslie Dijkstra
+item1.EMAIL;type=INTERNET:leslie.dijkstra830@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Bjarne;;;
+FN:Bjarne Turing
+item1.EMAIL;type=INTERNET:bjarne.turing831@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:business_contacts,myContacts
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.perlman832@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.turing833@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:brian.lovelace834@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1834
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Margaret;;;
+FN:Margaret Spärck Jones
+item1.EMAIL;type=INTERNET:margaret.sparckjones835@example.com
+item1.X-ABLabel:_$!<Work>!$_
+BDAY:1970-01-01
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Vint;;;
+FN:Vint Dijkstra
+EMAIL;type=INTERNET;type=pref:vint.dijkstra836@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Shafi;;;
+FN:Shafi Wing
+item1.EMAIL;type=INTERNET:shafi.wing837@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/shafi837
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Radia;;;
+FN:Radia Turing
+item1.EMAIL;type=INTERNET:radia.turing838@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Alan;;;
+FN:Alan Lovelace
+EMAIL;type=INTERNET;type=pref:alan.lovelace839@example.com
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hopper.liskov840@example.com
+item1.X-ABLabel:_$!<Other>!$_
+BDAY:1970-01-01
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:sophie.turing841@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1841
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Dennis;;;
+FN:Dennis Easley
+item1.EMAIL;type=INTERNET:dennis.easley842@example.com
+item1.X-ABLabel:INTERNET
+item3.URL:https://example.org/dennis842
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+ORG:Borg Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:katherine.borg843@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1843
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Hedy;;;
+FN:Hedy Allen
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Grace;;;
+FN:Grace Engelbart
+item1.EMAIL;type=INTERNET:grace.engelbart845@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;John;;;
+FN:John Cerf
+item1.EMAIL;type=INTERNET:john.cerf846@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/john846
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:linus.truong847@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:leslie.hamilton848@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Tim;;;
+FN:Tim Goldwasser
+item1.EMAIL;type=INTERNET:tim.goldwasser849@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Shafi;;;
+FN:Shafi Goldberg
+item1.EMAIL;type=INTERNET:shafi.goldberg850@example.com
+item1.X-ABLabel:_$!<Home>!$_
+BDAY:1970-01-01
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.wilkes851@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Guido;;;
+FN:Guido Engelbart
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;John;;;
+FN:John Berners-Lee
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Katherine;;;
+FN:Katherine Kernighan
+item1.EMAIL;type=INTERNET:katherine.kernighan854@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.lamport855@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:radia.truong856@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;John;;;
+FN:John Perlman
+EMAIL;type=INTERNET;type=pref:john.perlman857@example.com
+CATEGORIES:Ruby Code Club,going out peninsula
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Tim;;;
+FN:Tim Hamilton
+item1.EMAIL;type=INTERNET:tim.hamilton858@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:Family,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.wilkes859@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1859
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Bjarne;;;
+FN:Bjarne Spärck Jones
+EMAIL;type=INTERNET;type=pref:bjarne.sparckjones860@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:barbara.wing861@example.com
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Alan;;;
+FN:Alan Hopper
+EMAIL;type=INTERNET;type=pref:alan.hopper862@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Dennis;;;
+FN:Dennis Spärck Jones
+item1.EMAIL;type=INTERNET:dennis.sparckjones863@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1863
+item2.X-ABLabel:_$!<Home>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Adele;;;
+FN:Adele Johnson
+item1.EMAIL;type=INTERNET:adele.johnson864@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Hopper;;;
+FN:Hopper Thompson
+item1.EMAIL;type=INTERNET:hopper.thompson865@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1865
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Grace;;;
+FN:Grace Wirth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Hopper;;;
+FN:Hopper Hamilton
+EMAIL;type=INTERNET;type=pref:hopper.hamilton867@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Linus;;;
+FN:Linus Lovelace
+item1.EMAIL;type=INTERNET:linus.lovelace868@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wilkes;Ken;;;
+FN:Ken Wilkes
+item1.EMAIL;type=INTERNET:ken.wilkes869@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/ken869
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Radia;;;
+FN:Radia Truong
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Alan;;;
+FN:Alan Lamport
+item1.EMAIL;type=INTERNET:alan.lamport871@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:anita.kernighan872@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;Tim;;;
+FN:Tim Allen
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Anita;;;
+FN:Anita Johnson
+EMAIL;type=INTERNET;type=pref:anita.johnson874@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Edsger;;;
+FN:Edsger Johnson
+item1.EMAIL;type=INTERNET:edsger.johnson875@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Donald;;;
+FN:Donald Goldberg
+item1.EMAIL;type=INTERNET:donald.goldberg876@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+item1.EMAIL;type=INTERNET:ada.lovelace877@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.allen878@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Anita;;;
+FN:Anita Hamilton
+EMAIL;type=INTERNET;type=pref:anita.hamilton879@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Vint;;;
+FN:Vint Berners-Lee
+EMAIL;type=INTERNET;type=pref:vint.bernerslee880@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:karen.ritchie881@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Radia;;;
+FN:Radia Goldberg
+item1.EMAIL;type=INTERNET:radia.goldberg882@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Katherine;;;
+FN:Katherine Kernighan
+item1.EMAIL;type=INTERNET:katherine.kernighan883@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.bernerslee884@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:alan.hamilton885@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Margaret;;;
+FN:Margaret Borg
+item1.EMAIL;type=INTERNET:margaret.borg886@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item3.URL:https://example.org/margaret886
+item3.X-ABLabel:_$!<HomePage>!$_
+CATEGORIES:business_contacts,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Barbara;;;
+FN:Barbara Lovelace
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Dennis;;;
+FN:Dennis Hamilton
+item1.EMAIL;type=INTERNET:dennis.hamilton888@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:edsger.goldwasser889@example.com
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;Katherine;;;
+FN:Katherine Cerf
+item1.EMAIL;type=INTERNET:katherine.cerf890@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Hedy;;;
+FN:Hedy Spärck Jones
+EMAIL;type=INTERNET;type=pref:hedy.sparckjones891@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Guido;;;
+FN:Guido Knuth
+item1.EMAIL;type=INTERNET:guido.knuth892@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Alan;;;
+FN:Alan Ritchie
+EMAIL;type=INTERNET;type=pref:alan.ritchie893@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Edsger;;;
+FN:Edsger Lovelace
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Leslie;;;
+FN:Leslie Liskov
+item1.EMAIL;type=INTERNET:leslie.liskov895@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Alan;;;
+FN:Alan Kernighan
+item1.EMAIL;type=INTERNET:alan.kernighan896@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+ORG:Thompson Labs;
+TITLE:Researcher
+item1.EMAIL;type=INTERNET:anita.thompson897@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Barbara;;;
+FN:Barbara Easley
+item1.EMAIL;type=INTERNET:barbara.easley898@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1898
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Tim;;;
+FN:Tim Spärck Jones
+EMAIL;type=INTERNET;type=pref:tim.sparckjones899@example.com
+item2.TEL:+1-555-1899
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:shafi.engelbart900@example.com
+CATEGORIES:local,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Adele;;;
+FN:Adele Johnson
+item1.EMAIL;type=INTERNET:adele.johnson901@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1901
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Radia;;;
+FN:Radia Lovelace
+item1.EMAIL;type=INTERNET:radia.lovelace902@example.com
+item1.X-ABLabel:_$!<Work>!$_
+BDAY:1970-01-01
+CATEGORIES:business_contacts,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Allen;André;;;
+FN:André Allen
+item1.EMAIL;type=INTERNET:andré.allen903@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:annie.ritchie904@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Annie;;;
+FN:Annie Lamport
+item1.EMAIL;type=INTERNET:annie.lamport905@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Truong;Bjarne;;;
+FN:Bjarne Truong
+EMAIL;type=INTERNET;type=pref:bjarne.truong906@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Karen;;;
+FN:Karen Liskov
+item1.EMAIL;type=INTERNET:karen.liskov907@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Annie;;;
+FN:Annie Berners-Lee
+item1.EMAIL;type=INTERNET:annie.bernerslee908@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ada.thompson909@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Barbara;;;
+FN:Barbara Knuth
+item1.EMAIL;type=INTERNET:barbara.knuth910@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL:+1-555-1910
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Anita;;;
+FN:Anita Kernighan
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Edsger;;;
+FN:Edsger Berners-Lee
+EMAIL;type=INTERNET;type=pref:edsger.bernerslee912@example.com
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Dennis;;;
+FN:Dennis Goldberg
+item1.EMAIL;type=INTERNET:dennis.goldberg913@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Alan;;;
+FN:Alan Wing
+item1.EMAIL;type=INTERNET:alan.wing914@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.sparckjones915@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:going out peninsula,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Adele;;;
+FN:Adele Hopper
+item1.EMAIL;type=INTERNET:adele.hopper916@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Frances;;;
+FN:Frances Hopper
+item1.EMAIL;type=INTERNET:frances.hopper917@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:going out peninsula,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Engelbart;Edsger;;;
+FN:Edsger Engelbart
+item1.EMAIL;type=INTERNET:edsger.engelbart918@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;Edsger;;;
+FN:Edsger Spärck Jones
+item1.EMAIL;type=INTERNET:edsger.sparckjones919@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Shafi;;;
+FN:Shafi Lamarr
+item1.EMAIL;type=INTERNET:shafi.lamarr920@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:business_contacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Ken;;;
+FN:Ken Perlman
+EMAIL;type=INTERNET;type=pref:ken.perlman921@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Radia;;;
+FN:Radia Johnson
+item1.EMAIL;type=INTERNET:radia.johnson922@example.com
+item1.X-ABLabel:_$!<Work>!$_
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:edsger.wilkes923@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;John;;;
+FN:John Goldberg
+item1.EMAIL;type=INTERNET:john.goldberg924@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:business_contacts,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;John;;;
+FN:John Berners-Lee
+item1.EMAIL;type=INTERNET:john.bernerslee925@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Vint;;;
+FN:Vint Perlman
+item1.EMAIL;type=INTERNET:vint.perlman926@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:margaret.easley927@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Grace;;;
+FN:Grace Wirth
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:adele.cerf929@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wing;Frances;;;
+FN:Frances Wing
+item1.EMAIL;type=INTERNET:frances.wing930@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Annie;;;
+FN:Annie Goldberg
+item1.EMAIL;type=INTERNET:annie.goldberg931@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.thompson932@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Katherine;;;
+FN:Katherine Easley
+item1.EMAIL;type=INTERNET:katherine.easley933@example.com
+item1.X-ABLabel:_$!<Other>!$_
+item2.TEL:+1-555-1933
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Anita;;;
+FN:Anita Thompson
+item1.EMAIL;type=INTERNET:anita.thompson934@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:barbara.lovelace935@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Borg;Edsger;;;
+FN:Edsger Borg
+CATEGORIES:garage_sale,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;André;;;
+FN:André Spärck Jones
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Anita;;;
+FN:Anita Hopper
+CATEGORIES:Ruby Code Club,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Adele;;;
+FN:Adele Hejlsberg
+EMAIL;type=INTERNET;type=pref:adele.hejlsberg939@example.com
+CATEGORIES:Ruby Code Club,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Hedy;;;
+FN:Hedy Johnson
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;André;;;
+FN:André Hopper
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Brian;;;
+FN:Brian Goldberg
+item1.EMAIL;type=INTERNET:brian.goldberg942@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Ada;;;
+FN:Ada Turing
+item1.EMAIL;type=INTERNET:ada.turing943@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Alan;;;
+FN:Alan Knuth
+item1.EMAIL;type=INTERNET:alan.knuth944@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;André;;;
+FN:André Ritchie
+item1.EMAIL;type=INTERNET:andré.ritchie945@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;Grace;;;
+FN:Grace Hejlsberg
+item1.EMAIL;type=INTERNET:grace.hejlsberg946@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Bjarne;;;
+FN:Bjarne McCarthy
+item1.EMAIL;type=INTERNET:bjarne.mccarthy947@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:margaret.hamilton948@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.lovelace949@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Ada;;;
+FN:Ada Thompson
+item1.EMAIL;type=INTERNET:ada.thompson950@example.com
+item1.X-ABLabel:_$!<Other>!$_
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Alan;;;
+FN:Alan Knuth
+item1.EMAIL;type=INTERNET:alan.knuth951@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:hedy.ritchie952@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:hopper.turing953@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Sophie;;;
+FN:Sophie Johnson
+EMAIL;type=INTERNET;type=pref:sophie.johnson954@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Vint;;;
+FN:Vint McCarthy
+EMAIL;type=INTERNET;type=pref:vint.mccarthy955@example.com
+CATEGORIES:garage_sale,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.goldberg956@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+item1.EMAIL;type=INTERNET:ada.lovelace957@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;André;;;
+FN:André Lamarr
+item1.EMAIL;type=INTERNET:andré.lamarr958@example.com
+item1.X-ABLabel:INTERNET
+item2.TEL:+1-555-1958
+item2.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:grace.dijkstra959@example.com
+item1.X-ABLabel:_$!<Other>!$_
+CATEGORIES:Family,local
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Tim;;;
+FN:Tim McCarthy
+item1.EMAIL;type=INTERNET:tim.mccarthy960@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.org/tim960
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Thompson;Annie;;;
+FN:Annie Thompson
+item1.EMAIL;type=INTERNET:annie.thompson961@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Turing;Linus;;;
+FN:Linus Turing
+item1.EMAIL;type=INTERNET:linus.turing962@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Alan;;;
+FN:Alan Lamarr
+item1.EMAIL;type=INTERNET:alan.lamarr963@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Ada;;;
+FN:Ada Knuth
+item1.EMAIL;type=INTERNET:ada.knuth964@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1964
+item2.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Niklaus;;;
+FN:Niklaus Johnson
+item1.EMAIL;type=INTERNET:niklaus.johnson965@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:annie.liskov966@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+EMAIL;type=INTERNET;type=pref:ken.turing967@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Johnson;Adele;;;
+FN:Adele Johnson
+item1.EMAIL;type=INTERNET:adele.johnson968@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;Edsger;;;
+FN:Edsger Lamport
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Vint;;;
+FN:Vint Perlman
+item3.URL:https://example.org/vint970
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Easley;Alan;;;
+FN:Alan Easley
+EMAIL;type=INTERNET;type=pref:alan.easley971@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Donald;;;
+FN:Donald Goldberg
+EMAIL;type=INTERNET;type=pref:donald.goldberg972@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Grace;;;
+FN:Grace Berners-Lee
+item1.EMAIL;type=INTERNET:grace.bernerslee973@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Donald;;;
+FN:Donald Dijkstra
+item1.EMAIL;type=INTERNET:donald.dijkstra974@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Spärck Jones;John;;;
+FN:John Spärck Jones
+NOTE:Imported contact.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Kernighan;Guido;;;
+FN:Guido Kernighan
+item1.EMAIL;type=INTERNET:guido.kernighan976@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Bjarne;;;
+FN:Bjarne Knuth
+X-PHONETIC-FIRST-NAME:Bjarne
+X-PHONETIC-LAST-NAME:Knuth
+item1.EMAIL;type=INTERNET:bjarne.knuth977@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamarr;Edsger;;;
+FN:Edsger Lamarr
+item1.EMAIL;type=INTERNET:edsger.lamarr978@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.TEL:+1-555-1978
+item2.X-ABLabel:_$!<Mobile>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hopper;Annie;;;
+FN:Annie Hopper
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:alan.hejlsberg980@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lamport;John;;;
+FN:John Lamport
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldberg;Adele;;;
+FN:Adele Goldberg
+item1.EMAIL;type=INTERNET:adele.goldberg982@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:vint.goldwasser983@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Cerf;André;;;
+FN:André Cerf
+item1.EMAIL;type=INTERNET:andré.cerf984@example.com
+item1.X-ABLabel:INTERNET
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Liskov;Vint;;;
+FN:Vint Liskov
+X-PHONETIC-FIRST-NAME:Vint
+X-PHONETIC-LAST-NAME:Liskov
+item1.EMAIL;type=INTERNET:vint.liskov985@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Goldwasser;Hedy;;;
+FN:Hedy Goldwasser
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:McCarthy;Katherine;;;
+FN:Katherine McCarthy
+item1.EMAIL;type=INTERNET:katherine.mccarthy987@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Lovelace;Katherine;;;
+FN:Katherine Lovelace
+item1.EMAIL;type=INTERNET:katherine.lovelace988@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Torvalds;Edsger;;;
+FN:Edsger Torvalds
+item1.EMAIL;type=INTERNET:edsger.torvalds989@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Dijkstra;Katherine;;;
+FN:Katherine Dijkstra
+item1.EMAIL;type=INTERNET:katherine.dijkstra990@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Knuth;Leslie;;;
+FN:Leslie Knuth
+item1.EMAIL;type=INTERNET:leslie.knuth991@example.com
+item1.X-ABLabel:_$!<Home>!$_
+CATEGORIES:Family,garage_sale
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Berners-Lee;Shafi;;;
+FN:Shafi Berners-Lee
+item1.EMAIL;type=INTERNET:shafi.bernerslee992@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hejlsberg;John;;;
+FN:John Hejlsberg
+item1.EMAIL;type=INTERNET:john.hejlsberg993@example.com
+item1.X-ABLabel:_$!<Home>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:ken.goldwasser994@example.com
+item1.X-ABLabel:_$!<Work>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Wirth;Edsger;;;
+FN:Edsger Wirth
+EMAIL;type=INTERNET;type=pref:edsger.wirth995@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:andré.bernerslee996@example.com
+item1.X-ABLabel:_$!<Other>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Perlman;Frances;;;
+FN:Frances Perlman
+EMAIL;type=INTERNET;type=pref:frances.perlman997@example.com
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+N:Hamilton;Brian;;;
+FN:Brian Hamilton
+item1.EMAIL;type=INTERNET:brian.hamilton998@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item3.URL:https://example.org/brian998
+item3.X-ABLabel:_$!<HomePage>!$_
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;type=INTERNET:dennis.wirth999@example.com
+item1.X-ABLabel:INTERNET
+CATEGORIES:Ruby Code Club,local
+END:VCARD

@@ -2,7 +2,7 @@
 
 Synthetic Google Takeout *Contacts* exports used to test the PRM ingester (v0.1 milestone M1).
 Everything here is generated and fake; **no real export is ever committed** (see
-[`../incoming/`](../incoming/) for where real exports go).
+[`../../../ignore-data/`](../../../ignore-data/) for where real exports go).
 
 ## What a real Takeout contacts export looks like
 
@@ -32,6 +32,9 @@ Key real-world facts the fixtures encode:
 - Google's **`itemN.PROP` grouping**: `item1.EMAIL:…` paired with `item1.X-ABLabel:Work`.
 - Contacts frequently have **no `UID`** — so a stable id must fall back to normalized email or a
   content hash (INV-5). This is the common case, not an edge case.
+- Some cards have **no `N`/`FN` at all** (name-less) — ~33% of a real export. Identity falls back to
+  the email and the projection must render without a display name.
+- **`CATEGORIES`** carries Google label/group membership, present even in `All Contacts.vcf`.
 - Photos are normally **embedded** as `PHOTO;ENCODING=b` base64. (A separate external-image-file
   convention also exists in the wild and in the legacy `prt` importer; `takeout-photos-external`
   covers that heuristic.)
@@ -42,7 +45,7 @@ Key real-world facts the fixtures encode:
 | Fixture | Exercises |
 | --- | --- |
 | `takeout-basic` | Modern foldered layout; 3 clean records with UIDs; no photos. |
-| `takeout-google-quirks` | `itemN` grouping, folded NOTE, unicode (José Ñoño / 田中太郎), apostrophe names, **no UID**, same person across multiple folders. |
+| `takeout-google-quirks` | `itemN` grouping, folded NOTE, unicode (José Ñoño / 田中太郎), apostrophe names, **no UID**, a **name-less** email-only card with **`CATEGORIES`**, same person across multiple folders. |
 | `takeout-photos` | Embedded base64 `PHOTO` (modern norm) mixed with a no-photo record. |
 | `takeout-photos-external` | Photo as an external image file named after the contact (legacy heuristic). |
 | `takeout-duplicates` | Near-duplicates across labels: shared phone/email, case-different email, name variant — for dedup. |
