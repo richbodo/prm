@@ -1,0 +1,49 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//macOS 13.3.1//EN
+N:Lovelace;Ada;;;
+FN:Ada Lovelace
+ORG:Analytical Engines
+item1.EMAIL;TYPE=INTERNET;TYPE=pref:ada.lovelace@example.com
+item1.X-ABLabel:_$!<Work>!$_
+item2.TEL;TYPE=CELL;TYPE=VOICE:+1-555-0101
+item2.X-ABLabel:_$!<Home>!$_
+item3.URL:https://example.com/~ada
+item3.X-ABLabel:profile
+REV:2021-03-22T06:43:28Z
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//iOS 14.3//EN
+N:Hopper;Grace;Brewster;RADM;
+FN:Grace Hopper
+item1.EMAIL;TYPE=INTERNET;TYPE=pref:grace.hopper@example.org
+item1.X-ABLabel:_$!<Work>!$_
+item2.EMAIL;TYPE=INTERNET:ghopper@example.com
+item2.X-ABLabel:_$!<Other>!$_
+REV:2022-11-09T18:02:11Z
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//macOS 13.3.1//EN
+N:Johnson;Katherine;;;
+FN:Katherine Johnson
+item1.TEL;TYPE=CELL;TYPE=VOICE;TYPE=pref:+1-555-0120
+item1.X-ABLabel:_$!<Main>!$_
+item2.TEL;TYPE=WORK;TYPE=VOICE:+1-555-0121
+item2.X-ABLabel:on-site
+REV:2021-03-22T06:43:28Z
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//iOS 14.3//EN
+N:Ñoño;José;;;
+FN:José Ñoño
+item1.EMAIL;TYPE=INTERNET;TYPE=pref:jose.nono@example.com
+item1.X-ABLabel:_$!<Home>!$_
+item2.ADR;TYPE=HOME:;;1 Engine Way;Lovelace City;CA;94000;USA
+item2.X-ABADR:us
+item2.X-ABLabel:_$!<Home>!$_
+NOTE:Imported from an old iPhone; profile URL is the canonical one.
+REV:2022-11-09T18:02:11Z
+END:VCARD

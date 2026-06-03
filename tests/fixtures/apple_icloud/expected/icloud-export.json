@@ -1,0 +1,18 @@
+{
+  "description": "Synthetic Apple iCloud single-file vCard export (LF line endings, vCard 3.0, per-card PRODID/REV, no UID, itemN+X-ABLabel pseudo-labels, TYPE=pref/VOICE). 'Ada Lovelace' matches the Google takeout-duplicates canonical for cross-source dedup.",
+  "vcf_file": "icloud-export.vcf",
+  "line_ending": "LF",
+  "contact_count": 4,
+  "with_uid": 0,
+  "distinct_prodids": [
+    "-//Apple Inc.//iOS 14.3//EN",
+    "-//Apple Inc.//macOS 13.3.1//EN"
+  ],
+  "with_xablabel": 4,
+  "fns": [
+    "Ada Lovelace",
+    "Grace Hopper",
+    "José Ñoño",
+    "Katherine Johnson"
+  ]
+}
