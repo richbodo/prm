@@ -1,0 +1,23 @@
+{
+  "description": "Maintainer-confirmed shape: {friends:[{name,timestamp}]}, clean UTF-8.",
+  "json_file": "friends-basic.json",
+  "top_level_key": "friends",
+  "friend_count": 6,
+  "mojibake": false,
+  "names": [
+    "Ada Lovelace",
+    "John Doe",
+    "Jane Smith",
+    "José Ñoño",
+    "田中 太郎",
+    "Mary O'Brien"
+  ],
+  "connected_on": {
+    "Ada Lovelace": "2019-12-11",
+    "John Doe": "2022-02-20",
+    "Jane Smith": "2023-03-15",
+    "José Ñoño": "2020-08-10",
+    "田中 太郎": "2021-02-01",
+    "Mary O'Brien": "2017-07-14"
+  }
+}
