@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 
+from core import shared_db
+
 from . import ingest as ingest_mod
 from .config import resolve_home
 from .report import ImportReport
@@ -57,8 +59,10 @@ def cmd_init(args) -> int:
         return 1
     # Each manifest entry carries its own source label (a bare Takeout .vcf can't be inferred).
     results = [ingest_mod.parse_one(p, source) for source, p in entries]
-    report = ImportReport.from_results(results, persisted=False, dry_run=True)
-    print("Demo seed (persistence lands with the loader — plan §11 M1c):")
+    contacts = [c for r in results for c in r.contacts]
+    result = ingest_mod.load_into(home, contacts)
+    report = ImportReport.from_results(results, persisted=True, dry_run=False, stored=result.total)
+    print(f"Demo seeded into {home.shared_db}:")
     _emit(report, args.json)
     return 0
 
@@ -95,18 +99,40 @@ def cmd_import(args) -> int:
 
 def cmd_status(args) -> int:
     home = resolve_home(args.data_dir)
-    info = {
-        "home": str(home.root),
-        "exists": home.exists(),
-        "shared_db": home.shared_db.exists(),
-        "private_db": home.private_db.exists(),
-    }
+    info = {"home": str(home.root), "exists": home.exists(), "shared_db": home.shared_db.exists()}
+    if info["shared_db"]:
+        info["shared"] = shared_db.stats(home.shared_db)
+
     if args.json:
         print(json.dumps(info, indent=2))
-    else:
-        print(f"PRM home: {home.root} ({'exists' if info['exists'] else 'not created — run `prm init`'})")
-        if not info["shared_db"]:
-            print("  shared.db: none yet (the load path is the next milestone — plan §11 M1c)")
+        return 0
+
+    print(f"PRM home: {home.root} ({'exists' if info['exists'] else 'not created — run `prm init`'})")
+    if not info["shared_db"]:
+        print("  shared.db: none yet — run `prm import` to create it")
+        return 0
+    s = info["shared"]
+    print(f"  shared.db: {s['records']} record(s), {s['distinct_identities']} distinct identities "
+          f"(schema v{s['schema_version']})")
+    if s["by_source"]:
+        print("    by source: " + ", ".join(f"{k}={v}" for k, v in sorted(s["by_source"].items())))
+    if s["last_ingested_at"]:
+        print(f"    last import: {s['last_ingested_at']}")
+    return 0
+
+
+def cmd_search(args) -> int:
+    home = resolve_home(args.data_dir)
+    if not home.shared_db.exists():
+        print("no shared.db yet — run `prm import` first", file=sys.stderr)
+        return 1
+    rows = shared_db.search(home.shared_db, args.query, limit=args.limit)
+    if args.json:
+        print(json.dumps([{"name": n, "email": e, "org": o} for n, e, o, _ in rows], indent=2, ensure_ascii=False))
+        return 0
+    for name, email, org, _ in rows:
+        print(f"  {name or '(no name)'} · {email or '—'} · {org or '—'}")
+    print(f"{len(rows)} result(s) for {args.query!r}")
     return 0
 
 
@@ -132,6 +158,12 @@ def build_parser() -> argparse.ArgumentParser:
     ps = sub.add_parser("status", help="show the PRM home and store status")
     ps.add_argument("--json", action="store_true", help="machine-readable output")
     ps.set_defaults(func=cmd_status)
+
+    pq = sub.add_parser("search", help="full-text search the imported contacts")
+    pq.add_argument("query", help="search terms (prefix-matched across name/email/org/notes)")
+    pq.add_argument("--limit", type=int, default=20, help="max results (default 20)")
+    pq.add_argument("--json", action="store_true", help="machine-readable output")
+    pq.set_defaults(func=cmd_search)
     return p
 
 

@@ -14,6 +14,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from core import shared_db
+from core.lock import file_lock
+
 from .config import PrmHome
 from .normalize import CanonicalContact, normalize_all
 from .parsers import takeout, vcard
@@ -91,27 +94,29 @@ def collect(paths, *, source: str | None = None) -> list[PathResult]:
     return [parse_one(p, source) for p in _expand(paths)]
 
 
-def load_into(home: PrmHome, contacts: list[CanonicalContact]) -> int:
-    """Persist canonical contacts into shared.db. Not yet implemented (plan §11 M1c)."""
-    raise NotImplementedError("the shared.db load path is the next milestone (plan §11 M1c)")
+def load_into(home: PrmHome, contacts: list[CanonicalContact], *,
+              ingested_at: str | None = None) -> shared_db.LoadResult:
+    """Persist canonical contacts into the home's shared.db, under the single-instance lock."""
+    home.create()
+    with file_lock(home.lock_file):
+        return shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
 
 
 def ingest(paths, *, source: str | None = None, home: PrmHome | None = None,
            dry_run: bool = True) -> ImportReport:
-    """Parse + normalize + report. Persists only when ``dry_run`` is False *and* a loader exists."""
+    """Parse + normalize + report. Persists to shared.db when ``dry_run`` is False and a home given."""
     results = collect(paths, source=source)
     contacts = [c for r in results for c in r.contacts]
     notes: list[str] = []
     persisted = False
+    stored = None
 
     if not dry_run:
         if home is None:
             notes.append("no PRM home given; nothing persisted")
         else:
-            try:
-                load_into(home, contacts)
-                persisted = True
-            except NotImplementedError as exc:
-                notes.append(str(exc))
+            result = load_into(home, contacts)
+            persisted = True
+            stored = result.total
 
-    return ImportReport.from_results(results, persisted=persisted, dry_run=dry_run, notes=notes)
+    return ImportReport.from_results(results, persisted=persisted, dry_run=dry_run, stored=stored, notes=notes)

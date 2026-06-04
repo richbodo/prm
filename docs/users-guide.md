@@ -5,10 +5,10 @@ scattered (Google, Apple, LinkedIn, Facebook, loose `.vcf`/`.csv` files) into on
 — eventually — lets you keep private relationship notes on top and an AI help maintain them. Your
 data never leaves your device.
 
-> **Status (v0.1, in progress).** What works **today** is the **ingestor's inspection path**: point
-> `prm` at your real contact exports and get a faithful, structured report — how many contacts, which
-> source, how each got a stable identity, how many have no name. **Saving** that into a searchable
-> database, the **search workspace**, and **AI-assisted dedup** are the next milestones (see
+> **Status (v0.1, in progress).** What works **today**: point `prm` at your real contact exports and
+> it parses them, gives each contact a stable identity, **saves them into a local database, and lets
+> you search from the terminal** — for **vCard** and **Google Takeout** sources. The **web search
+> workspace**, the **CSV/Facebook** parsers, and **AI-assisted dedup** are the next milestones (see
 > [Roadmap](roadmap.md)). This guide marks clearly what runs now vs. what's coming.
 
 ---
@@ -17,11 +17,12 @@ data never leaves your device.
 
 | Capability | Status |
 | --- | --- |
-| Inspect a contact export (parse → normalize → report) without saving anything | ✅ works |
-| Import **vCard** (`.vcf`) and **Google Takeout** (`.zip`) | ✅ works |
-| Import **CSV** (LinkedIn, Google CSV) and **Facebook** JSON | ⏳ recognized, parser coming |
+| Import **vCard** (`.vcf`) and **Google Takeout** (`.zip`) into a local database | ✅ works |
+| **Search** your imported contacts from the terminal | ✅ works |
+| Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
-| Persist to a database, search, and AI dedup | ⏳ next milestones |
+| Import **CSV** (LinkedIn, Google CSV) and **Facebook** JSON | ⏳ recognized, parser coming |
+| Web search workspace and AI-assisted dedup | ⏳ next milestones |
 
 ---
 
@@ -78,7 +79,7 @@ You should see the unit and fixture tests pass.
 ## 3. Try the demo (no personal data)
 
 The fastest way to see it work is the built-in demo, which seeds a realistic **~1000-contact**
-dataset from the repo's *synthetic* fixtures — no personal data, nothing written outside the repo:
+database from the repo's *synthetic* fixtures — no personal data, nothing written outside the repo:
 
 ```bash
 prm init --demo
@@ -86,18 +87,20 @@ prm init --demo
 
 ```
 PRM home ready at /…/prm/prm-data
-Demo seed (persistence lands with the loader — plan §11 M1c):
-Ingest DRY RUN — nothing written: 1004 contacts from 4 file(s)
+Demo seeded into /…/prm/prm-data/shared.db:
+Ingest imported: 1004 contacts from 4 file(s)
   - …/google_takeout_bulk/…/All Contacts.vcf: 1000 · google_takeout (vcard, confidence override)
   - …/apple_icloud/…/icloud-export.vcf: 4 · apple_icloud (vcard, confidence override)
   - …/linkedin/…/Connections.csv: SKIPPED — CSV parser lands next (plan §11 M1)
   - …/google_csv/…/contacts.csv: SKIPPED — CSV parser lands next (plan §11 M1)
   by source: apple_icloud=4, google_csv=0, google_takeout=1000, linkedin=0
   stable-id: email=904, hash=95, url=5  (325 name-less)
+  shared.db now holds 1001 record(s)
 ```
 
-This is exactly what you'll see against your own data — read [Step 5](#5-inspect-an-import-dry-run)
-for what each line means. (The CSV lines are skipped for now; that parser is the next increment.)
+Now try `prm search ada` and `prm status` against it. This is exactly what you'll see against your
+own data — read [Step 5](#5-inspect-an-import-dry-run) for what each line means. (The CSV lines are
+skipped for now; that parser is the next increment.)
 
 ## 4. Export your contacts
 
@@ -152,19 +155,21 @@ prm import takeout.zip --dry-run --json         # machine-readable output (for s
 
 ## 6. Import for real
 
-Running without `--dry-run` previews the same report and then asks before committing:
+Drop the `--dry-run` to save into your PRM home's `shared.db`:
 
 ```bash
 prm import ~/Downloads/takeout-20260603.zip
 ```
 
 In an interactive terminal it shows the preview and prompts `Proceed with import? [y/N]`. Use
-`--non-interactive` (or `--json`) for unattended, best-effort runs that never prompt.
+`--non-interactive` (or `--json`) for unattended runs that never prompt. The same command ends with
+`shared.db now holds N record(s)`.
 
-> **Today:** the database **load path is the next milestone**, so a real import currently runs the
-> full parse + report and tells you persistence is pending rather than writing. Once the loader lands,
-> this same command will save into your PRM home and `prm status` will show real counts. The
-> inspection report above is accurate and useful right now.
+Re-running an import is **safe and idempotent** — each contact gets a stable identity, so importing
+the same file again updates rather than duplicates. You can import several sources into one home
+(e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together. (The full
+opt-in, non-destructive *re-import with an orphan preview* is a later milestone; today's import is
+the plain idempotent load.)
 
 ## 7. Check status
 
@@ -174,8 +179,25 @@ prm status
 
 ```
 PRM home: /…/prm/prm-data (exists)
-  shared.db: none yet (the load path is the next milestone — plan §11 M1c)
+  shared.db: 997 record(s), 997 distinct identities (schema v1)
+    by source: google_takeout=997
+    last import: 2026-06-04T05:51:09Z
 ```
+
+(1000 parsed → 997 stored above means three records shared an identity and were merged — exactly
+what de-duplication will refine later.)
+
+## 8. Search your contacts
+
+```bash
+prm search "ada"
+prm search "navy" --limit 50
+prm search "lovelace" --json
+```
+
+Search is **prefix-matched** across name, email, organization, and notes, so `lovel` finds
+`Lovelace`. Output is one contact per line (`name · email · org`); `--json` gives a structured list.
+This is a terminal stand-in for the web search workspace that arrives next.
 
 ---
 
@@ -199,7 +221,8 @@ prm-data/
   audit.log.jsonl    # append-only log of applied changes
 ```
 
-(Only the directory skeleton is created today; the DB files arrive with the loader.)
+(`shared.db` is created on your first import. `private.db`, `proposals/`, and `audit.log.jsonl`
+arrive with the private-overlay and dedup milestones.)
 
 ## Privacy
 
@@ -220,9 +243,10 @@ prm-data/
 
 ## What's next
 
-Persistence (saving imports), a local **search-and-view workspace**, and **AI-assisted dedup**
-(propose → review → apply) are the remaining v0.1 milestones, followed by the private overlay and
-custom relationship schema. See the [Roadmap](roadmap.md).
+The **CSV and Facebook parsers** (so LinkedIn / Google CSV / Facebook friends import too), a local
+**web search-and-view workspace**, and **AI-assisted dedup** (propose → review → apply) are the
+remaining v0.1 milestones, followed by the private overlay and custom relationship schema. See the
+[Roadmap](roadmap.md).
 
 ---
 
