@@ -15,7 +15,7 @@ is the record of what each fixture's fidelity actually rests on.
 | **Apple iCloud** | vCard 3.0 (single `.vcf`) | [`apple_icloud/`](../../tests/fixtures/apple_icloud/) | ✅ `rsb_icloud_contacts.vcf` (57 contacts) | ✅ **2026-06-03** |
 | **LinkedIn** | vendor CSV (`Connections.csv` in a zip) | [`linkedin/`](../../tests/fixtures/linkedin/) | ✅ Basic + Complete exports (1,174 connections) | ✅ **2026-06-04** (parsed end-to-end) |
 | **Google CSV** | legacy *Export → Google CSV* | [`google_csv/`](../../tests/fixtures/google_csv/) | ❌ none | ❌ built from docs |
-| **Facebook** | DYI `friends.json` (name + timestamp) | [`facebook/`](../../tests/fixtures/facebook/) | ❌ none | ❌ built from docs |
+| **Facebook** | DYI `friends.json` (name + timestamp) | [`facebook/`](../../tests/fixtures/facebook/) | ❌ none | ⚠️ parser built; not real-validated |
 | **Outlook CSV** | vendor CSV | — not built | ❌ none | ⏳ not started |
 
 Out of scope for v0.1 (no fixture needed): CardDAV live mirror, Google People API connector — file
@@ -28,8 +28,10 @@ import only this release.
    into `ignore-data/`, then confirm the column set, the email/phone `Type` label syntax, and the
    line endings (currently assumed CRLF). The legacy export header is wider than our representative
    subset — verify which columns a current export actually emits.
-2. **Facebook** — get a real DYI **friends** export (JSON) into `ignore-data/` and confirm the
-   `facebook/` mojibake handling and the `friends_v2` shape against it.
+2. **Facebook** — the parser is built (handles `friends`/`friends_v2` and repairs the DYI
+   UTF-8-as-latin1 mojibake), passing against the synthetic `facebook/` fixture. Get a real DYI
+   **friends** export (JSON) into `ignore-data/` to confirm the key name and mojibake behavior against
+   a genuine export.
 3. **Outlook CSV** — not built; drop a real sample in `ignore-data/` before building, so the first
    version is validated rather than guessed.
 

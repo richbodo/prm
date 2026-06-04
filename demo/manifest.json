@@ -19,7 +19,12 @@
     {
       "source": "google_csv",
       "path": "tests/fixtures/google_csv/sources/contacts.csv",
-      "note": "vendor CSV — ingested once the CSV parser lands (plan §11 M1)"
+      "note": "vendor CSV — wide/sparse Google Contacts export"
+    },
+    {
+      "source": "facebook",
+      "path": "tests/fixtures/facebook/sources/friends-basic.json",
+      "note": "Facebook DYI friends — name + connected date only (the thinnest source)"
     }
   ]
 }
