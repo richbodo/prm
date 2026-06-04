@@ -5,8 +5,9 @@ one per record, each a flat list of ``RawField``s. Mapping those to the canonica
 provenance, and assigning a stable id all happen in ``cli.normalize`` (one layer up), so the choice
 of parsing library never leaks past this package.
 
-Implemented: vCard (``vcard``), Google Takeout (``takeout``, a zip of vCards), and vendor CSV
-(``csv`` — LinkedIn + Google CSV, dialect-detected from the header). Planned next: Facebook JSON.
+Implemented (the full v0.1 source set): vCard (``vcard``), Google Takeout (``takeout``, a zip of
+vCards), vendor CSV (``csv`` — LinkedIn + Google CSV, dialect-detected from the header), and Facebook
+DYI friends JSON (``facebook``, with mojibake repair).
 """
 
 from .base import ParsedRecord, RawField, SourceFormat, detect_format

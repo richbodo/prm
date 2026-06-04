@@ -9,6 +9,7 @@ in the CLI.
 
 from __future__ import annotations
 
+import json
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,12 +20,12 @@ from core.lock import file_lock
 from .config import PrmHome
 from .normalize import CanonicalContact, normalize_all
 from .parsers import csv as csv_parser
-from .parsers import takeout, vcard
+from .parsers import facebook, takeout, vcard
 from .parsers.base import SourceFormat, detect_format
 from .report import ImportReport
 
 # File extensions we will attempt (others are ignored when walking a directory).
-_KNOWN_SUFFIXES = {".vcf", ".zip", ".csv"}
+_KNOWN_SUFFIXES = {".vcf", ".zip", ".csv", ".json"}
 
 
 @dataclass
@@ -55,6 +56,8 @@ def infer_source(path: Path, fmt: SourceFormat) -> tuple[str, str]:
         if "Given Name" in head or "Group Membership" in head:
             return "google_csv", "medium"
         return "vendor_csv", "low"
+    if fmt is SourceFormat.FACEBOOK_JSON:
+        return "facebook", "high"
     return "unknown", "low"
 
 
@@ -67,6 +70,18 @@ def _read_csv_bytes(path: Path) -> bytes:
                 or next((n for n in names if n.lower().endswith(".csv")), None)
             if member is None:
                 raise ValueError("no .csv inside the zip")
+            return zf.read(member)
+    return path.read_bytes()
+
+
+def _read_facebook_bytes(path: Path) -> bytes:
+    """Read a bare friends .json, or extract a friends .json from a Facebook export .zip."""
+    if path.suffix.lower() == ".zip":
+        with zipfile.ZipFile(path) as zf:
+            member = next((n for n in zf.namelist()
+                           if "friend" in n.lower() and n.lower().endswith(".json")), None)
+            if member is None:
+                raise ValueError("no friends .json inside the zip")
             return zf.read(member)
     return path.read_bytes()
 
@@ -100,6 +115,11 @@ def parse_one(path: Path, source_override: str | None = None) -> PathResult:
         try:
             records = csv_parser.parse(_read_csv_bytes(path), source)
         except (ValueError, KeyError) as exc:
+            return PathResult(path, fmt, source, confidence, skipped_reason=str(exc))
+    elif fmt is SourceFormat.FACEBOOK_JSON:
+        try:
+            records = facebook.parse(_read_facebook_bytes(path), source)
+        except (ValueError, json.JSONDecodeError) as exc:
             return PathResult(path, fmt, source, confidence, skipped_reason=str(exc))
     else:
         return PathResult(path, fmt, source, confidence, skipped_reason="unrecognized format")

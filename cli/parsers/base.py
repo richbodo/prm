@@ -17,6 +17,7 @@ class SourceFormat(enum.Enum):
     VCARD = "vcard"             # a .vcf file (one or many cards)
     GOOGLE_TAKEOUT = "takeout"  # a Takeout .zip (vCards under Contacts/)
     VENDOR_CSV = "csv"          # a vendor CSV (LinkedIn, Google CSV), incl. a LinkedIn export zip
+    FACEBOOK_JSON = "facebook"  # a Facebook DYI friends .json, or an export .zip containing one
     UNKNOWN = "unknown"
 
 
@@ -60,11 +61,18 @@ def detect_format(path: str | Path) -> SourceFormat:
         return SourceFormat.VCARD
     if suffix == ".csv":
         return SourceFormat.VENDOR_CSV
+    if suffix == ".json":
+        head = p.read_bytes()[:4096]
+        if b'"friends' in head:          # "friends" or "friends_v2"
+            return SourceFormat.FACEBOOK_JSON
+        return SourceFormat.UNKNOWN
     if suffix == ".zip" and zipfile.is_zipfile(p):
         with zipfile.ZipFile(p) as zf:
             names = zf.namelist()
         if any("/Contacts/" in n and n.lower().endswith(".vcf") for n in names):
             return SourceFormat.GOOGLE_TAKEOUT
         if any(n.endswith("Connections.csv") for n in names):
-            return SourceFormat.VENDOR_CSV  # LinkedIn export — handled by the CSV parser (planned)
+            return SourceFormat.VENDOR_CSV  # LinkedIn export
+        if any("friend" in n.lower() and n.lower().endswith(".json") for n in names):
+            return SourceFormat.FACEBOOK_JSON
     return SourceFormat.UNKNOWN
