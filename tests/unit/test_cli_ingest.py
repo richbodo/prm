@@ -83,12 +83,14 @@ def test_source_override():
     assert result.source == "my_label" and result.confidence == "override"
 
 
-def test_load_into_is_not_implemented_yet():
-    try:
-        ingest_mod.load_into(resolve_home("/tmp/x"), [])
-    except NotImplementedError:
-        return
-    raise AssertionError("load_into should not be implemented yet")
+def test_ingest_persists_and_status_reads_back():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        report = ingest_mod.ingest([APPLE], home=home, dry_run=False)
+        assert report.persisted and report.stored == 4
+        assert home.shared_db.exists() and not home.private_db.exists()   # two-store isolation
+        # round-trips through the real status reader
+        assert prm_import.main(["--data-dir", str(home.root), "status", "--json"]) == 0
 
 
 def test_report_json_roundtrip():

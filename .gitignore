@@ -149,6 +149,9 @@ vite.config.ts.timestamp-*
 # Synthetic, generated fixtures live in tests/fixtures/ and ARE committed.
 ignore-data/
 
+# The default PRM home (demo mode writes here) — holds personal contact DBs.
+prm-data/
+
 # Python caches
 __pycache__/
 *.pyc

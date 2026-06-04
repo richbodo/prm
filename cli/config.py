@@ -52,6 +52,10 @@ class PrmHome:
     def config_file(self) -> Path:
         return self.root / "config.json"
 
+    @property
+    def lock_file(self) -> Path:
+        return self.root / ".lock"
+
     def exists(self) -> bool:
         return self.root.is_dir()
 

@@ -24,5 +24,8 @@ prm = "cli.prm_import:main"
 [tool.setuptools]
 packages = ["cli", "cli.parsers", "core"]
 
+[tool.setuptools.package-data]
+core = ["schema/*.sql"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

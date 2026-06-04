@@ -33,10 +33,11 @@ class ImportReport:
     paths: list[PathSummary] = field(default_factory=list)
     persisted: bool = False
     dry_run: bool = True
+    stored: int | None = None          # rows in shared.db after the load (None if not persisted)
     notes: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_results(cls, results, *, persisted: bool, dry_run: bool, notes=None) -> "ImportReport":
+    def from_results(cls, results, *, persisted: bool, dry_run: bool, stored=None, notes=None) -> "ImportReport":
         """Aggregate a list of duck-typed path results (see ``cli.ingest.PathResult``)."""
         by_source: Counter = Counter()
         by_kind: Counter = Counter()
@@ -65,6 +66,7 @@ class ImportReport:
             paths=summaries,
             persisted=persisted,
             dry_run=dry_run,
+            stored=stored,
             notes=list(notes or []),
         )
 
@@ -89,6 +91,8 @@ class ImportReport:
         if self.by_key_kind:
             lines.append("  stable-id: " + ", ".join(f"{k}={n}" for k, n in sorted(self.by_key_kind.items()))
                          + f"  ({self.nameless} name-less)")
+        if self.stored is not None:
+            lines.append(f"  shared.db now holds {self.stored} record(s)")
         for note in self.notes:
             lines.append(f"  note: {note}")
         return "\n".join(lines)

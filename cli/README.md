@@ -38,9 +38,10 @@ common key and the content hash is the last resort for the thinnest records. Ide
 ## Commands (Phase A)
 
 ```
-prm init [--demo] [--data-dir DIR]        # create the PRM home; --demo seeds from the fixtures
+prm init [--demo] [--data-dir DIR]        # create the PRM home; --demo seeds + imports the fixtures
 prm import PATH... [--source NAME] [--dry-run] [--non-interactive] [--json]
-prm status [--json]
+prm status [--json]                        # counts from shared.db
+prm search QUERY [--limit N] [--json]      # FTS over imported contacts
 ```
 
 - **PRM home** (`config.py`): one directory for all stores (`shared.db`, `private.db`,
@@ -54,12 +55,13 @@ prm status [--json]
 
 ## Status
 
-- **Done:** vCard (`parsers/vcard.py`) + Google Takeout zip (`parsers/takeout.py`) → normalize;
-  the Phase-A CLI skeleton (`init`/`import --dry-run`/`status`) over a pure `ingest()`. Validated
-  against the Apple iCloud, Takeout quirks, and 1000-card bulk fixtures, and a real Takeout export.
-- **Next (plan §11 M1):** the `shared.db` **load path** (`core/shared_db.py`) so `import` persists
-  and `status` reads real counts; then the **vendor CSV** parser (`parsers/csv.py` — LinkedIn +
-  Google CSV, fixtures already exist).
+- **Done:** vCard (`parsers/vcard.py`) + Google Takeout zip (`parsers/takeout.py`) → normalize →
+  **`shared.db` load path** (`core/shared_db.py`: WAL, `user_version` handshake, single-instance
+  file-lock, `quick_check` + zero-row guard, idempotent re-import, FTS5). The CLI (`init`/`import`/
+  `status`/`search`) over a pure `ingest()`. Validated against the Apple iCloud, Takeout quirks, and
+  1000-card bulk fixtures, and a **real 1000-contact Takeout export** (imported + searched).
+- **Next (plan §11 M1):** the **vendor CSV** parser (`parsers/csv.py` — LinkedIn + Google CSV,
+  fixtures already exist) and Facebook JSON; then the private store + dedup (M3).
 - **v0.2:** the config *file* + platform dirs, and `discover.py` (Downloads/ingestion-dir scan)
   shared with the MCP ingestion surface.
 
