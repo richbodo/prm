@@ -14,7 +14,11 @@ CardDAV) writes a read-only **Shared DB** with stable contact IDs and per-field 
 **AI deduplicates** via a propose → review → apply flow: the AI stages a merge **changeset**, the
 user approves it in the workspace "like merging a PR." Merge decisions live in a minimal
 **private store** (separate from the raw Shared DB) and survive re-import. Realizes the
-**review-required** safe-write tier + snapshot ring + append-only audit log.
+**review-required** safe-write tier + snapshot ring + append-only audit log. Runs **zero-config**:
+all stores live under one **PRM home** (default `./prm-data/`, so demo mode never touches anything
+outside the repo), and `prm init --demo` seeds a realistic ~1000-contact home from the synthetic
+fixtures. Import **infers the source, previews it, and asks before committing** (with a
+`--non-interactive` best-effort mode), over a pure `ingest()` reused by the MCP surface.
 *Details: [`../plans/v0.1-implementation-plan.md`](../plans/v0.1-implementation-plan.md).*
 
 ## v0.2 — Private overlay, custom schema, AI-write tiers
@@ -27,6 +31,13 @@ edited **only** in the workspace (INV-3). Each field carries an **AI-write polic
 exercising the **append-only** tier. Multiple AI proposals are handled as separate queued
 changesets reviewed serially (apply-time conflict detection), not as branches to merge — keeping
 v0.1's native append-only-log + snapshot-ring substrate (no VCS).
+
+Also in v0.2: a **config file** (records the active `data_dir`) + **platform data dirs** (XDG /
+macOS / Windows) for installed (non-repo) use, and **source discovery** — a `discover_sources()`
+library that scans `~/Downloads` and a configured ingestion dir for likely contact exports
+(signature-matched, opt-in, never a background poll) and offers a pick-list. Surfaced via `prm scan`
+/ `prm import` (no path) and **reused by the MCP ingestion surface**, so CLI and AI share one
+discovery path.
 
 ## v0.3 — Delegated gathering: public data (easiest first)
 
@@ -62,6 +73,9 @@ resolution; full concurrent-AI merge story over git.
   local-AI-required). v0.4 builds only the querier half.
 - Per-vendor live API connectors (Google People API, MS Graph).
 - Federated / peer-to-peer reads between PNAs on different devices.
+- **An installer** (the normal path for non-developers; writes the chosen `data_dir` into the config
+  file). Deferred to project maturity — and note it bends the `never-distributed-single-user` flavor,
+  so it waits on the distribution-semantics question below.
 
 ## Parallel track — contributions back to PNT
 
@@ -72,4 +86,14 @@ This reference design is expected to feed the toolkit. As each lands with its de
   applies" rule for data writes; the toolkit's MCP private surface is read-only today.
 - **AC-PRM-C** (single-instance file-lock) — exercised by the native-SQLite storage pick.
 - Privacy-reclassification mechanics and per-field provenance findings as they surface.
+- **Distribution semantics (open finding).** PNT's `never-distributed-single-user` flavor is too
+  coarse. "Distribution" is a spectrum with different *verifiability* properties: (1) point a user at
+  a **GitHub repo** — they build it and can run the **PNT conformance tests** to confirm it's a
+  compliant PNA *before trusting it*; (2) a **built binary in a repo** (source nearby); (3) a
+  **binary from a website that doesn't host source** (opaque, hardest to verify). Orthogonal: shipping
+  **code only** vs. **code + sensitive data** (cf. fellows). The safety property that matters is
+  *independent verifiability* — the build-from-source-and-run-conformance-tests path (this PRM today:
+  a "home-cooked meal" a friend builds and verifies) is qualitatively different from an opaque binary.
+  This likely warrants splitting the distribution axis in PNT. **Not yet nailed down — tracked for
+  its own write-up (candidate GitHub issue).**
 - SWHID archival + `Architecture.md` attestation once a version is accepted.

@@ -1,0 +1,25 @@
+{
+  "description": "Sources that `prm init --demo` ingests to seed a demo PRM home. All synthetic (see tests/fixtures/); paths are relative to the repo root. JSON, not TOML, for Python 3.10 (no stdlib tomllib).",
+  "sources": [
+    {
+      "source": "google_takeout",
+      "path": "tests/fixtures/google_takeout_bulk/sources/Takeout/Contacts/All Contacts/All Contacts.vcf",
+      "note": "~1000-contact bulk corpus — the bulk of the demo"
+    },
+    {
+      "source": "apple_icloud",
+      "path": "tests/fixtures/apple_icloud/sources/icloud-export.vcf",
+      "note": "small Apple vCard export"
+    },
+    {
+      "source": "linkedin",
+      "path": "tests/fixtures/linkedin/sources/Connections.csv",
+      "note": "vendor CSV — ingested once the CSV parser lands (plan §11 M1)"
+    },
+    {
+      "source": "google_csv",
+      "path": "tests/fixtures/google_csv/sources/contacts.csv",
+      "note": "vendor CSV — ingested once the CSV parser lands (plan §11 M1)"
+    }
+  ]
+}

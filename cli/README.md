@@ -35,13 +35,33 @@ common key and the content hash is the last resort for the thinnest records. Ide
 **not** cross-source merge — same-person records that differ are reconciled by the propose → review
 → apply dedup flow, never auto-merged (AC-PRM-B).
 
+## Commands (Phase A)
+
+```
+prm init [--demo] [--data-dir DIR]        # create the PRM home; --demo seeds from the fixtures
+prm import PATH... [--source NAME] [--dry-run] [--non-interactive] [--json]
+prm status [--json]
+```
+
+- **PRM home** (`config.py`): one directory for all stores (`shared.db`, `private.db`,
+  `proposals/`, `snapshots/`, `audit.log.jsonl`). Resolves `--data-dir` → `$PRM_HOME` →
+  `./prm-data/`. Demo mode never writes outside the repo.
+- **`import`** detects format, infers the source label (shown with a confidence), and previews it.
+  Interactive runs ask before persisting; `--non-interactive`/`--json`/`--dry-run` never prompt.
+  `--source` overrides the inferred label.
+- The **CLI is thin**: `prm_import.py` only parses args and renders; all work is in the pure
+  `ingest()` (`ingest.py`) + `ImportReport` (`report.py`), reused by the future MCP surface.
+
 ## Status
 
-- **Done:** vCard (`parsers/vcard.py`) + Google Takeout zip (`parsers/takeout.py`) → normalize.
-  Validated against the Apple iCloud, Google Takeout quirks, and 1000-card bulk fixtures, and
-  against a real Takeout export.
-- **Next:** vendor CSV (`parsers/csv.py` — LinkedIn + Google CSV column mapping; fixtures already
-  exist), then the `shared.db` loader + `prm import` / `prm status` CLI.
+- **Done:** vCard (`parsers/vcard.py`) + Google Takeout zip (`parsers/takeout.py`) → normalize;
+  the Phase-A CLI skeleton (`init`/`import --dry-run`/`status`) over a pure `ingest()`. Validated
+  against the Apple iCloud, Takeout quirks, and 1000-card bulk fixtures, and a real Takeout export.
+- **Next (plan §11 M1):** the `shared.db` **load path** (`core/shared_db.py`) so `import` persists
+  and `status` reads real counts; then the **vendor CSV** parser (`parsers/csv.py` — LinkedIn +
+  Google CSV, fixtures already exist).
+- **v0.2:** the config *file* + platform dirs, and `discover.py` (Downloads/ingestion-dir scan)
+  shared with the MCP ingestion surface.
 
 ## Dependencies
 
