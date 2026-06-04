@@ -12,12 +12,12 @@
     "Position",
     "Connected On"
   ],
-  "data_rows": 20,
+  "data_rows": 21,
   "with_name": 18,
   "with_url": 20,
   "with_email": 2,
-  "with_company": 18,
-  "with_position": 17,
+  "with_company": 19,
+  "with_position": 18,
   "fns": [
     "Ada Lovelace",
     "Adele Goldberg",

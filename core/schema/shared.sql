@@ -33,5 +33,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS contacts_fts USING fts5(
     name,
     email,
     org,
+    title,      -- role/position; searchable because LinkedIn data is position-heavy
     note
 );
