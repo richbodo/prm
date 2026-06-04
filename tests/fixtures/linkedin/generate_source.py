@@ -21,7 +21,9 @@ redacted):
     opted in (the preamble says exactly this). The real export had 22/1,174 filled.
   * **No phone column and no stable id.** The closest thing to a stable key is the **profile
     URL**; otherwise a contact hashes on name + company.
-  * Some rows have a **blank name** (connection withheld it) but still carry a URL.
+  * Some rows have a **blank name** (connection withheld it) but still carry a URL; ~2% of a real
+    export have **no name AND no URL** (a deactivated profile — only company/position/date remain),
+    the thinnest record, identified only by company + the connected-on date.
   * ``Company``/``Position`` are usually present; ``Connected On`` is a ``DD Mon YYYY`` date.
 
 Cross-source dedup hooks (both no-UID, matching the Google/Apple fixtures):
@@ -87,6 +89,9 @@ ROWS = [
     ("Shafi", "Goldwasser", "shafigoldwasser", "", "MIT", "Professor", "07 Mar 2020"),
     ("", "", "private-member-4d5e6f", "", "", "", "15 Aug 2022"),              # name + company withheld
     ("Leslie", "Lamport", "leslielamport", "", "Microsoft Research", "Scientist", "29 Nov 2017"),
+    # Deactivated profile: no name AND no URL — only company/position/date remain (~2% of a real
+    # export). No profile-URL key, so identity falls to a content hash over company + connected-date.
+    ("", "", "", "", "Defunct Robotics", "Former Engineer", "04 Jun 2026"),
 ]
 
 

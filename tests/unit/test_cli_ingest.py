@@ -72,10 +72,10 @@ def test_ingest_takeout_zip_labels_google_takeout():
     assert report.total == 3 and report.by_source == {"google_takeout": 3}
 
 
-def test_csv_is_skipped_with_reason():
+def test_csv_now_parses():
     [result] = ingest_mod.collect([LINKEDIN])
     assert result.fmt is SourceFormat.VENDOR_CSV
-    assert result.contacts == [] and "CSV parser" in result.skipped_reason
+    assert len(result.contacts) >= 20 and result.skipped_reason is None
 
 
 def test_source_override():

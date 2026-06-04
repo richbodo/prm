@@ -16,7 +16,7 @@ from typing import Any
 class SourceFormat(enum.Enum):
     VCARD = "vcard"             # a .vcf file (one or many cards)
     GOOGLE_TAKEOUT = "takeout"  # a Takeout .zip (vCards under Contacts/)
-    VENDOR_CSV = "csv"          # a vendor CSV (LinkedIn, Google CSV) — parser planned
+    VENDOR_CSV = "csv"          # a vendor CSV (LinkedIn, Google CSV), incl. a LinkedIn export zip
     UNKNOWN = "unknown"
 
 

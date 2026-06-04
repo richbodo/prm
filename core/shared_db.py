@@ -74,7 +74,7 @@ def _ensure_schema(con: sqlite3.Connection) -> None:
 
 
 # --------------------------------------------------------------------------- fts projection
-def _fts_fields(jcard) -> tuple[str, str, str, str]:
+def _fts_fields(jcard) -> tuple[str, str, str, str, str]:
     name = jcard.first_value("fn") or ""
     email_prop = jcard.get("email")
     email = str(email_prop.value) if email_prop and email_prop.value else ""
@@ -83,9 +83,11 @@ def _fts_fields(jcard) -> tuple[str, str, str, str]:
         org = " ".join(str(v) for v in org_prop.value if v)
     else:
         org = str(org_prop.value) if org_prop and org_prop.value else ""
+    title_prop = jcard.get("title")
+    title = str(title_prop.value) if title_prop and title_prop.value else ""
     note_prop = jcard.get("note")
     note = str(note_prop.value) if note_prop and note_prop.value else ""
-    return name, str(email), org, note
+    return name, str(email), org, title, note
 
 
 # --------------------------------------------------------------------------- write
@@ -115,11 +117,11 @@ def load(db_path, records, *, ingested_at: str | None = None) -> LoadResult:
                         "VALUES (?, ?, ?, ?)",
                         (srid, p.field, p.value, p.observed_at or ingested_at),
                     )
-                name, email, org, note = _fts_fields(r.jcard)
+                name, email, org, title, note = _fts_fields(r.jcard)
                 cur.execute(
-                    "INSERT INTO contacts_fts(source_record_id, name, email, org, note) "
-                    "VALUES (?, ?, ?, ?, ?)",
-                    (srid, name, email, org, note),
+                    "INSERT INTO contacts_fts(source_record_id, name, email, org, title, note) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (srid, name, email, org, title, note),
                 )
             con.commit()
         except Exception:

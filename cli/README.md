@@ -60,8 +60,9 @@ prm search QUERY [--limit N] [--json]      # FTS over imported contacts
   file-lock, `quick_check` + zero-row guard, idempotent re-import, FTS5). The CLI (`init`/`import`/
   `status`/`search`) over a pure `ingest()`. Validated against the Apple iCloud, Takeout quirks, and
   1000-card bulk fixtures, and a **real 1000-contact Takeout export** (imported + searched).
-- **Next (plan §11 M1):** the **vendor CSV** parser (`parsers/csv.py` — LinkedIn + Google CSV,
-  fixtures already exist) and Facebook JSON; then the private store + dedup (M3).
+  The **vendor CSV** parser (`parsers/csv.py` — LinkedIn + Google CSV, dialect-detected from the
+  header) lands the same way; validated against a real 1,174-connection LinkedIn export.
+- **Next (plan §11):** the Facebook JSON parser; then the private store + dedup (M3).
 - **v0.2:** the config *file* + platform dirs, and `discover.py` (Downloads/ingestion-dir scan)
   shared with the MCP ingestion surface.
 

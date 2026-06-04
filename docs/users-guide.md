@@ -17,11 +17,11 @@ data never leaves your device.
 
 | Capability | Status |
 | --- | --- |
-| Import **vCard** (`.vcf`) and **Google Takeout** (`.zip`) into a local database | ✅ works |
+| Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** into a local database | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
-| Import **CSV** (LinkedIn, Google CSV) and **Facebook** JSON | ⏳ recognized, parser coming |
+| Import **Facebook** JSON | ⏳ recognized, parser coming |
 | Web search workspace and AI-assisted dedup | ⏳ next milestones |
 
 ---
@@ -111,7 +111,8 @@ credentials, no sync.
 | --- | --- | --- |
 | **Google** | [takeout.google.com](https://takeout.google.com) → *Deselect all* → select **Contacts** → choose **vCard** → create export → download the `.zip` | ✅ yes |
 | **Apple iCloud** | Mac **Contacts** app → select all (`⌘A`) → **File ▸ Export ▸ Export vCard…** → one `.vcf`. (Or iCloud.com ▸ Contacts ▸ gear ▸ *Export vCard*.) | ✅ yes |
-| **LinkedIn** | **Settings & Privacy ▸ Data Privacy ▸ Get a copy of your data** → pick **Connections** → request → download the `.zip` (the `Connections.csv` inside) | ⏳ recognized, parser coming |
+| **LinkedIn** | **Settings & Privacy ▸ Data Privacy ▸ Get a copy of your data** → pick **Connections** → request → download the `.zip` (import the `.zip` directly — PRM pulls `Connections.csv` out of it) | ✅ yes |
+| **Google CSV** | [contacts.google.com](https://contacts.google.com) → **Export ▸ Google CSV** → one `.csv` | ✅ yes |
 | **Facebook** | **Settings ▸ Your information ▸ Download your information** → select **Friends and followers**, format **JSON** → request → download `friends.json` | ⏳ parser coming |
 
 You can keep these files anywhere. The repo has a gitignored staging folder, **`ignore-data/`**, that
@@ -236,17 +237,17 @@ arrive with the private-overlay and dedup milestones.)
 
 - **`ModuleNotFoundError: vobjectx`** — install it (`pip install vobjectx`) or use the editable
   install in Step 2. If you already have the older `vobject`, PRM uses it automatically.
-- **A CSV or Facebook file is "SKIPPED"** — expected for now; those parsers are the next increment.
-  vCard (`.vcf`) and Google Takeout (`.zip`) are fully supported today.
+- **A Facebook file is "SKIPPED"** — expected for now; that parser is the next increment. vCard
+  (`.vcf`), Google Takeout (`.zip`), LinkedIn (`.zip`/`Connections.csv`), and Google CSV (`.csv`) are
+  all supported today.
 - **`prm: command not found`** — activate your venv (`source .venv/bin/activate`) or use
   `python3 -m cli …` from the repo root.
 
 ## What's next
 
-The **CSV and Facebook parsers** (so LinkedIn / Google CSV / Facebook friends import too), a local
-**web search-and-view workspace**, and **AI-assisted dedup** (propose → review → apply) are the
-remaining v0.1 milestones, followed by the private overlay and custom relationship schema. See the
-[Roadmap](roadmap.md).
+The **Facebook parser**, a local **web search-and-view workspace**, and **AI-assisted dedup**
+(propose → review → apply) are the remaining v0.1 milestones, followed by the private overlay and
+custom relationship schema. See the [Roadmap](roadmap.md).
 
 ---
 

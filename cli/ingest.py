@@ -1,16 +1,15 @@
 """The ingest orchestrator — **pure and non-interactive**.
 
 ``ingest(paths, ...)`` walks files, detects format, infers source, parses → normalizes → builds an
-``ImportReport``. It touches no terminal and prompts for nothing, so the CLI *and* the MCP ingestion
-surface drive the same core and tests exercise it directly. Interactive confirmation and the future
-Downloads discovery live one layer up, in the CLI.
-
-Persistence (the ``shared.db`` load path) is the next milestone (plan §11 M1c); until then ``ingest``
-parses and reports what *would* load, and ``load_into`` is a clearly-marked stub.
+``ImportReport``, and (when not a dry run) loads into ``shared.db``. It touches no terminal and
+prompts for nothing, so the CLI *and* the MCP ingestion surface drive the same core and tests
+exercise it directly. Interactive confirmation and the future Downloads discovery live one layer up,
+in the CLI.
 """
 
 from __future__ import annotations
 
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -19,6 +18,7 @@ from core.lock import file_lock
 
 from .config import PrmHome
 from .normalize import CanonicalContact, normalize_all
+from .parsers import csv as csv_parser
 from .parsers import takeout, vcard
 from .parsers.base import SourceFormat, detect_format
 from .report import ImportReport
@@ -48,13 +48,27 @@ def infer_source(path: Path, fmt: SourceFormat) -> tuple[str, str]:
             return "apple_icloud", "high"
         return "vcard", "low"
     if fmt is SourceFormat.VENDOR_CSV:
-        if path.name == "Connections.csv":
+        # A .zip detected as vendor CSV is a LinkedIn export (it contains Connections.csv).
+        if path.suffix.lower() == ".zip" or path.name == "Connections.csv":
             return "linkedin", "high"
         head = path.read_bytes()[:512].decode("utf-8", "replace")
         if "Given Name" in head or "Group Membership" in head:
             return "google_csv", "medium"
         return "vendor_csv", "low"
     return "unknown", "low"
+
+
+def _read_csv_bytes(path: Path) -> bytes:
+    """Read CSV bytes from a bare .csv, or extract Connections.csv from a LinkedIn export .zip."""
+    if path.suffix.lower() == ".zip":
+        with zipfile.ZipFile(path) as zf:
+            names = zf.namelist()
+            member = next((n for n in names if n.endswith("Connections.csv")), None) \
+                or next((n for n in names if n.lower().endswith(".csv")), None)
+            if member is None:
+                raise ValueError("no .csv inside the zip")
+            return zf.read(member)
+    return path.read_bytes()
 
 
 def _expand(paths) -> list[Path]:
@@ -83,7 +97,10 @@ def parse_one(path: Path, source_override: str | None = None) -> PathResult:
         if not source_override:
             source = takeout.SOURCE
     elif fmt is SourceFormat.VENDOR_CSV:
-        return PathResult(path, fmt, source, confidence, skipped_reason="CSV parser lands next (plan §11 M1)")
+        try:
+            records = csv_parser.parse(_read_csv_bytes(path), source)
+        except (ValueError, KeyError) as exc:
+            return PathResult(path, fmt, source, confidence, skipped_reason=str(exc))
     else:
         return PathResult(path, fmt, source, confidence, skipped_reason="unrecognized format")
 

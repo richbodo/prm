@@ -72,14 +72,17 @@ def stable_key(jcard: JCard, source: str) -> StableKey:
 def _content_hash(jcard: JCard, source: str) -> str:
     """SHA-1 over the strongest weak signals we have, namespaced by source.
 
-    Basis = display name + organization + first phone + source. Joined with a unit separator so two
-    distinct field layouts can't collide by concatenation.
+    Basis = display name + organization + connected-on date + first phone + source. The connected-on
+    date matters for the thinnest real records (a LinkedIn connection with no name and no profile URL
+    — a deactivated profile — is identified only by company + the date you connected). Joined with a
+    unit separator so two distinct field layouts can't collide by concatenation.
     """
     fn = _first_value(jcard, "fn") or ""
     org = jcard.get("org")
     org_text = ";".join(str(v) for v in org.value) if org and isinstance(org.value, list) else (
         str(org.value) if org else ""
     )
+    connected = _first_value(jcard, "x-connected-on") or ""
     tel = _first_value(jcard, "tel") or ""
-    basis = "\x1f".join([fn.strip().lower(), org_text.strip().lower(), tel.strip(), source])
+    basis = "\x1f".join([fn.strip().lower(), org_text.strip().lower(), connected.strip(), tel.strip(), source])
     return hashlib.sha1(basis.encode("utf-8")).hexdigest()

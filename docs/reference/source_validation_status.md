@@ -13,7 +13,7 @@ is the record of what each fixture's fidelity actually rests on.
 | --- | --- | --- | --- | --- |
 | **Google Takeout** | vCard 3.0 (zip of `.vcf` under `Contacts/`) | [`google_takeout/`](../../tests/fixtures/google_takeout/), [`google_takeout_bulk/`](../../tests/fixtures/google_takeout_bulk/) | ✅ `takeout-…Z-3-001.zip` (1000 contacts, 8 label `.vcf`s, 408 photos) | ✅ **2026-06-04** |
 | **Apple iCloud** | vCard 3.0 (single `.vcf`) | [`apple_icloud/`](../../tests/fixtures/apple_icloud/) | ✅ `rsb_icloud_contacts.vcf` (57 contacts) | ✅ **2026-06-03** |
-| **LinkedIn** | vendor CSV (`Connections.csv` in a zip) | [`linkedin/`](../../tests/fixtures/linkedin/) | ✅ `Basic_LinkedInDataExport_…zip` (29 CSVs) | ✅ **2026-06-03** |
+| **LinkedIn** | vendor CSV (`Connections.csv` in a zip) | [`linkedin/`](../../tests/fixtures/linkedin/) | ✅ Basic + Complete exports (1,174 connections) | ✅ **2026-06-04** (parsed end-to-end) |
 | **Google CSV** | legacy *Export → Google CSV* | [`google_csv/`](../../tests/fixtures/google_csv/) | ❌ none | ❌ built from docs |
 | **Facebook** | DYI `friends.json` (name + timestamp) | [`facebook/`](../../tests/fixtures/facebook/) | ❌ none | ❌ built from docs |
 | **Outlook CSV** | vendor CSV | — not built | ❌ none | ⏳ not started |
@@ -23,8 +23,9 @@ import only this release.
 
 ## Still to validate (action items)
 
-1. **Google CSV** — get a real *Export → Google CSV* from contacts.google.com into `ignore-data/`,
-   then confirm the `google_csv/` fixture's column set, the email/phone `Type` label syntax, and the
+1. **Google CSV** — the parser is built and passes against the synthetic `google_csv/` fixture, but
+   no *real* export has been checked yet. Get a real *Export → Google CSV* from contacts.google.com
+   into `ignore-data/`, then confirm the column set, the email/phone `Type` label syntax, and the
    line endings (currently assumed CRLF). The legacy export header is wider than our representative
    subset — verify which columns a current export actually emits.
 2. **Facebook** — get a real DYI **friends** export (JSON) into `ignore-data/` and confirm the
@@ -33,6 +34,20 @@ import only this release.
    version is validated rather than guessed.
 
 ## What real-world validation has confirmed / revealed
+
+### LinkedIn — validated 2026-06-04 (Complete export, 1,174 connections, parsed end-to-end)
+
+Ran the real `Connections.csv` through parse → normalize → load → search. The identity breakdown
+matched the structure exactly: **22 rows with an email** (the rare opt-in), **1,129 keyed on the
+profile URL**, and **23 with no name and no URL** (deactivated profiles) — confirming the 3-line
+preamble, the header, and the ~2% email-fill rate.
+
+The one refinement the real data forced, now folded in: the **name-less + URL-less** rows have no
+profile-URL key, so identity falls to a content hash that now includes the **connected-on date**
+(`identity._content_hash`), and the `linkedin/` fixture gained a deactivated-profile row. Also found:
+only `Connections.csv` is network data (the Complete export's ~42 CSVs — `Email Addresses`,
+`PhoneNumbers`, `ImportedContacts`, … — are all the *owner's own* data). LinkedIn `Position` (→
+`TITLE`) was added to the FTS surface, since role is the most natural thing to search in this source.
 
 ### Google Takeout — validated 2026-06-04 (1000-contact export)
 
