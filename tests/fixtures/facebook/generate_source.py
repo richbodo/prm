@@ -15,7 +15,7 @@ In the PRM model a Facebook friend maps to:
   * ``source = facebook`` — the constant/default provenance field,
   * stable id — a content hash of ``name + timestamp + source`` (no stronger key exists).
 
-All data is SYNTHETIC. No real export is committed — real ones go in ``tests/fixtures/incoming/``.
+All data is SYNTHETIC. No real export is committed — real ones go in the repo-root ``ignore-data/``.
 
 Two fixtures:
   * ``friends-basic.json`` — the shape confirmed with the maintainer: ``{"friends": [{"name",

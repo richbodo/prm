@@ -10,7 +10,7 @@ not the connections'). So this fixture is a single ``Connections.csv``; there is
 
 All data is SYNTHETIC. Names are historical computing figures; the few emails use the reserved
 ``example.com``/``example.org`` domains (RFC 2606). No real export is committed — real ones go in
-``tests/fixtures/incoming/`` (gitignored).
+the repo-root ``ignore-data/`` (gitignored).
 
 LinkedIn quirks this fixture reproduces, distilled from a real export (1,174 connections; values
 redacted):

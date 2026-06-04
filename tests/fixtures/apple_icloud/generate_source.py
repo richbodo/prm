@@ -10,7 +10,7 @@ fixture.
 
 All data is SYNTHETIC. Names are historical computing figures; emails use the reserved
 ``example.com``/``example.org`` domains (RFC 2606) and phone numbers use the 555-01xx fictional
-block. No real export is committed — real ones go in ``tests/fixtures/incoming/`` (gitignored).
+block. No real export is committed — real ones go in the repo-root ``ignore-data/`` (gitignored).
 
 Apple quirks this corpus reproduces, observed in a real iCloud export (values redacted):
   * vCard **3.0**, like Google — but **LF line endings** (the sampled export had zero CRLF),

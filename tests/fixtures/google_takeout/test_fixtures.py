@@ -33,7 +33,7 @@ def unfold(text: str) -> str:
 
 def parse_zip(zip_path: Path) -> dict:
     """Extract verifiable metrics from a built Takeout zip using stdlib only."""
-    contact_count = with_uid = with_embedded_photo = 0
+    contact_count = with_uid = with_embedded_photo = without_name = with_categories = 0
     fns: list[str] = []
     vcf_files: list[str] = []
     external_images: list[str] = []
@@ -49,13 +49,19 @@ def parse_zip(zip_path: Path) -> dict:
                 # Split into individual cards (drop the empty head before the first BEGIN).
                 for block in text.split("BEGIN:VCARD")[1:]:
                     contact_count += 1
+                    has_fn = False
                     for line in block.splitlines():
                         if line.startswith("FN:"):
                             fns.append(line[3:].strip())
+                            has_fn = True
                         elif line.startswith("UID:"):
                             with_uid += 1
                         elif line.startswith("PHOTO"):
                             with_embedded_photo += 1
+                        elif line.startswith("CATEGORIES:"):
+                            with_categories += 1
+                    if not has_fn:
+                        without_name += 1
             elif lower.endswith(IMAGE_SUFFIXES):
                 external_images.append(name)
 
@@ -65,6 +71,8 @@ def parse_zip(zip_path: Path) -> dict:
         "contact_count": contact_count,
         "with_uid": with_uid,
         "without_uid": contact_count - with_uid,
+        "without_name": without_name,
+        "with_categories": with_categories,
         "with_embedded_photo": with_embedded_photo,
         "fns": sorted(fns),
     }
@@ -85,6 +93,8 @@ def check_fixture(name: str) -> list[str]:
         "contact_count",
         "with_uid",
         "without_uid",
+        "without_name",
+        "with_categories",
         "with_embedded_photo",
         "fns",
     ]

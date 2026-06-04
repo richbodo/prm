@@ -144,3 +144,14 @@ vite.config.ts.timestamp-*
 
 # macOS
 .DS_Store
+
+# Real contact exports — never commit (protects INV-1: private data stays local).
+# Synthetic, generated fixtures live in tests/fixtures/ and ARE committed.
+ignore-data/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Derived fixture build artifacts (rebuild with `python build.py`)
+tests/fixtures/google_takeout/build/

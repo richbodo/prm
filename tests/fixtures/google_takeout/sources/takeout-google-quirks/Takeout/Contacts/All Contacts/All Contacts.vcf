@@ -38,3 +38,9 @@ item1.X-ABLabel:Work
 item2.TEL:+1-555-0112
 item2.X-ABLabel:WORK
 END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+item1.EMAIL;TYPE=INTERNET:unknown.contact@example.com
+item1.X-ABLabel:Work
+CATEGORIES:myContacts,Ruby Code Club
+END:VCARD

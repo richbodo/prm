@@ -1,7 +1,7 @@
 # LinkedIn — connections fixture
 
 Synthetic LinkedIn `Connections.csv`, used to test the PRM ingester's **vendor-CSV** path (v0.1 M1).
-Generated and fake; **no real export is committed** (real ones go in [`../incoming/`](../incoming/)).
+Generated and fake; **no real export is committed** (real ones go in [`../../../ignore-data/`](../../../ignore-data/)).
 
 ## What a real LinkedIn export looks like
 

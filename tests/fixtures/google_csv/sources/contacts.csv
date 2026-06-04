@@ -1,0 +1,11 @@
+Name,Given Name,Additional Name,Family Name,Name Prefix,Name Suffix,Nickname,Birthday,Notes,Group Membership,E-mail 1 - Type,E-mail 1 - Value,E-mail 2 - Type,E-mail 2 - Value,Phone 1 - Type,Phone 1 - Value,Organization 1 - Name,Organization 1 - Title,Website 1 - Type,Website 1 - Value
+Ada Lovelace,Ada,,Lovelace,,,,,,* myContacts ::: Starred in Android,Work,ada.lovelace@example.com,,,Mobile,+1-555-0101,Analytical Engines,Mathematician,,
+Grace Hopper,Grace,,Hopper,,,,,,* myContacts,Work,grace.hopper@example.org,Home,ghopper@example.com,Work,+1-555-0102,US Navy,Rear Admiral,,
+André Truong,André,,Truong,,,,,,* myContacts,Home,andre.truong@example.com,,,,,R2E,Engineer,,
+Hedy Lamarr,Hedy,,Lamarr,,,,,,* myContacts,,,,,Mobile,+1-555-0110,Inventions Inc,Inventor,,
+Alan Turing,Alan,,Turing,,,,,"Met at NPL; said ""machines will think"", then laughed.",* myContacts ::: Starred in Android,Home,alan.turing@example.com,,,,,National Physical Laboratory,Researcher,,
+Katherine Johnson,Katherine,,Johnson,,,,,,* myContacts,Work,katherine.johnson@example.org,,,Work,+1-555-0103,NASA,Aerospace Technologist,,
+Tim Berners-Lee,Tim,,Berners-Lee,,,,,,* myContacts,Work,tim@example.org,,,,,W3C,Director,Profile,https://example.org/timbl
+Radia Perlman,Radia,,Perlman,,,,,,* myContacts,Home,radia.perlman@example.com,,,,,,,,
+Vint Cerf,Vint,,Cerf,,,Vint,1943-06-23,,* myContacts ::: Starred in Android,Work,vint.cerf@example.com,,,,,Google,VP & Chief Internet Evangelist,,
+Barbara Liskov,Barbara,,Liskov,,,,,,* myContacts,Work,barbara.liskov@example.com,,,,,MIT,Institute Professor,,
