@@ -156,5 +156,9 @@ prm-data/
 __pycache__/
 *.pyc
 
+# Python build / editable-install + test artifacts
+*.egg-info/
+.pytest_cache/
+
 # Derived fixture build artifacts (rebuild with `python build.py`)
 tests/fixtures/google_takeout/build/
