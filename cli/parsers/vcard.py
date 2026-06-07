@@ -21,6 +21,12 @@ try:  # prefer the maintained fork; fall back to the API-compatible original
 except ImportError:  # pragma: no cover - depends on which is installed
     import vobject as _vobject  # type: ignore
 
+# The one API divergence between the two libs: ``vobject`` exposes ``readComponents``; the maintained
+# ``vobjectx`` fork renamed it to ``read_components``. Everything else this module touches
+# (``card.lines()``/``serialize()``, line ``name``/``value``/``params``/``group``, the N & ADR value
+# structs) is identical, so resolving this one name is all the "runs on either" promise needs.
+_read_components = getattr(_vobject, "read_components", None) or getattr(_vobject, "readComponents")
+
 
 def _flatten_value(value: Any) -> Any:
     """vobject value -> plain str | list[str]. Handles Name/Address structs and lists."""
@@ -49,7 +55,7 @@ def parse(raw: str | bytes, source: str) -> list[ParsedRecord]:
     """Parse one-or-many vCards into ``ParsedRecord``s tagged with ``source``."""
     text = raw.decode("utf-8") if isinstance(raw, (bytes, bytearray)) else raw
     records: list[ParsedRecord] = []
-    for card in _vobject.readComponents(text):
+    for card in _read_components(text):
         fields = [_line_to_field(ln) for ln in card.lines()]
         try:
             raw_text = card.serialize()
