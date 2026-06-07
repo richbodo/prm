@@ -123,6 +123,9 @@ This reference design is expected to feed the toolkit. As each lands with its de
   **code only** vs. **code + sensitive data** (cf. fellows). The safety property that matters is
   *independent verifiability* — the build-from-source-and-run-conformance-tests path (this PRM today:
   a "home-cooked meal" a friend builds and verifies) is qualitatively different from an opaque binary.
-  This likely warrants splitting the distribution axis in PNT. **Not yet nailed down — tracked for
-  its own write-up (candidate GitHub issue).**
+  This likely warrants splitting the distribution axis in PNT. **Proposed upstream as a discussion RFC
+  — [personal_network_toolkit#39](https://github.com/richbodo/personal_network_toolkit/issues/39)
+  (tracks PRM [#8](https://github.com/richbodo/prm/issues/8)); not yet a spec change** (per
+  CONTRIBUTING, an obligation-changing axis split lands with its demonstrating design — PRM is the
+  candidate demonstrator, gated on the deferred installer).
 - SWHID archival + `Architecture.md` attestation once a version is accepted.
