@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PRM workspace</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="dot" title="local-only — contact data never leaves this device"></span>
+      PRM <span class="muted">workspace</span>
+    </div>
+    <input id="q" type="search" placeholder="Search name · email · org · notes…" autocomplete="off" autofocus />
+    <div id="stat" class="muted" aria-live="polite"></div>
+  </header>
+
+  <main>
+    <section id="list" aria-label="Contacts">
+      <ol id="results"></ol>
+      <button id="more" hidden>Load more</button>
+    </section>
+    <section id="detail" aria-label="Contact detail">
+      <p class="placeholder">Select a contact to see its fields and provenance.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span class="muted">read-only · v0.1 (M2) · <a href="/api/status">/api/status</a></span>
+    <button id="reset" title="Clear the view">reset</button>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

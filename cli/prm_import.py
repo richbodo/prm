@@ -121,6 +121,16 @@ def cmd_status(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    home = resolve_home(args.data_dir)
+    if not home.shared_db.exists():
+        print("no shared.db yet — run `prm import` first", file=sys.stderr)
+        return 1
+    from daemon.server import serve  # imported lazily so the ingest path never pays for it
+    serve(home, host=args.host, port=args.port)
+    return 0
+
+
 def cmd_search(args) -> int:
     home = resolve_home(args.data_dir)
     if not home.shared_db.exists():
@@ -158,6 +168,11 @@ def build_parser() -> argparse.ArgumentParser:
     ps = sub.add_parser("status", help="show the PRM home and store status")
     ps.add_argument("--json", action="store_true", help="machine-readable output")
     ps.set_defaults(func=cmd_status)
+
+    pv = sub.add_parser("serve", help="serve the local read-only workspace (search/view)")
+    pv.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")
+    pv.add_argument("--port", type=int, default=8770, help="port (default 8770)")
+    pv.set_defaults(func=cmd_serve)
 
     pq = sub.add_parser("search", help="full-text search the imported contacts")
     pq.add_argument("query", help="search terms (prefix-matched across name/email/org/notes)")
