@@ -122,7 +122,7 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
-def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8765) -> ThreadingHTTPServer:
+def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> ThreadingHTTPServer:
     """Build (but don't run) the read-only daemon bound to ``host:port``. Localhost only (INV-1).
 
     Split from ``serve()`` so tests can bind an ephemeral port (``port=0``), drive it over a real
@@ -133,7 +133,7 @@ def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8765) -> 
     return httpd
 
 
-def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8765) -> None:
+def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> None:
     """Run the read-only workspace daemon until interrupted."""
     httpd = make_server(home, host=host, port=port)
     print(f"PRM workspace → http://{host}:{port}   (serving {home.root}, read-only)")

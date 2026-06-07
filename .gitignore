@@ -156,6 +156,9 @@ prm-data/
 __pycache__/
 *.pyc
 
+# Python virtualenv (created by `just setup`)
+.venv/
+
 # Python build / editable-install + test artifacts
 *.egg-info/
 .pytest_cache/

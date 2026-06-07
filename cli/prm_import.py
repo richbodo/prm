@@ -171,7 +171,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pv = sub.add_parser("serve", help="serve the local read-only workspace (search/view)")
     pv.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")
-    pv.add_argument("--port", type=int, default=8765, help="port (default 8765)")
+    pv.add_argument("--port", type=int, default=8770, help="port (default 8770)")
     pv.set_defaults(func=cmd_serve)
 
     pq = sub.add_parser("search", help="full-text search the imported contacts")

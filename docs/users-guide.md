@@ -206,7 +206,7 @@ The same data is also browsable in the local web workspace — see the next sect
 For a point-and-click view of the same data, start the local workspace:
 
 ```bash
-prm serve                      # then open http://127.0.0.1:8765
+prm serve                      # then open http://127.0.0.1:8770
 prm serve --port 9000          # pick a different port
 ```
 
