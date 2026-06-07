@@ -22,7 +22,10 @@ dev = ["pytest>=7"]
 prm = "cli.prm_import:main"
 
 [tool.setuptools]
-packages = ["cli", "cli.parsers", "core"]
+# `daemon` serves the read-only workspace (M2). Its static assets live in the source tree under
+# `workspace/` and are resolved relative to it — v0.1 is run from source / editable install (the
+# build-from-source distribution posture; no wheel installer yet — see roadmap / issue #8).
+packages = ["cli", "cli.parsers", "core", "daemon"]
 
 [tool.setuptools.package-data]
 core = ["schema/*.sql"]

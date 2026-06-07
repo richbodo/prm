@@ -5,11 +5,12 @@ scattered (Google, Apple, LinkedIn, Facebook, loose `.vcf`/`.csv` files) into on
 — eventually — lets you keep private relationship notes on top and an AI help maintain them. Your
 data never leaves your device.
 
-> **Status (v0.1, in progress).** What works **today**: point `prm` at your real contact exports and
-> it parses them, gives each contact a stable identity, **saves them into a local database, and lets
-> you search from the terminal** — for **vCard** and **Google Takeout** sources. The **web search
-> workspace**, the **CSV/Facebook** parsers, and **AI-assisted dedup** are the next milestones (see
-> [Roadmap](roadmap.md)). This guide marks clearly what runs now vs. what's coming.
+> **Status (v0.1, in progress).** What works **today**: point `prm` at your real contact exports —
+> **vCard, Google Takeout, LinkedIn, Google CSV, Facebook** — and it parses them, gives each contact a
+> stable identity, **saves them into a local database**, and lets you **search from the terminal or
+> browse them in a local read-only web workspace** (`prm serve`). **AI-assisted dedup**
+> (propose → review → apply) is the next milestone (see [Roadmap](roadmap.md)). This guide marks
+> clearly what runs now vs. what's coming.
 
 ---
 
@@ -19,9 +20,10 @@ data never leaves your device.
 | --- | --- |
 | Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** / **Facebook** | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
+| Browse + search in a local **web workspace** — read-only (`prm serve`) | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
-| Web search workspace and AI-assisted dedup | ⏳ next milestones |
+| AI-assisted dedup (propose → review → apply in the workspace) | ⏳ next milestone |
 
 ---
 
@@ -197,7 +199,28 @@ prm search "lovelace" --json
 
 Search is **prefix-matched** across name, email, organization, and notes, so `lovel` finds
 `Lovelace`. Output is one contact per line (`name · email · org`); `--json` gives a structured list.
-This is a terminal stand-in for the web search workspace that arrives next.
+The same data is also browsable in the local web workspace — see the next section.
+
+## 9. Browse in the web workspace (read-only)
+
+For a point-and-click view of the same data, start the local workspace:
+
+```bash
+prm serve                      # then open http://127.0.0.1:8765
+prm serve --port 9000          # pick a different port
+```
+
+It serves a small single-page app that lets you **search, browse the full list, and open any contact**
+to see its fields and **per-field provenance** (which source each value came from, and when). It reads
+the same `shared.db`, so import (or `prm init --demo`) first; if there's no database yet it says so.
+
+Two guarantees worth knowing:
+
+- **Local only.** The daemon binds `127.0.0.1` — it is never reachable from the network. Your contact
+  data does not leave the device (invariant **INV-1**).
+- **Read-only, today.** The workspace can *view* but not *change* your data yet. Editing — the
+  AI-assisted **dedup propose → review → apply** flow, where you approve merges "like merging a PR" —
+  is the next milestone (see [Roadmap](roadmap.md)). Stop the daemon with `Ctrl-C`.
 
 ---
 

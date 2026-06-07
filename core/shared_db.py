@@ -175,3 +175,66 @@ def search(db_path, query: str, *, limit: int = 20) -> list[tuple]:
         ).fetchall()
     finally:
         con.close()
+
+
+def list_records(db_path, *, limit: int = 50, offset: int = 0) -> dict:
+    """Browse page over all records (name-ordered), for the workspace list. Read-only.
+
+    Each row pairs the searchable surface (``contacts_fts``) with its source (``source_records``);
+    the join is 1:1 because the loader keeps one fts row per record. Returns the page plus ``total``
+    so the UI can paginate.
+    """
+    con = connect(db_path, read_only=True)
+    try:
+        total = con.execute("SELECT count(*) FROM source_records").fetchone()[0]
+        rows = con.execute(
+            "SELECT sr.source_record_id, f.name, f.email, f.org, sr.source "
+            "FROM source_records sr JOIN contacts_fts f USING (source_record_id) "
+            "ORDER BY f.name, sr.source_record_id LIMIT ? OFFSET ?",
+            (limit, offset),
+        ).fetchall()
+    finally:
+        con.close()
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "records": [
+            {"id": rid, "name": name, "email": email, "org": org, "source": source}
+            for rid, name, email, org, source in rows
+        ],
+    }
+
+
+def get_record(db_path, source_record_id: str) -> dict | None:
+    """One record by id: its raw jCard (as stored JSON) + per-field provenance. Read-only.
+
+    Returns ``raw_jcard`` as the on-disk TEXT rather than a parsed object so this stays a leaf that
+    never imports ``cli`` — the caller (daemon) owns jCard rendering. ``None`` if no such record.
+    """
+    con = connect(db_path, read_only=True)
+    try:
+        row = con.execute(
+            "SELECT source, source_uid, stable_key, ingested_at, raw_jcard "
+            "FROM source_records WHERE source_record_id = ?",
+            (source_record_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        source, source_uid, stable_key, ingested_at, raw_jcard = row
+        prov = con.execute(
+            "SELECT field, value, observed_at FROM field_provenance "
+            "WHERE source_record_id = ? ORDER BY field",
+            (source_record_id,),
+        ).fetchall()
+    finally:
+        con.close()
+    return {
+        "id": source_record_id,
+        "source": source,
+        "source_uid": source_uid,
+        "stable_key": stable_key,
+        "ingested_at": ingested_at,
+        "raw_jcard": raw_jcard,
+        "provenance": [{"field": f, "value": v, "observed_at": o} for f, v, o in prov],
+    }
