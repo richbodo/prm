@@ -8,11 +8,11 @@ data never leaves your device.
 > **Status (v0.1, in progress).** What works **today**: point `prm` at your real contact exports —
 > **vCard, Google Takeout, LinkedIn, Google CSV, Facebook** — and it parses them, gives each contact a
 > stable identity, **saves them into a local database**, lets you **search from the terminal or browse
-> them in a local web workspace** (`prm serve`), and **find & merge duplicate contacts** in that
+> them in a local web workspace** (`just serve`), and **find & merge duplicate contacts** in that
 > workspace — review one at a time, pick the winner for any conflict, every merge reversible. An **AI
 > can also propose the merges for you** (over a local MCP server) — it can only *propose*; you still
 > review and approve each one in the workspace. You can also **re-import an updated export** and preview
-> exactly what changes (`prm reimport`). What's coming next: a private overlay (groups, tags, notes) +
+> exactly what changes (`just reimport`). What's coming next: a private overlay (groups, tags, notes) +
 > a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
 > clearly what runs now vs. what's coming.
 
@@ -24,10 +24,10 @@ data never leaves your device.
 | --- | --- |
 | Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** / **Facebook** | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
-| Browse + search your contacts in a local **web workspace** (`prm serve`) | ✅ works |
+| Browse + search your contacts in a local **web workspace** (`just serve`) | ✅ works |
 | **Find & merge duplicate contacts** in the workspace — review, reconcile, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
-| **Re-import** an updated export — preview changes, merges preserved (`prm reimport`) | ✅ works |
+| **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 
@@ -36,6 +36,12 @@ data never leaves your device.
 ## Before you start
 
 - **Python 3.10 or newer** and **git**.
+- **[`just`](https://github.com/casey/just#installation)** (recommended) — the command runner this
+  guide uses, so setup and everyday tasks are one memorable word: `just setup`, `just serve`,
+  `just search`. Install it with `brew install just` (macOS), `cargo install just`, or your package
+  manager. Every recipe is a thin wrapper around a plain command — `just` is a convenience, not a
+  requirement. Run `just` (or `just --list`) to see every recipe and what it runs; the "without `just`"
+  commands are given alongside throughout.
 - The only runtime dependency is a vCard lexer — **`vobjectx`** (installed in the setup step below).
   The older `vobject` works as a drop-in fallback if that's what you already have.
 
@@ -54,34 +60,38 @@ cd prm
 
 ## 2. Set up
 
-Pick one of two ways to run it.
+One command creates an isolated environment (`./.venv`) and installs the package with its dependency:
 
-**A — Editable install (recommended).** Creates an isolated environment, installs the package and
-its dependency, and gives you the `prm` command:
+```bash
+just setup            # creates ./.venv and installs prm + vobjectx + pytest (editable)
+```
+
+That's all — **every other `just` command in this guide uses that environment automatically**, so you
+never have to activate anything. (Prefer `prm`, `pytest`, and `python` directly on your PATH? Run
+`just shell` to drop into an activated sub-shell; type `exit` to leave.)
+
+**Confirm your build is sound:**
+
+```bash
+just doctor           # checks Python ≥3.10, the deps, FTS5, and the workspace port
+just test             # runs the unit + DB test suite
+```
+
+You should see the checks pass and the tests green.
+
+<details>
+<summary><strong>Without <code>just</code></strong> (the equivalent plain commands)</summary>
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"            # installs prm + vobjectx + pytest
+pytest                             # confirm the build (or: python3 tests/unit/test_vcard_path.py)
 ```
 
-**B — No install.** Run it straight from the repo root as a module (needs `vobjectx` or `vobject`
-importable in your Python):
-
-```bash
-python3 -m cli --help              # equivalent to `prm --help`
-```
-
-Throughout this guide, `prm …` and `python3 -m cli …` are interchangeable.
-
-**Confirm your build is sound** by running the tests:
-
-```bash
-pytest                              # or, without pytest:
-python3 tests/unit/test_vcard_path.py
-```
-
-You should see the unit and fixture tests pass.
+After this, `prm …` and `python3 -m cli …` are interchangeable. `just --list` shows the recipe behind
+every command in this guide, so you can always run the underlying command by hand instead.
+</details>
 
 ## 3. Try the demo (no personal data)
 
@@ -89,7 +99,7 @@ The fastest way to see it work is the built-in demo, which seeds a realistic **~
 database from the repo's *synthetic* fixtures — no personal data, nothing written outside the repo:
 
 ```bash
-prm init --demo
+just demo             # = prm init --demo
 ```
 
 ```
@@ -105,9 +115,10 @@ Ingest imported: 1004 contacts from 4 file(s)
   shared.db now holds 1001 record(s)
 ```
 
-Now try `prm search ada` and `prm status` against it. This is exactly what you'll see against your
+Now try `just search ada` and `just status` against it. This is exactly what you'll see against your
 own data — read [Step 5](#5-inspect-an-import-dry-run) for what each line means. (The CSV lines are
-skipped for now; that parser is the next increment.)
+skipped for now; that parser is the next increment.) When you're ready to import your *own* contacts,
+wipe this synthetic home first with `just clean-data` — see the note at [Step 6](#6-import-for-real).
 
 ## 4. Export your contacts
 
@@ -129,11 +140,10 @@ stays on the device").
 
 ## 5. Inspect an import (dry run)
 
-Point `prm` at a file (or folder) with `--dry-run` to parse it and print a report **without writing
-anything**:
+Run `just dry-run` on a file (or folder) to parse it and print a report **without writing anything**:
 
 ```bash
-prm import ~/Downloads/takeout-20260603.zip --dry-run
+just dry-run ~/Downloads/takeout-20260603.zip          # = prm import … --dry-run
 ```
 
 ```
@@ -153,38 +163,50 @@ How to read it:
   falls back): `uid` → `email` → `url` → `hash` (a content hash, the last resort for the thinnest
   records). `… name-less` counts contacts that had no name at all (common in real exports).
 
-Useful flags:
+Useful flags pass straight through the `just` recipes, and you can hand over **many paths at once** —
+either a **folder** (PRM recurses into it) or a shell **glob** like `*` (your shell expands it to a
+list, and PRM handles each entry):
 
 ```bash
-prm import contacts.vcf --source apple_icloud   # override the inferred source label
-prm import ~/Downloads/ --dry-run               # walk a folder; import every recognized file
-prm import takeout.zip --dry-run --json         # machine-readable output (for scripts / the AI surface)
+just ingest contacts.vcf --source apple_icloud  # override the inferred source label
+just dry-run ~/Downloads/                        # a folder — PRM walks it, previewing every recognized file
+just dry-run ~/Downloads/exports/*               # a glob — preview every export dumped loose in one folder
+just dry-run takeout.zip --json                  # machine-readable output (for scripts / the AI surface)
 ```
 
 ## 6. Import for real
 
-Drop the `--dry-run` to save into your PRM home's `shared.db`:
+> **Coming from the demo?** Your PRM home still holds the ~1000 synthetic demo contacts. Run
+> `just clean-data` to wipe `./prm-data/` before importing your own, or keep them mixed in — they're
+> harmless and `just status` shows the split by source.
+
+Use `just ingest` to save into your PRM home's `shared.db`:
 
 ```bash
-prm import ~/Downloads/takeout-20260603.zip
+just ingest ~/Downloads/takeout-20260603.zip           # = prm import … (no --dry-run)
 ```
 
-In an interactive terminal it shows the preview and prompts `Proceed with import? [y/N]`. Use
+In an interactive terminal it shows the preview and prompts `Proceed with import? [y/N]`. Append
 `--non-interactive` (or `--json`) for unattended runs that never prompt. The same command ends with
 `shared.db now holds N record(s)`.
 
 Re-running an import is **safe and idempotent** — each contact gets a stable identity, so importing
 the same file again updates rather than duplicates. You can import several sources into one home
-(e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together.
+(e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together. The same path
+rules as Step 5 apply — point `just ingest` at a folder, or glob a folderful of loose exports at once:
+
+```bash
+just ingest ~/Downloads/exports/*               # import every export in that folder in one go
+```
 
 ### Re-importing an updated export
 
-When you re-download an export later (more contacts, edits, deletions), use **`prm reimport`** to see
+When you re-download an export later (more contacts, edits, deletions), use **`just reimport`** to see
 exactly what would change before committing:
 
 ```bash
-prm reimport ~/Downloads/takeout-20260820.zip --source google_takeout --dry-run   # preview only
-prm reimport ~/Downloads/takeout-20260820.zip --source google_takeout             # preview, then confirm
+just reimport ~/Downloads/takeout-20260820.zip --source google_takeout --dry-run   # preview only
+just reimport ~/Downloads/takeout-20260820.zip --source google_takeout             # preview, then confirm
 ```
 
 It reports, per source, how many records are **new**, **updated**, **unchanged**, and **stale** (in
@@ -196,7 +218,7 @@ snapshot and records the re-import in the audit log. `--non-interactive` applies
 ## 7. Check status
 
 ```bash
-prm status
+just status
 ```
 
 ```
@@ -212,9 +234,9 @@ what de-duplication will refine later.)
 ## 8. Search your contacts
 
 ```bash
-prm search "ada"
-prm search "navy" --limit 50
-prm search "lovelace" --json
+just search "ada"
+just search "navy" --limit 50
+just search "lovelace" --json
 ```
 
 Search is **prefix-matched** across name, email, organization, and notes, so `lovel` finds
@@ -223,16 +245,19 @@ The same data is also browsable in the local web workspace — see the next sect
 
 ## 9. The web workspace — browse, and merge duplicates
 
-For a point-and-click view, start the local workspace:
+For a point-and-click view, start the local workspace (seed or import data first — `just demo`):
 
 ```bash
-prm serve                      # then open http://127.0.0.1:8770
-prm serve --port 9000          # pick a different port
+just serve                     # serves http://127.0.0.1:8770 (Ctrl-C to stop)
+just open                      # opens that URL in your browser — run in a second terminal
+just serve 9000                # pick a different port → http://127.0.0.1:9000
 ```
 
 It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
 contact** to see its fields and **per-field provenance** (which source each value came from). It reads
-the same home, so import (or `prm init --demo`) first; if there's no database yet it says so.
+the same home, so import (or `just demo`) first; if there's no database yet it says so.
+
+(If a previous run left the port busy, `just port` frees it.)
 
 **Duplicates** finds contacts that look like the same person and helps you merge them — one at a time,
 most-confident first:
@@ -256,10 +281,19 @@ Two guarantees worth knowing:
 
 An AI assistant can do the reviewing legwork: it scans for duplicates and **proposes** merges, which
 show up in this same Duplicates tab tagged **🤖 AI proposal** for you to approve or reject. The AI can
-only *propose* — it can never apply a merge. Set this up with the local MCP servers (see
-[`../mcp_servers/README.md`](../mcp_servers/README.md)). **A local AI is recommended**: once a cloud
-client can read your contacts, that data leaves the device — so the read tools warn, and the consent
-gate for cloud AI is a later milestone (see [Roadmap](roadmap.md)).
+only *propose* — it can never apply a merge.
+
+Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_servers/README.md):
+
+1. **Register the two MCP servers** (`prm-shared-data`, `prm-dedup`) with your MCP client (e.g. Claude
+   Desktop) and point them at your PRM home — the `--data-dir` arg, or the `PRM_HOME` env var.
+2. **Hand the assistant the dedup prompt** in [`../prompts/dedup.md`](../prompts/dedup.md) — paste its
+   contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
+   scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
+
+**A local AI is recommended**: once a cloud client can read your contacts, that data leaves the device
+— so the read tools warn, and the consent gate for cloud AI is a later milestone (see
+[Roadmap](roadmap.md)).
 
 ---
 
@@ -296,20 +330,21 @@ arrive with the private-overlay and dedup milestones.)
 
 ## Troubleshooting
 
-- **`ModuleNotFoundError: vobjectx`** — install it (`pip install vobjectx`) or use the editable
-  install in Step 2. If you already have the older `vobject`, PRM uses it automatically.
+- **`ModuleNotFoundError: vobjectx`** — run `just setup` (it installs it), or `pip install vobjectx`.
+  If you already have the older `vobject`, PRM uses it automatically.
 - **A file is "SKIPPED" as unrecognized** — PRM imports vCard (`.vcf`), Google Takeout (`.zip`),
   LinkedIn (`.zip`/`Connections.csv`), Google CSV (`.csv`), and Facebook friends (`.zip`/`.json`).
   Other files in an export folder are ignored. **Note:** a Facebook friend is just a *name and the
   date you connected* — no email or phone — so those contacts are intentionally thin.
-- **`prm: command not found`** — activate your venv (`source .venv/bin/activate`) or use
-  `python3 -m cli …` from the repo root.
+- **`prm: command not found`** — the `just` recipes don't need `prm` on your PATH (they run `./.venv`
+  directly), so prefer `just serve`, `just search`, and so on. To use `prm` itself, run `just shell`
+  (activates the venv) or `source .venv/bin/activate`; or run `python3 -m cli …` from the repo root.
 
 ## What's next
 
 All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review,
 reconcile, undo), **AI-proposed merges over MCP** (the AI proposes; you approve), and opt-in
-**non-destructive re-import** (`prm reimport`) are done. The last v0.1 step is the `Architecture.md`
+**non-destructive re-import** (`just reimport`) are done. The last v0.1 step is the `Architecture.md`
 conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
 (groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
 

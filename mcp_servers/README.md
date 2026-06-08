@@ -67,6 +67,21 @@ not interactive use. The servers import `core/` + `cli.config` directly from the
 the SDK venv (`mcp_servers/.venv`, created by `just mcp-install-deps`) holds only the `mcp` SDK —
 `core`'s deliberately tiny dependency surface stays clean.
 
+**Pointing a server at your data.** Each server reads your **PRM home** — the data dir holding
+`shared.db` / `private.db` / `proposals/`. `just mcp-install` and `--print-config` bind it for you; the
+standalone commands above accept `--data-dir DIR`, or set `$PRM_HOME` (resolution order:
+`--data-dir` → `$PRM_HOME` → `./prm-data/`; see the user's guide
+[§ Where your data lives](../docs/users-guide.md#where-your-data-lives)).
+
+## Driving the dedup loop
+
+Once the servers are registered, hand the assistant the dedup instructions in
+[`prompts/dedup.md`](prompts/dedup.md) — paste its contents (or attach the file) into your MCP client
+session; it is **not** auto-loaded. That prompt tells the AI how to pull duplicate candidates, ask you
+clarifying questions, build a **conservative** merge changeset, and `submit_merge_proposal` — after which
+the proposal appears in the workspace **Duplicates** tab tagged 🤖 for you to approve or reject. The AI
+only proposes; you apply.
+
 ## ⚠️ Cloud vs local AI
 
 The read tools return contact **PII**. The moment a **cloud** client (e.g. Claude Desktop backed by a

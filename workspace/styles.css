@@ -6,6 +6,7 @@
   --line:#e7e3d8; --line-2:#efece3;
   --accent:#3a6f5c; --accent-d:#2c5446; --accent-w:#ecf3ef;
   --clay:#9a5a3c; --clay-w:#f7efe7;
+  --danger:#c0392b;   /* conflict / "you must choose" — a warm brick red that fits the palette */
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
@@ -154,7 +155,7 @@ footer.foot{display:none;}
 .keepall{font-size:11.5px;color:var(--accent-d);margin-top:6px;}
 .single{font-size:14.5px;}
 .single .from{font-size:11.5px;color:var(--faint);margin-left:4px;}
-.conflict .clabel{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--clay);margin-bottom:9px;}
+.conflict .clabel{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--danger);font-weight:700;margin-bottom:9px;}
 .conflict .opts{display:flex;flex-direction:column;gap:8px;}
 .opt{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;border:1px solid var(--line);border-radius:10px;background:var(--panel);transition:border-color .14s,background .14s,box-shadow .14s;}
 .opt:hover{border-color:#d8cfc4;background:#fdfbf8;}
