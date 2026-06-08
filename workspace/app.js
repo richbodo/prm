@@ -104,8 +104,8 @@ async function selectContact(id, li) {
     `<table class="kv">${rows}</table>`;
 }
 
-// ---- duplicates review (one at a time, confident-first, neutral, reversible) ----
-let dupClusters = [], dupIndex = 0, dupPicks = {};
+// ---- duplicates review: AI proposals + deterministic candidates, one at a time ----
+let dupItems = [], dupIndex = 0, dupPicks = {};
 
 async function postJSON(path, body) {
   const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
@@ -115,39 +115,50 @@ async function postJSON(path, body) {
 
 async function loadDuplicates() {
   try {
-    const { clusters } = await api("/api/candidates");   // detector orders confident → review → strong → fuzzy
-    dupClusters = clusters;
+    const [props, cands] = await Promise.all([api("/api/proposals"), api("/api/candidates")]);
+    const aiItems = (props.proposals || []).map((p) => ({ kind: "proposal", ...p }));
+    const detItems = (cands.clusters || []).map((c) => ({ kind: "candidate", ...c }));
+    dupItems = aiItems.concat(detItems);            // AI proposals first — review the AI's work, then the detector
     dupIndex = 0;
-    if (els.dupBadge) els.dupBadge.textContent = clusters.length || "—";
-    const conf = clusters.filter((c) => c.tier === "confident").length;
+    if (els.dupBadge) els.dupBadge.textContent = dupItems.length || "—";
     const sub = $("#dup-sub");
-    if (sub) sub.textContent = clusters.length ? `${clusters.length} possible · ${conf} confident · one at a time` : "none found";
-    showCluster();
-  } catch { /* detection not ready */ }
+    if (sub) sub.textContent = dupItems.length
+      ? `${dupItems.length} to review${aiItems.length ? ` · ${aiItems.length} from AI 🤖` : ""} · one at a time`
+      : "none found";
+    showItem();
+  } catch { /* not ready */ }
 }
 
-async function showCluster() {
+async function showItem() {
   const merge = $("#merge"), prog = $("#dup-progress");
-  if (dupIndex >= dupClusters.length) {
+  if (dupIndex >= dupItems.length) {
     if (prog) prog.hidden = true;
     merge.innerHTML = `<div class="empty"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><h2 class="serif">All caught up</h2><p>No more duplicates to review.</p></div>`;
     return;
   }
-  const cl = dupClusters[dupIndex];
-  if (prog) { prog.hidden = false; $("#dup-pos").textContent = dupIndex + 1; $("#dup-total").textContent = dupClusters.length; $("#dup-tier").textContent = cl.tier; }
+  const item = dupItems[dupIndex];
+  if (prog) { prog.hidden = false; $("#dup-pos").textContent = dupIndex + 1; $("#dup-total").textContent = dupItems.length; $("#dup-tier").textContent = item.kind === "proposal" ? "ai proposal" : item.tier; }
   dupPicks = {};
   merge.innerHTML = `<p class="ph" style="text-align:center;margin-top:40px">Loading…</p>`;
-  renderMergeCard(cl, await api(`/api/merge-preview?ids=${cl.member_ids.join(",")}`));
+  const preview = await api(`/api/merge-preview?ids=${(item.member_ids || []).join(",")}`);
+  (item.kind === "proposal" ? renderProposalCard : renderMergeCard)(item, preview);
 }
 
-function renderMergeCard(cl, preview) {
-  const memberChips = cl.members.map((m) =>
+function memberChips(members) {
+  return (members || []).map((m) =>
     `<span class="member"><span class="avatar">${esc(initial(m.name))}</span><span class="who"><b>${esc(m.name || "(no name)")}</b> <span>${esc(srcLabel(m.source))}</span></span></span>`).join("");
-  const rows = preview.fields.filter((f) => !NOISE.has(f.name)).map((f) => {
+}
+
+// aiPicks {field: chosenValue} → conflicts show the AI's choice selected (read-only); null → interactive.
+function diffRows(preview, aiPicks) {
+  return preview.fields.filter((f) => !NOISE.has(f.name)).map((f) => {
     if (f.kind === "conflict") {
-      const opts = f.options.map((o) =>
-        `<label class="opt" data-field="${esc(f.name)}" data-val="${esc(o.value)}" data-src="${esc(o.source)}"><span class="pick"></span><span class="v">${esc(o.value)}</span><span class="from">${esc(srcLabel(o.source))}</span></label>`).join("");
-      return `<tr><th class="f">${esc(f.name)}</th><td><div class="conflict"><div class="clabel">⚠ these differ — choose which to keep</div><div class="opts">${opts}</div></div></td></tr>`;
+      const opts = f.options.map((o) => {
+        const sel = aiPicks && aiPicks[f.name] === o.value ? " sel" : "";
+        const data = aiPicks ? "" : ` data-field="${esc(f.name)}" data-val="${esc(o.value)}" data-src="${esc(o.source)}"`;
+        return `<label class="opt${sel}"${data}><span class="pick"></span><span class="v">${esc(o.value)}</span><span class="from">${esc(srcLabel(o.source))}</span></label>`;
+      }).join("");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="conflict"><div class="clabel">${aiPicks ? "⚠ differ — the AI chose:" : "⚠ these differ — choose which to keep"}</div><div class="opts">${opts}</div></div></td></tr>`;
     }
     if (f.kind === "union" && f.values.length > 1) {
       const items = f.values.map((v) => `<div class="u"><span class="plus">+</span><span>${esc(v.value)}</span><span class="from">${esc(srcLabel(v.source))}</span></div>`).join("");
@@ -156,11 +167,14 @@ function renderMergeCard(cl, preview) {
     const v = f.values[0];
     return `<tr><th class="f">${esc(f.name)}</th><td><div class="single">${esc(v.value)} <span class="from mono">${esc(srcLabel(v.source))}</span></div></td></tr>`;
   }).join("");
+}
 
+// candidate (manual flow): pick conflicts, build the changeset on approve
+function renderMergeCard(cl, preview) {
   $("#merge").innerHTML =
-    `<div class="mergecard"><div class="mc-head"><div class="eyebrow">${esc(cl.tier)} · ${esc(cl.signals.join(", "))}</div>` +
-    `<h3 class="serif">These look like the same person</h3><div class="members">${memberChips}</div></div>` +
-    `<table class="difftbl"><tbody>${rows}</tbody></table>` +
+    `<div class="mergecard"><div class="mc-head"><div class="eyebrow">${esc(cl.tier)} · ${esc((cl.signals || []).join(", "))}</div>` +
+    `<h3 class="serif">These look like the same person</h3><div class="members">${memberChips(preview.members)}</div></div>` +
+    `<table class="difftbl"><tbody>${diffRows(preview, null)}</tbody></table>` +
     `<div class="mc-foot"><span class="reassure">↺ Reversible — undo anytime</span><span class="spacer"></span>` +
     `<button class="btn ghost" id="dup-reject">Not a duplicate</button>` +
     `<button class="btn ghost" id="dup-skip">Skip</button>` +
@@ -172,25 +186,38 @@ function renderMergeCard(cl, preview) {
     dupPicks[opt.dataset.field] = { value: opt.dataset.val, source: opt.dataset.src };
     $("#dup-approve").disabled = preview.conflicts.some((c) => !(c in dupPicks));
   }));
-  $("#dup-approve").addEventListener("click", () => approveCluster(cl));
-  $("#dup-reject").addEventListener("click", () => rejectCluster(cl));
-  $("#dup-skip").addEventListener("click", () => { dupIndex++; showCluster(); });
+  $("#dup-approve").addEventListener("click", async () => {
+    const resolutions = Object.entries(dupPicks).map(([field, v]) => ({ field, chosen_value: v.value, chosen_source: v.source, rule: "user" }));
+    await postJSON("/api/merge", { member_ids: cl.member_ids, into: cl.member_ids[0], resolutions });
+    advance();
+  });
+  $("#dup-reject").addEventListener("click", async () => { await postJSON("/api/reject", { key: cl.key }); advance(); });
+  $("#dup-skip").addEventListener("click", () => { dupIndex++; showItem(); });
 }
 
-async function approveCluster(cl) {
-  const resolutions = Object.entries(dupPicks).map(([field, v]) => ({ field, chosen_value: v.value, chosen_source: v.source, rule: "user" }));
-  await postJSON("/api/merge", { member_ids: cl.member_ids, into: cl.member_ids[0], resolutions });
-  dupClusters.splice(dupIndex, 1);     // merged cluster done; next one slides into this index
-  afterReviewChange();
+// AI proposal: review the AI's proposed merge + its choices, approve or reject the whole proposal
+function renderProposalCard(p, preview) {
+  const aiPicks = {};
+  (p.operations || []).forEach((op) => { if (op.op === "resolve_field") aiPicks[op.field] = op.chosen_value; });
+  $("#merge").innerHTML =
+    `<div class="mergecard"><div class="mc-head"><div class="eyebrow"><span class="botbadge">🤖 AI proposal</span> · ${esc(p.created_by)}</div>` +
+    `<h3 class="serif">The AI proposes merging these</h3>` +
+    (p.rationale ? `<p class="prationale">“${esc(p.rationale)}”</p>` : "") +
+    `<div class="members">${memberChips(preview.members)}</div></div>` +
+    `<table class="difftbl"><tbody>${diffRows(preview, aiPicks)}</tbody></table>` +
+    `<div class="mc-foot"><span class="reassure">↺ Reversible — undo anytime</span><span class="spacer"></span>` +
+    `<button class="btn ghost" id="dup-reject">Reject</button>` +
+    `<button class="btn ghost" id="dup-skip">Skip</button>` +
+    `<button class="btn primary" id="dup-approve">Approve merge</button></div></div>`;
+  $("#dup-approve").addEventListener("click", async () => { await postJSON("/api/apply-proposal", { proposal_id: p.proposal_id }); advance(); });
+  $("#dup-reject").addEventListener("click", async () => { await postJSON("/api/dismiss-proposal", { proposal_id: p.proposal_id }); advance(); });
+  $("#dup-skip").addEventListener("click", () => { dupIndex++; showItem(); });
 }
-async function rejectCluster(cl) {
-  await postJSON("/api/reject", { key: cl.key });
-  dupClusters.splice(dupIndex, 1);
-  afterReviewChange();
-}
-function afterReviewChange() {
-  if (els.dupBadge) els.dupBadge.textContent = dupClusters.length || "—";
-  showCluster();
+
+function advance() {
+  dupItems.splice(dupIndex, 1);     // reviewed item done; the next slides into this index
+  if (els.dupBadge) els.dupBadge.textContent = dupItems.length || "—";
+  showItem();
   refreshStats();
   browse();          // contacts changed
 }

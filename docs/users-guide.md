@@ -9,9 +9,11 @@ data never leaves your device.
 > **vCard, Google Takeout, LinkedIn, Google CSV, Facebook** — and it parses them, gives each contact a
 > stable identity, **saves them into a local database**, lets you **search from the terminal or browse
 > them in a local web workspace** (`prm serve`), and **find & merge duplicate contacts** in that
-> workspace — review one at a time, pick the winner for any conflict, every merge reversible. Letting an
-> **AI** do that reviewing for you (propose → you review) is the next milestone (see
-> [Roadmap](roadmap.md)). This guide marks clearly what runs now vs. what's coming.
+> workspace — review one at a time, pick the winner for any conflict, every merge reversible. An **AI
+> can also propose the merges for you** (over a local MCP server) — it can only *propose*; you still
+> review and approve each one in the workspace. What's coming next: opt-in non-destructive re-import,
+> then a private overlay + custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
+> clearly what runs now vs. what's coming.
 
 ---
 
@@ -25,7 +27,7 @@ data never leaves your device.
 | **Find & merge duplicate contacts** in the workspace — review, reconcile, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
-| **AI**-assisted dedup — an AI proposes the merges, you review them | ⏳ next milestone |
+| **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 
 ---
 
@@ -232,8 +234,16 @@ Two guarantees worth knowing:
 - **Local only.** The daemon binds `127.0.0.1` — it is never reachable from the network. Your contact
   data does not leave the device (invariant **INV-1**). Stop the daemon with `Ctrl-C`.
 - **Reversible & non-destructive.** Your imported source records are never changed; a merge is a
-  decision layered on top, snapshotted before it's applied, and undoable. Letting an **AI** do the
-  reviewing for you is the next milestone (see [Roadmap](roadmap.md)).
+  decision layered on top, snapshotted before it's applied, and undoable.
+
+### Let an AI propose the merges (optional)
+
+An AI assistant can do the reviewing legwork: it scans for duplicates and **proposes** merges, which
+show up in this same Duplicates tab tagged **🤖 AI proposal** for you to approve or reject. The AI can
+only *propose* — it can never apply a merge. Set this up with the local MCP servers (see
+[`../mcp_servers/README.md`](../mcp_servers/README.md)). **A local AI is recommended**: once a cloud
+client can read your contacts, that data leaves the device — so the read tools warn, and the consent
+gate for cloud AI is a later milestone (see [Roadmap](roadmap.md)).
 
 ---
 
@@ -281,10 +291,11 @@ arrive with the private-overlay and dedup milestones.)
 
 ## What's next
 
-All five source parsers, the local **web workspace**, and **find-&-merge deduplication** (review,
-reconcile, undo) are done. The remaining v0.1 milestone is letting an **AI** do the dedup reviewing for
-you (it proposes; you approve), followed by the private overlay and custom relationship schema. See the
-[Roadmap](roadmap.md).
+All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review,
+reconcile, undo), and **AI-proposed merges over MCP** (the AI proposes; you approve) are done. The
+remaining v0.1 milestones are opt-in **non-destructive re-import** (with an orphan preview) and the
+`Architecture.md` conformance attestation, followed by the private overlay and custom relationship
+schema. See the [Roadmap](roadmap.md).
 
 ---
 

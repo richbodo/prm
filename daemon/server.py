@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, candidates, private_db, projection, shared_db
+from core import apply, candidates, private_db, projection, proposals, shared_db
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
@@ -82,6 +82,9 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
             return _json(400, {"error": "merge-preview needs ≥2 contact ids"})
         return _json(200, projection.preview_merge(home, ids))
 
+    if path == "/api/proposals":
+        return _json(200, {"proposals": proposals.list_proposals(home, status="pending")})
+
     if path.startswith(_CONTACT_PREFIX):
         contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
         if contact is None:
@@ -115,6 +118,25 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
         if path == "/api/undo":
             restored = apply.undo(home)
             return _json(200, {"ok": bool(restored), "restored": restored})
+
+        if path == "/api/apply-proposal":
+            cs = proposals.load(home, body.get("proposal_id") or "")
+            if cs is None:
+                return _json(404, {"error": "no such proposal"})
+            if cs.get("status") != "pending":
+                return _json(409, {"error": f"proposal already {cs.get('status')}"})
+            apply.apply_changeset(home, cs)                       # the human approves the AI's proposal
+            proposals.set_status(home, cs["proposal_id"], "applied")
+            return _json(200, {"ok": True, "proposal_id": cs["proposal_id"], "into": cs.get("into")})
+
+        if path == "/api/dismiss-proposal":
+            cs = proposals.load(home, body.get("proposal_id") or "")
+            if cs is None:
+                return _json(404, {"error": "no such proposal"})
+            proposals.set_status(home, cs["proposal_id"], "dismissed")
+            if cs.get("member_ids"):                              # also suppress the underlying candidate
+                apply.reject_cluster(home, candidates.cluster_key(cs["member_ids"]), by="manual:workspace")
+            return _json(200, {"ok": True})
     except (KeyError, ValueError) as exc:
         return _json(400, {"error": str(exc)})
 

@@ -175,3 +175,5 @@ footer.foot{display:none;}
 .btn.primary{background:var(--accent);border-color:var(--accent-d);color:#fff;font-weight:550;}
 .btn.primary:hover{background:var(--accent-d);}
 .btn.primary:disabled{background:#cdd8d2;border-color:#cdd8d2;color:#fff;cursor:not-allowed;}
+.botbadge{font-weight:600;color:var(--accent-d);background:var(--accent-w);border:1px solid #d8e7e0;border-radius:20px;padding:1px 9px;letter-spacing:0;text-transform:none;}
+.prationale{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:14px;margin:8px 0 12px;}
