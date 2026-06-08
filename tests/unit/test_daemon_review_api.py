@@ -20,6 +20,7 @@ sys.path.insert(0, str(REPO))
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
 from daemon import server  # noqa: E402
+from mcp_servers import tools as mcp_tools  # noqa: E402  (pure tools, no SDK import)
 
 
 def _body(resp) -> dict:
@@ -99,6 +100,40 @@ def test_undo_route_restores():
         assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 1
         assert _body(server.route("POST", "/api/undo", {}, home, {}))["ok"]
         assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 2   # merge reversed
+
+
+def _stage_ai_proposal(home):
+    cl = _confident(home)
+    return mcp_tools.submit_merge_proposal(home, cl["member_ids"], cl["member_ids"][0], rationale="same email")["proposal_id"]
+
+
+def test_proposals_route():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        pid = _stage_ai_proposal(home)
+        props = _body(server.route("GET", "/api/proposals", {}, home))["proposals"]
+        assert any(p["proposal_id"] == pid and p["created_by"] == "ai:local-dedup" and p["member_ids"] for p in props)
+
+
+def test_apply_proposal_route():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        pid = _stage_ai_proposal(home)
+        assert _body(server.route("POST", "/api/apply-proposal", {}, home, {"proposal_id": pid}))["ok"]
+        assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 1      # the AI's merge applied
+        assert not _body(server.route("GET", "/api/proposals", {}, home))["proposals"]   # no longer pending
+        assert server.route("POST", "/api/apply-proposal", {}, home, {"proposal_id": "nope"})[0] == 404
+
+
+def test_dismiss_proposal_route():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        pid = _stage_ai_proposal(home)
+        assert _body(server.route("POST", "/api/dismiss-proposal", {}, home, {"proposal_id": pid}))["ok"]
+        assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 2       # NOT merged
+        assert not _body(server.route("GET", "/api/proposals", {}, home))["proposals"]    # dismissed
+        # dismissing the proposal also suppresses the underlying deterministic candidate
+        assert not [c for c in _body(server.route("GET", "/api/candidates", {}, home))["clusters"] if c["tier"] == "confident"]
 
 
 def main() -> int:

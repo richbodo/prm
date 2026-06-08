@@ -28,7 +28,10 @@ def build_merge_changeset(home, contact_ids, into, *, resolutions=None,
     for r in (resolutions or []):
         ops.append(proposals.resolve_field_op(into, r["field"], r.get("chosen_value"),
                                                chosen_source=r.get("chosen_source"), rule=r.get("rule", "user")))
-    return proposals.build(ops, created_by=created_by, rationale=rationale)
+    cs = proposals.build(ops, created_by=created_by, rationale=rationale)
+    cs["member_ids"] = sorted(members)   # the canonical contacts being merged (for the review UI)
+    cs["into"] = into
+    return cs
 
 
 def apply_changeset(home, changeset: dict) -> dict:

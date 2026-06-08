@@ -108,7 +108,8 @@ def list_proposals(home, *, status: str | None = None) -> list:
             continue
         out.append({"proposal_id": cs.get("proposal_id"), "created_by": cs.get("created_by"),
                     "created_at": cs.get("created_at"), "status": cs.get("status"),
-                    "rationale": cs.get("rationale", ""), "operations": cs.get("operations", [])})
+                    "rationale": cs.get("rationale", ""), "member_ids": cs.get("member_ids", []),
+                    "into": cs.get("into"), "operations": cs.get("operations", [])})
     return out
 
 

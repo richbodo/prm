@@ -183,7 +183,19 @@ def preview_merge(home, contact_ids: list) -> dict:
             fields.append({"name": name, "kind": "single", "values": [{"value": opts[0]["value"], "source": opts[0]["source"]}]})
         else:
             fields.append({"name": name, "kind": "union", "values": [{"value": o["value"], "source": o["source"]} for o in opts]})
-    return {"member_ids": list(contact_ids), "fields": fields, "conflicts": conflicts}
+    members = []
+    for cid in contact_ids:
+        recs = groups.get(cid, [])
+        name = ""
+        for rec in recs:
+            for prop in rec["props"]:
+                if prop[0].lower() == "fn":
+                    name = _flatten(prop[3:] if len(prop) > 3 else [])
+                    break
+            if name:
+                break
+        members.append({"id": cid, "name": name, "source": recs[0]["source"] if recs else ""})
+    return {"member_ids": list(contact_ids), "members": members, "fields": fields, "conflicts": conflicts}
 
 
 def get_contact(home, contact_id: str) -> dict | None:
