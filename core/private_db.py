@@ -119,6 +119,19 @@ def field_resolutions(db_path) -> dict:
         con.close()
 
 
+def rejected_pairs(db_path) -> set:
+    """Cluster/pair keys the user marked 'not a duplicate' — excluded from re-detection so a dismissed
+    candidate never resurfaces (survives re-import, keyed on the stable cluster key)."""
+    if not Path(db_path).exists():
+        return set()
+    con = connect(db_path, read_only=True)
+    try:
+        return {k for (k,) in con.execute(
+            "SELECT pair_key FROM dedup_decisions WHERE decision = 'not_duplicate'")}
+    finally:
+        con.close()
+
+
 def source_priority(db_path) -> list:
     """The reconcile order from settings (falls back to the default if unset)."""
     con = connect(db_path, read_only=True)

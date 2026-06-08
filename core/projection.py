@@ -124,10 +124,16 @@ def _sort_key(c):
 
 
 # --------------------------------------------------------------------------- public read API
+def all_contacts(home) -> list:
+    """Every canonical contact, fully merged and name-ordered (named first). ``list_contacts`` is a
+    page of this; duplicate detection (``core.candidates``) consumes the whole set."""
+    return sorted(_all(home), key=_sort_key)
+
+
 def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
     """A name-ordered page of canonical contacts (named first). Each carries its contributing
     ``sources`` and ``member_count`` so the UI can show multi-source merges."""
-    contacts = sorted(_all(home), key=_sort_key)
+    contacts = all_contacts(home)
     page = contacts[offset:offset + limit]
     return {
         "total": len(contacts),
