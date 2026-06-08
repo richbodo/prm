@@ -45,7 +45,10 @@ exception** the app catches and handles:
 - **Runtime active-set explainer** (EX-H4) and **reversible return-to-PNA-mode** (EX-H5) — *mode
   only*: it stops future sharing but **cannot recall data already sent**.
 - **Best-effort consent propagation** to the human via the MCP `instructions` handshake (EX-H7) when
-  an agent, not the person, is the immediate caller.
+  an agent, not the person, is the immediate caller. **Live in v0.1:** both servers construct
+  `FastMCP(..., instructions=CLOUD_LLM_NOTICE)` (`mcp_servers/consent.py`), so a cooperating cloud
+  client is told to get the user's consent first and prefer a local model. It is honest signaling, not
+  a gate — a non-cooperating client can ignore it.
 
 The honest framing (EX-H8 strength profile): *once data crosses to a third party, PRM can guarantee
 nothing about the data itself; every real guarantee is about the **boundary** — consent, signaling,
@@ -57,10 +60,12 @@ sent" is `none`.
 
 - **INV-1 becomes precise:** it holds **in PNA mode**; `EX-CLOUD-LLM` is the one sanctioned exit, not
   a leak.
-- The handler is UI work in the **workspace** (consent gate, banner, return-to-PNA control), owed by
-  the time a cloud client can reach the **private** MCP surface — **v0.2**. (The v0.1 *read* surface
-  already returns contact PII to a connected cloud client, so the posture applies there too; v0.1's
-  stance is "local AI recommended" — see the implementation plan §6.)
+- The handler splits across two homes. The **server-side** half — EX-H7's `instructions` handshake — is
+  **done in v0.1** (both servers, `mcp_servers/consent.py`), because the v0.1 *read* surface already
+  returns contact PII to a connected cloud client. The **workspace** half (consent gate before connect,
+  persistent "not a PNA" banner, return-to-PNA-mode control — EX-H2–H5) is UI work owed by the time a
+  cloud client can reach the **private** MCP surface — **v0.2**. v0.1's standing stance remains "local AI
+  recommended" (see the implementation plan §6).
 - Building it lets PRM **demonstrate `EX-CLOUD-LLM` for PNT**, which today cites only
   `fellows_local_db`.
 

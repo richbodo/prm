@@ -173,8 +173,19 @@ mcp-install-deps:
     set -euo pipefail
     if [ ! -d {{mcp_venv}} ]; then python3 -m venv {{mcp_venv}}; fi
     {{mcp_venv}}/bin/pip install --upgrade pip --quiet
-    {{mcp_venv}}/bin/pip install -r mcp_servers/requirements.txt
+    {{mcp_venv}}/bin/pip install -r mcp_servers/requirements.txt --quiet
     echo "MCP venv ready ({{mcp_venv}}). See mcp_servers/README.md for Claude Desktop config."
+
+# Pass --data-dir DIR to bind a non-default home, --print to preview, --non-interactive to skip the prompt.
+# One-shot: register both PRM servers in Claude Desktop (backs up + merges, never clobbers; idempotent).
+[group('mcp')]
+mcp-install *args="": mcp-install-deps
+    @{{python}} -m mcp_servers.install {{args}}
+
+# Remove PRM's servers from Claude Desktop's config (backs up first; leaves other servers untouched).
+[group('mcp')]
+mcp-uninstall *args="":
+    @{{python}} -m mcp_servers.install --uninstall {{args}}
 
 # Run the read-only Shared-Data-Ops MCP server over stdio (./prm-data by default; pass --data-dir).
 [group('mcp')]
