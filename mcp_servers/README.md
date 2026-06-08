@@ -8,36 +8,38 @@ never apply them. Reviewing and approving merges stays in the PRM workspace.
 | `shared_data_ops.py` | `search_contacts`, `list_contacts`, `get_contact`, `get_provenance`, `find_duplicate_candidates` | **read-only** |
 | `dedup_ops.py` | `find_duplicate_candidates`, `submit_merge_proposal`, `list_proposals`, `get_proposal` | **propose-only** (no apply tool — INV-11 / AC-PRM-F) |
 
-## Install
+## Install into Claude Desktop — one command
 
 ```bash
-just mcp-install-deps        # creates mcp_servers/.venv and installs the mcp SDK
+just mcp-install
 ```
 
-The servers import `core/` + `cli.config` directly from the repo (stdlib-only), so the venv holds only
-the SDK — `core`'s deliberately tiny dependency surface stays clean.
+Sets up the SDK venv (if needed), then **safely registers both servers** in Claude Desktop's
+`claude_desktop_config.json`. It is **non-destructive by construction**: it **backs the file up** first,
+**merges** PRM's two entries under `mcpServers` (every other server *and* Claude Desktop's own
+`preferences` / `coworkUserFilesPath` are left untouched), writes atomically, and is **idempotent** —
+re-run it anytime (e.g. if Claude Desktop resets `mcpServers` during an update) to restore them. It
+shows a preview and asks before writing.
 
-## Run
+Then **fully quit Claude Desktop (⌘Q — closing the window isn't enough) and reopen it**; Settings ▸
+Developer ▸ *Local MCP servers* should list `prm-shared-data` and `prm-dedup`. Point the assistant at
+[`prompts/dedup.md`](prompts/dedup.md).
 
 ```bash
-just mcp-shared-data-ops     # read-only server  (stdio)
-just mcp-dedup-ops           # propose-only server (stdio)
+just mcp-install --data-dir DIR   # bind a non-default PRM home (else $PRM_HOME, else ./prm-data/)
+just mcp-install --print          # preview the change; write nothing
+just mcp-uninstall                # remove PRM's servers (backs up; leaves other servers alone)
 ```
 
-By themselves these just block on stdin waiting for JSON-RPC frames — useful for a test harness, not
-interactive use. For real use, register them with an MCP client (e.g. Claude Desktop).
+### Prefer to paste it yourself?
 
-### Get the Claude Desktop config (don't hand-write it)
-
-Each server prints its own `mcpServers` entry — **with the right absolute paths already filled in** —
-via `--print-config`. Run `just mcp-install-deps` first (the printed `command` points at that venv):
+Run `just mcp-install-deps` first, then print either server's ready-to-paste entry (absolute paths
+filled in) and add it via Claude Desktop → Settings ▸ Developer ▸ **Edit Config**:
 
 ```bash
 just mcp-shared-data-ops --print-config     # read-only server's entry
 just mcp-dedup-ops --print-config           # propose-only server's entry
 ```
-
-Each prints a complete, paste-ready block, e.g.:
 
 ```jsonc
 {
@@ -50,10 +52,20 @@ Each prints a complete, paste-ready block, e.g.:
 }
 ```
 
-Open Claude Desktop → Settings ▸ Developer ▸ **Edit Config**, and paste the entry under `mcpServers`
-(to add **both** servers, merge the two `prm-*` entries into one `mcpServers` object). Then **fully quit
-and reopen** Claude Desktop. Point at a different home with `--data-dir DIR` (or `$PRM_HOME`); the
-printed path follows it. Finally, point the assistant at `prompts/dedup.md`.
+(To add both by hand, merge the two `prm-*` entries into one `mcpServers` object.) Fully quit + reopen
+Claude Desktop afterward.
+
+## Run standalone (test harness)
+
+```bash
+just mcp-shared-data-ops     # read-only server  (stdio)
+just mcp-dedup-ops           # propose-only server (stdio)
+```
+
+By themselves these block on stdin waiting for JSON-RPC frames — useful for a protocol test harness,
+not interactive use. The servers import `core/` + `cli.config` directly from the repo (stdlib-only), so
+the SDK venv (`mcp_servers/.venv`, created by `just mcp-install-deps`) holds only the `mcp` SDK —
+`core`'s deliberately tiny dependency surface stays clean.
 
 ## ⚠️ Cloud vs local AI
 
