@@ -25,24 +25,35 @@ just mcp-dedup-ops           # propose-only server (stdio)
 ```
 
 By themselves these just block on stdin waiting for JSON-RPC frames — useful for a test harness, not
-interactive use. For real use, register them with an MCP client (e.g. Claude Desktop):
+interactive use. For real use, register them with an MCP client (e.g. Claude Desktop).
+
+### Get the Claude Desktop config (don't hand-write it)
+
+Each server prints its own `mcpServers` entry — **with the right absolute paths already filled in** —
+via `--print-config`. Run `just mcp-install-deps` first (the printed `command` points at that venv):
+
+```bash
+just mcp-shared-data-ops --print-config     # read-only server's entry
+just mcp-dedup-ops --print-config           # propose-only server's entry
+```
+
+Each prints a complete, paste-ready block, e.g.:
 
 ```jsonc
 {
   "mcpServers": {
     "prm-shared-data": {
-      "command": "/ABSOLUTE/PATH/prm/mcp_servers/.venv/bin/python",
-      "args": ["/ABSOLUTE/PATH/prm/mcp_servers/shared_data_ops.py", "--data-dir", "/ABSOLUTE/PATH/prm/prm-data"]
-    },
-    "prm-dedup": {
-      "command": "/ABSOLUTE/PATH/prm/mcp_servers/.venv/bin/python",
-      "args": ["/ABSOLUTE/PATH/prm/mcp_servers/dedup_ops.py", "--data-dir", "/ABSOLUTE/PATH/prm/prm-data"]
+      "command": "/Users/you/src/prm/mcp_servers/.venv/bin/python",
+      "args": ["/Users/you/src/prm/mcp_servers/shared_data_ops.py", "--data-dir", "/Users/you/src/prm/prm-data"]
     }
   }
 }
 ```
 
-(Or set `PRM_HOME` instead of `--data-dir`.) Then point the assistant at `prompts/dedup.md`.
+Open Claude Desktop → Settings ▸ Developer ▸ **Edit Config**, and paste the entry under `mcpServers`
+(to add **both** servers, merge the two `prm-*` entries into one `mcpServers` object). Then **fully quit
+and reopen** Claude Desktop. Point at a different home with `--data-dir DIR` (or `$PRM_HOME`); the
+printed path follows it. Finally, point the assistant at `prompts/dedup.md`.
 
 ## ⚠️ Cloud vs local AI
 

@@ -56,8 +56,17 @@ def build(home) -> "FastMCP":
 def main() -> None:
     ap = argparse.ArgumentParser(description="PRM Shared-Data-Ops MCP server (read-only).")
     ap.add_argument("--data-dir", help="PRM home (else $PRM_HOME, else ./prm-data/)")
+    ap.add_argument("--print-config", action="store_true",
+                    help="print the Claude Desktop JSON for this server and exit (don't run it)")
     args = ap.parse_args()
-    build(resolve_home(args.data_dir)).run()
+    home = resolve_home(args.data_dir)
+    if args.print_config:
+        from mcp_servers import claude_config
+        print(claude_config.block(claude_config.server_entry("prm-shared-data", "shared_data_ops.py", home.root)))
+        print("# Paste under \"mcpServers\" in claude_desktop_config.json (Settings ▸ Developer ▸ Edit Config), "
+              "then fully quit + reopen Claude Desktop.", file=sys.stderr)
+        return
+    build(home).run()
 
 
 if __name__ == "__main__":
