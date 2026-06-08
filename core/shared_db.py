@@ -190,7 +190,8 @@ def list_records(db_path, *, limit: int = 50, offset: int = 0) -> dict:
         rows = con.execute(
             "SELECT sr.source_record_id, f.name, f.email, f.org, sr.source "
             "FROM source_records sr JOIN contacts_fts f USING (source_record_id) "
-            "ORDER BY f.name, sr.source_record_id LIMIT ? OFFSET ?",
+            # Named contacts first (real exports carry many name-less rows), then A–Z case-insensitively.
+            "ORDER BY (f.name = ''), f.name COLLATE NOCASE, sr.source_record_id LIMIT ? OFFSET ?",
             (limit, offset),
         ).fetchall()
     finally:

@@ -129,6 +129,22 @@ def test_make_server_serves_over_socket():
             t.join(timeout=5)
 
 
+def test_list_records_orders_named_first():
+    # Real exports carry many name-less rows; the browse list must lead with named contacts.
+    with tempfile.TemporaryDirectory() as tmp:
+        vcf = Path(tmp) / "mixed.vcf"
+        vcf.write_text(
+            "BEGIN:VCARD\r\nVERSION:3.0\r\nEMAIL:zzz@example.com\r\nEND:VCARD\r\n"
+            "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Aaa Person\r\nEMAIL:aaa@example.com\r\nEND:VCARD\r\n",
+            encoding="utf-8")
+        home = resolve_home(Path(tmp) / "h")
+        ingest_mod.ingest([vcf], home=home, dry_run=False)
+        names = [r["name"] for r in shared_db.list_records(home.shared_db, limit=10)["records"]]
+        assert names[0] == "Aaa Person"                       # named first…
+        assert "" in names                                    # …name-less still present…
+        assert names.index("Aaa Person") < names.index("")    # …but after the named one
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []
