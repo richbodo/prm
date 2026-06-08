@@ -113,6 +113,19 @@ async function postJSON(path, body) {
   return res.json();
 }
 
+// Keep the nav badge + the "N to review" subtitle in sync with the live queue. Called on load AND
+// after every review (advance), so the header can't go stale as items are merged/rejected. The AI
+// count is derived from the remaining items, not a load-time snapshot.
+function updateDupCounts() {
+  const total = dupItems.length;
+  const ai = dupItems.filter((i) => i.kind === "proposal").length;
+  if (els.dupBadge) els.dupBadge.textContent = total || "—";
+  const sub = $("#dup-sub");
+  if (sub) sub.textContent = total
+    ? `${total} to review${ai ? ` · ${ai} from AI 🤖` : ""} · one at a time`
+    : "none found";
+}
+
 async function loadDuplicates() {
   try {
     const [props, cands] = await Promise.all([api("/api/proposals"), api("/api/candidates")]);
@@ -120,11 +133,7 @@ async function loadDuplicates() {
     const detItems = (cands.clusters || []).map((c) => ({ kind: "candidate", ...c }));
     dupItems = aiItems.concat(detItems);            // AI proposals first — review the AI's work, then the detector
     dupIndex = 0;
-    if (els.dupBadge) els.dupBadge.textContent = dupItems.length || "—";
-    const sub = $("#dup-sub");
-    if (sub) sub.textContent = dupItems.length
-      ? `${dupItems.length} to review${aiItems.length ? ` · ${aiItems.length} from AI 🤖` : ""} · one at a time`
-      : "none found";
+    updateDupCounts();
     showItem();
   } catch { /* not ready */ }
 }
@@ -216,7 +225,7 @@ function renderProposalCard(p, preview) {
 
 function advance() {
   dupItems.splice(dupIndex, 1);     // reviewed item done; the next slides into this index
-  if (els.dupBadge) els.dupBadge.textContent = dupItems.length || "—";
+  updateDupCounts();                // badge + "N to review" subtitle, both kept in sync (not just the badge)
   showItem();
   refreshStats();
   browse();          // contacts changed
