@@ -4,33 +4,81 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PRM workspace</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%233a6f5c'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <span class="dot" title="local-only — contact data never leaves this device"></span>
-      PRM <span class="muted">workspace</span>
+<div class="app">
+
+  <!-- ============ SIDEBAR / MENU ============ -->
+  <aside class="sidebar">
+    <div class="brand"><span class="mark serif">P<em>R</em>M</span><span class="ver">v0.1</span></div>
+    <div class="tagline">personal relationship manager</div>
+
+    <div class="device" title="Your contact data never leaves this device (INV-1).">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span><b>Kept on this device</b><br>nothing leaves your machine</span>
     </div>
-    <input id="q" type="search" placeholder="Search name · email · org · notes…" autocomplete="off" autofocus />
-    <div id="stat" class="muted" aria-live="polite"></div>
-  </header>
 
+    <nav class="menu">
+      <div class="navlabel">Library</div>
+      <div class="navitem active" data-view="contacts">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/></svg>
+        Contacts
+      </div>
+      <div class="navitem" data-view="duplicates">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><circle cx="16" cy="16" r="4.2"/><path d="M11 11l2 2"/></svg>
+        Duplicates <span class="tag" style="margin-left:auto;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)">next</span>
+      </div>
+      <div class="navlabel">Coming soon</div>
+      <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="9" r="2.6"/><circle cx="16" cy="9" r="2.6"/><path d="M3 19c0-2.5 1.8-4 4-4m6 4c0-2.5 1.8-4 4-4"/></svg> Groups <span class="tag">v0.2</span></div>
+      <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h9l4 4v12H6z"/><path d="M14 4v5h5M9 13h6M9 16h4"/></svg> Notes <span class="tag">v0.2</span></div>
+    </nav>
+
+    <div class="sidefoot">
+      <div class="stat"><span>Contacts</span><b id="stat-contacts">—</b></div>
+      <div class="stat"><span>Sources</span><b id="stat-sources">—</b></div>
+      <div class="stat"><span>Last import</span><b id="stat-import">—</b></div>
+      <button class="resetbtn" id="reset" title="Clear the view (always reachable)">↺ Reset view</button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
   <main>
-    <section id="list" aria-label="Contacts">
-      <ol id="results"></ol>
-      <button id="more" hidden>Load more</button>
+
+    <!-- ---- CONTACTS ---- -->
+    <section class="view show" id="contacts">
+      <div class="topbar">
+        <h1 class="serif">Contacts <span class="sub" id="topsub"></span></h1>
+        <div class="searchwrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="q" type="search" placeholder="Search name · email · org · notes…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="split">
+        <div class="list">
+          <div class="listhead" id="listhead">All contacts</div>
+          <ol class="rows" id="rows"></ol>
+        </div>
+        <div class="detail" id="detail"><p class="ph">Select a contact to see its fields and where each value came from.</p></div>
+      </div>
     </section>
-    <section id="detail" aria-label="Contact detail">
-      <p class="placeholder">Select a contact to see its fields and provenance.</p>
+
+    <!-- ---- DUPLICATES (read-only placeholder until the dedupe milestone) ---- -->
+    <section class="view" id="duplicates">
+      <div class="topbar"><h1 class="serif">Duplicates</h1></div>
+      <div class="empty">
+        <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.5"/><circle cx="16" cy="16" r="4.5"/><path d="M11 11l2 2"/></svg>
+        <h2 class="serif">Duplicate review is the next milestone</h2>
+        <p>Find contacts that look like the same person and merge them — multi-valued fields combine,
+        conflicting ones (like a name) you reconcile, and every merge is reversible. This surface is
+        designed and lands with the dedupe milestone (M3).</p>
+        <span class="next">coming next · M3</span>
+      </div>
     </section>
+
   </main>
-
-  <footer>
-    <span class="muted">read-only · v0.1 (M2) · <a href="/api/status">/api/status</a></span>
-    <button id="reset" title="Clear the view">reset</button>
-  </footer>
-
-  <script src="/app.js"></script>
+</div>
+<script src="/app.js"></script>
 </body>
 </html>
