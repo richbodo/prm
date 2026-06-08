@@ -18,10 +18,12 @@ from mcp.server.fastmcp import FastMCP  # noqa: E402  (SDK; isolated venv — se
 
 from cli.config import resolve_home  # noqa: E402
 from mcp_servers import tools  # noqa: E402
+from mcp_servers.consent import CLOUD_LLM_NOTICE  # noqa: E402
 
 
 def build(home) -> "FastMCP":
-    mcp = FastMCP("prm-shared-data-ops")
+    # `instructions` carries the EX-H7 best-effort cloud-LLM consent notice to a cooperating client.
+    mcp = FastMCP("prm-shared-data-ops", instructions=CLOUD_LLM_NOTICE)
 
     @mcp.tool()
     def search_contacts(query: str, limit: int = 20) -> dict:

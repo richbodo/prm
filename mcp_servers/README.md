@@ -51,4 +51,10 @@ cloud model) can read it, your data leaves the device — PNT's `AC-MCP-A` / `EX
 AI is recommended.** An MCP server *cannot* detect or restrict which LLM consumes its output (see
 [`../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md`](../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md)),
 so this boundary is held by your consent and honest signaling — never by trying to identify the client.
-The full cloud-AI consent handler is a v0.2 milestone (see [`../docs/roadmap.md`](../docs/roadmap.md)).
+
+Both servers carry that signal at the protocol level: each is built with an MCP `instructions` handshake
+([`consent.py`](consent.py), the EX-H7 best-effort clause) telling a *cooperating* cloud client to get
+your explicit consent before reading and to prefer a local model. It's honest signaling, not a gate — a
+non-cooperating client can ignore it. The **full** cloud-AI consent handler (a workspace consent gate,
+a persistent "not a PNA" banner, a return-to-PNA-mode control) is a v0.2 milestone (see
+[`../docs/roadmap.md`](../docs/roadmap.md)).

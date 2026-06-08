@@ -18,10 +18,12 @@ from mcp.server.fastmcp import FastMCP  # noqa: E402
 
 from cli.config import resolve_home  # noqa: E402
 from mcp_servers import tools  # noqa: E402
+from mcp_servers.consent import CLOUD_LLM_NOTICE  # noqa: E402
 
 
 def build(home) -> "FastMCP":
-    mcp = FastMCP("prm-dedup-ops")
+    # `instructions` carries the EX-H7 best-effort cloud-LLM consent notice to a cooperating client.
+    mcp = FastMCP("prm-dedup-ops", instructions=CLOUD_LLM_NOTICE)
 
     @mcp.tool()
     def find_duplicate_candidates(limit: int = 50) -> dict:
