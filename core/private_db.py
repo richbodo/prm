@@ -97,6 +97,72 @@ def seed_identities(db_path, source_record_ids, *, created_at: str | None = None
     return seeded
 
 
+# --------------------------------------------------------------------------- write (apply)
+def apply_operations(db_path, operations) -> list:
+    """Run a changeset's operations in **one transaction** (the daemon calls this under the file-lock,
+    after snapshotting). Returns the applied ops for the audit log; rolls back on any error.
+
+    - ``merge``: re-point the given ``source_record_ids`` at ``into``; orphaned contacts (now with no
+      records) are deleted, cascading their dangling ``field_resolutions``.
+    - ``resolve_field``: upsert the chosen value (a manual edit is just ``rule="user"``).
+    - ``flag_conflict``: record the field ``needs_review`` (default value = the first candidate).
+    """
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        cur = con.cursor()
+        applied = []
+        try:
+            for op in operations:
+                kind = op.get("op")
+                if kind == "merge":
+                    into = op["into"]
+                    cur.execute("INSERT OR IGNORE INTO contacts(contact_id, created_at) VALUES (?, ?)", (into, _now_iso()))
+                    for srid in op["source_record_ids"]:
+                        cur.execute("UPDATE identity_map SET contact_id = ? WHERE source_record_id = ?", (into, srid))
+                    cur.execute("DELETE FROM contacts WHERE contact_id NOT IN (SELECT contact_id FROM identity_map)")
+                elif kind == "resolve_field":
+                    cur.execute(
+                        "INSERT OR REPLACE INTO field_resolutions"
+                        "(contact_id, field, chosen_value, chosen_source, rule, status, resolved_by, resolved_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (op["contact_id"], op["field"], op.get("chosen_value"), op.get("chosen_source"),
+                         op.get("rule", "user"), op.get("status", "applied"), op.get("resolved_by"), _now_iso()),
+                    )
+                elif kind == "flag_conflict":
+                    default = (op.get("candidates") or [{}])[0]
+                    cur.execute(
+                        "INSERT OR REPLACE INTO field_resolutions"
+                        "(contact_id, field, chosen_value, chosen_source, rule, status, resolved_at) "
+                        "VALUES (?, ?, ?, ?, 'needs_review', 'needs_review', ?)",
+                        (op["contact_id"], op["field"], default.get("value"), default.get("source"), _now_iso()),
+                    )
+                else:
+                    raise PrivateDbError(f"unknown changeset op: {kind!r}")
+                applied.append(op)
+            con.commit()
+        except Exception:
+            con.rollback()
+            raise
+    finally:
+        con.close()
+    return applied
+
+
+def record_decision(db_path, pair_key: str, decision: str) -> None:
+    """Persist a dedup decision ('not_duplicate' | 'merged') keyed on the stable cluster key."""
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        con.execute(
+            "INSERT OR REPLACE INTO dedup_decisions(pair_key, decision, decided_at) VALUES (?, ?, ?)",
+            (pair_key, decision, _now_iso()),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+
 # --------------------------------------------------------------------------- read
 def identity_map(db_path) -> dict:
     """{source_record_id: contact_id} for every mapped record."""
