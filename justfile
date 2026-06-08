@@ -114,10 +114,9 @@ test-all: test test-fixtures
 demo:
     {{prm}} init --demo
 
-# Needs data first — run `just demo`, or `just ingest <file>`.
-# Serve the local read-only workspace at http://127.0.0.1:{{port}} (Ctrl-C to stop).
+# Serve the read-only workspace at http://127.0.0.1:8770 (default). Pass a port: `just serve 9000`. Needs data first (`just demo`); Ctrl-C to stop.
 [group('dev')]
-serve:
+serve port=port:
     {{prm}} serve --port {{port}}
 
 # Open the workspace in your browser (start `just serve` in another terminal first).
@@ -135,6 +134,11 @@ ingest *paths:
 dry-run *paths:
     {{prm}} import {{paths}} --dry-run
 
+# Re-import an updated export — preview changes, then confirm. E.g. `just reimport ~/Downloads/takeout.zip --source google_takeout`.
+[group('dev')]
+reimport *paths:
+    {{prm}} reimport {{paths}}
+
 # Show PRM home + store status.
 [group('dev')]
 status:
@@ -145,7 +149,7 @@ status:
 search *args:
     {{prm}} search {{args}}
 
-# Free port {{port}} if a previous `just serve` didn't shut down cleanly.
+# Free port 8770 if a previous `just serve` didn't shut down cleanly.
 [group('dev')]
 port:
     @lsof -ti:{{port}} | xargs -r kill -9 2>/dev/null || true
