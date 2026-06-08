@@ -14,7 +14,7 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from core import shared_db
+from core import private_db, shared_db
 from core.lock import file_lock
 
 from .config import PrmHome
@@ -133,10 +133,15 @@ def collect(paths, *, source: str | None = None) -> list[PathResult]:
 
 def load_into(home: PrmHome, contacts: list[CanonicalContact], *,
               ingested_at: str | None = None) -> shared_db.LoadResult:
-    """Persist canonical contacts into the home's shared.db, under the single-instance lock."""
+    """Persist canonical contacts into shared.db and seed the private store's 1:1 identity baseline,
+    both under the single-instance lock (AC-PRM-C). Seeding is idempotent and preserves any prior
+    merge decisions, so re-import re-attaches by the stable source_record_id (plan §11 M3a)."""
     home.create()
     with file_lock(home.lock_file):
-        return shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
+        result = shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
+        srids = [shared_db.source_record_id(c.source, c.stable_key.as_str()) for c in contacts]
+        private_db.seed_identities(home.private_db, srids, created_at=ingested_at)
+        return result
 
 
 def ingest(paths, *, source: str | None = None, home: PrmHome | None = None,
