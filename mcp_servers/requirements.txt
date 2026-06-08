@@ -1,0 +1,3 @@
+# PRM MCP servers — installed into an isolated mcp_servers/.venv (just mcp-install-deps), so core/'s
+# tiny-deps boundary stays clean. The servers import core/ + cli.config (stdlib-only) via sys.path.
+mcp>=1.2
