@@ -18,3 +18,13 @@ around cloud AI, what the protocol can and can't enforce, and how PRM stays an h
 - [**MCP cannot identify the consuming LLM → `EX-CLOUD-LLM`**](mcp-cannot-identify-the-consuming-llm.md)
   — an MCP server can't tell whether a cloud or local model is reading its output, so PRM handles
   cloud AI with a *consented, reversible exception*, not detection or blocking.
+
+## Dedupe & merge
+
+How PRM finds and merges duplicate contacts — the deterministic + AI flows, the reversible merge model,
+and the stdlib detection algorithm.
+
+- [**Contact dedupe — one pipeline, two authors, reversible by construction**](dedupe-design.md)
+  — one detection core + one review/apply, with a deterministic UI (M3) and an LLM (M4) as
+  interchangeable proposal authors; immutable-raw + projection makes merges reversible; field-level
+  Update rides the same substrate.
