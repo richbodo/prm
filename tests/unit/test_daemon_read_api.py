@@ -88,8 +88,8 @@ def test_route_search_and_contacts_and_detail():
         an_id = listing["records"][0]["id"]
 
         detail = _body(server.route("GET", f"/api/contact/{an_id}", {}, home))
-        assert detail["id"] == an_id and "fields" in detail and "provenance" in detail
-        assert all({"name", "params", "values"} <= f.keys() for f in detail["fields"])
+        assert detail["id"] == an_id and detail["member_count"] == 1 and "fields" in detail
+        assert all({"name", "kind", "values"} <= f.keys() for f in detail["fields"])   # projection shape
 
         # search a token that exists in the fixture's names
         name = next((r["name"] for r in listing["records"] if r["name"]), "")
@@ -101,7 +101,7 @@ def test_route_search_and_contacts_and_detail():
 def test_route_errors():
     with tempfile.TemporaryDirectory() as tmp:
         home = _seeded_home(tmp)
-        assert server.route("POST", "/api/status", {}, home)[0] == 405          # read-only surface
+        assert server.route("PUT", "/api/status", {}, home)[0] == 405            # unsupported method
         assert server.route("GET", "/api/contact/missing", {}, home)[0] == 404
         assert server.route("GET", "/api/nope", {}, home)[0] == 404
     with tempfile.TemporaryDirectory() as tmp:
