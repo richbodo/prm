@@ -92,6 +92,10 @@ resolution; full concurrent-AI merge story over git.
 - **The responder app** — the AI that receives, validates, and drafts replies to inbound PNA
   queries — is a **separate future reference design** (skeptical-by-construction, draft-never-send,
   local-AI-required). v0.4 builds only the querier half.
+- **Full contact CRUD.** Field-level **Update** arrives *with* v0.1 dedupe — a `resolve_field` override
+  is also a manual field edit (see [`design-notes/dedupe-design.md`](design-notes/dedupe-design.md)).
+  **Create** (user-authored contacts → a `local_records` store) and **Delete** (a projection-filtered
+  tombstone) are a follow-on on that same substrate; Create lands with v0.2's private overlay.
 - Per-vendor live API connectors (Google People API, MS Graph).
 - Federated / peer-to-peer reads between PNAs on different devices.
 - **An installer** (the normal path for non-developers; writes the chosen `data_dir` into the config
