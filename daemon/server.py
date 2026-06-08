@@ -1,13 +1,13 @@
-"""Read-only local daemon (v0.1 M2): serves the workspace SPA + a JSON read API over ``shared.db``.
+"""The local daemon: serves the workspace SPA + the JSON API over the two stores.
 
-Read path only — every store access goes through ``core.shared_db`` opened **read-only** (INV-2).
-The write surface (apply approved proposals, the daemon as the only writer of private data) lands
-with M3 and will add ``POST`` routes guarded by the single-instance file-lock.
+Reads go through ``core.projection`` (the canonical, merged contact a user sees); duplicate review goes
+through ``core.candidates`` (detect) and ``core.apply`` (apply / dismiss / undo). The daemon is the
+**only writer of canonical private data** — every write takes the AC-PRM-C file-lock and snapshots
+first (handled in ``core.apply``). It binds **127.0.0.1 only**: a local tool, never a network service
+(INV-1).
 
-The request router (``route``) is a **pure function** of ``(method, path, query, home)`` returning
-``(status, content_type, body)`` — no sockets, no globals — so the API is unit-testable without
-binding a port. ``serve()`` is the thin ``http.server`` glue around it. The server binds
-**127.0.0.1 only**: the workspace is a local tool, never a network service (INV-1).
+The router (``route``) is a pure function of ``(method, path, query, home, body)`` → ``(status,
+content_type, body)`` — no sockets — so the whole API is unit-testable without binding a port.
 """
 
 from __future__ import annotations
@@ -18,15 +18,12 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from cli.jcard import JCard
-from core import shared_db
+from core import apply, candidates, private_db, projection, shared_db
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
 _API_PREFIX = "/api/"
 _CONTACT_PREFIX = "/api/contact/"
-
-# Static assets the SPA shell is allowed to request (explicit allow-list — no path traversal).
 _STATIC = {"/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/styles.css": "styles.css"}
 _CTYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
            ".css": "text/css; charset=utf-8"}
@@ -44,54 +41,87 @@ def _int(values, default: int) -> int:
         return default
 
 
-def _render_contact(record: dict) -> dict:
-    """Parse the stored jCard into a render-friendly shape (the daemon owns jCard rendering)."""
-    jc = JCard.from_json(record["raw_jcard"])
-    return {
-        "id": record["id"],
-        "source": record["source"],
-        "source_uid": record["source_uid"],
-        "stable_key": record["stable_key"],
-        "ingested_at": record["ingested_at"],
-        "fn": jc.first_value("fn"),
-        "fields": [{"name": p.name, "params": p.params, "values": p.values} for p in jc.properties],
-        "provenance": record["provenance"],
-    }
-
-
-# --------------------------------------------------------------------------- pure router
-def route(method: str, path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
-    """Pure read-only API router. ``query`` is the ``parse_qs`` dict ({name: [values]})."""
-    if method != "GET":
-        return _json(405, {"error": "method not allowed", "method": method})
-
+# --------------------------------------------------------------------------- GET (read)
+def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
     db = home.shared_db
     if path == "/api/status":
         if not db.exists():
             return _json(200, {"shared_db": False, "home": str(home.root)})
-        return _json(200, {"shared_db": True, "home": str(home.root), **shared_db.stats(db)})
+        out = {"shared_db": True, "home": str(home.root), **shared_db.stats(db)}
+        if home.private_db.exists():
+            p = private_db.stats(home.private_db)
+            out["contacts"] = p["contacts"]              # canonical (post-merge) count
+            out["merged_contacts"] = p["merged_contacts"]
+        return _json(200, out)
 
     if not db.exists():
         return _json(409, {"error": "no shared.db yet — run `prm import` first"})
 
     if path == "/api/search":
         q = (query.get("q") or [""])[0]
-        rows = shared_db.search(db, q, limit=_int(query.get("limit"), 20))
-        return _json(200, {"query": q,
-                           "results": [{"id": rid, "name": n, "email": e, "org": o} for n, e, o, rid in rows]})
+        imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+        seen, results = set(), []
+        for name, email, org, srid in shared_db.search(db, q, limit=_int(query.get("limit"), 30)):
+            cid = imap.get(srid, srid)                   # map the raw hit to its canonical contact
+            if cid in seen:
+                continue
+            seen.add(cid)
+            results.append({"id": cid, "name": name, "email": email, "org": org})
+        return _json(200, {"query": q, "results": results})
 
     if path == "/api/contacts":
-        return _json(200, shared_db.list_records(db, limit=_int(query.get("limit"), 50),
-                                                 offset=_int(query.get("offset"), 0)))
+        return _json(200, projection.list_contacts(home, limit=_int(query.get("limit"), 50),
+                                                    offset=_int(query.get("offset"), 0)))
+
+    if path == "/api/candidates":
+        return _json(200, {"clusters": candidates.find_duplicate_candidates(home)})
 
     if path.startswith(_CONTACT_PREFIX):
-        rid = path[len(_CONTACT_PREFIX):]
-        record = shared_db.get_record(db, rid)
-        if record is None:
-            return _json(404, {"error": "no such contact", "id": rid})
-        return _json(200, _render_contact(record))
+        contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
+        if contact is None:
+            return _json(404, {"error": "no such contact"})
+        return _json(200, contact)
 
     return _json(404, {"error": "not found", "path": path})
+
+
+# --------------------------------------------------------------------------- POST (write — review)
+def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
+    if not home.shared_db.exists():
+        return _json(409, {"error": "no shared.db yet"})
+    try:
+        if path == "/api/merge":
+            members, into = body.get("member_ids") or [], body.get("into")
+            if not into or into not in members:
+                return _json(400, {"error": "merge needs member_ids and an `into` among them"})
+            cs = apply.build_merge_changeset(home, members, into, resolutions=body.get("resolutions") or [],
+                                             created_by="manual:workspace", rationale=body.get("rationale", ""))
+            result = apply.apply_changeset(home, cs)
+            return _json(200, {"ok": True, "into": into, "proposal_id": result["proposal_id"]})
+
+        if path == "/api/reject":
+            key = body.get("key")
+            if not key:
+                return _json(400, {"error": "reject needs a cluster `key`"})
+            apply.reject_cluster(home, key, by="manual:workspace")
+            return _json(200, {"ok": True})
+
+        if path == "/api/undo":
+            restored = apply.undo(home)
+            return _json(200, {"ok": bool(restored), "restored": restored})
+    except (KeyError, ValueError) as exc:
+        return _json(400, {"error": str(exc)})
+
+    return _json(404, {"error": "not found", "path": path})
+
+
+def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None = None) -> tuple[int, str, bytes]:
+    """Pure API router. ``query`` is the ``parse_qs`` dict; ``body`` is the parsed JSON for POST."""
+    if method == "GET":
+        return _get(path, query, home)
+    if method == "POST":
+        return _post(path, home, body or {})
+    return _json(405, {"error": "method not allowed", "method": method})
 
 
 def _static(path: str) -> tuple[int, str, bytes]:
@@ -106,37 +136,49 @@ def _static(path: str) -> tuple[int, str, bytes]:
 
 # --------------------------------------------------------------------------- socket glue
 class _Handler(BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 (http.server API)
-        parsed = urlparse(self.path)
-        if parsed.path.startswith(_API_PREFIX):
-            status, ctype, body = route("GET", parsed.path, parse_qs(parsed.query), self.server.home)
-        else:
-            status, ctype, body = _static(parsed.path)
+    def _send(self, status: int, ctype: str, body: bytes) -> None:
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args) -> None:  # quiet; the daemon is a local tool
+    def do_GET(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if parsed.path.startswith(_API_PREFIX):
+            self._send(*route("GET", parsed.path, parse_qs(parsed.query), self.server.home))
+        else:
+            self._send(*_static(parsed.path))
+
+    def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if not parsed.path.startswith(_API_PREFIX):
+            self._send(404, "text/plain; charset=utf-8", b"not found")
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        except (ValueError, TypeError):
+            self._send(*_json(400, {"error": "invalid JSON body"}))
+            return
+        self._send(*route("POST", parsed.path, parse_qs(parsed.query), self.server.home, body))
+
+    def log_message(self, *args) -> None:  # quiet; a local tool
         pass
 
 
 def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> ThreadingHTTPServer:
-    """Build (but don't run) the read-only daemon bound to ``host:port``. Localhost only (INV-1).
-
-    Split from ``serve()`` so tests can bind an ephemeral port (``port=0``), drive it over a real
-    socket, and ``shutdown()`` cleanly. Read ``httpd.server_address`` for the actual bound port.
-    """
+    """Build (but don't run) the daemon bound to ``host:port``. Localhost only (INV-1). Split from
+    ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly."""
     httpd = ThreadingHTTPServer((host, port), _Handler)
-    httpd.home = home  # read by _Handler.do_GET via self.server
+    httpd.home = home
     return httpd
 
 
 def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> None:
-    """Run the read-only workspace daemon until interrupted."""
+    """Run the workspace daemon until interrupted."""
     httpd = make_server(home, host=host, port=port)
-    print(f"PRM workspace → http://{host}:{port}   (serving {home.root}, read-only)")
+    print(f"PRM workspace → http://{host}:{port}   (serving {home.root})")
     print("Ctrl-C to stop.")
     try:
         httpd.serve_forever()

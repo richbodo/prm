@@ -119,3 +119,10 @@ footer.foot{display:none;}
   .split{grid-template-columns:1fr;}
   .list{border-right:none;border-bottom:1px solid var(--line);max-height:42vh;}
 }
+
+/* ---- canonical-projection detail + merged badges (M3d) ---- */
+.navitem .count{margin-left:auto;font-size:11.5px;font-variant-numeric:tabular-nums;background:var(--clay-w);color:var(--clay);border-radius:20px;padding:1px 8px;}
+.fval{font-size:14.5px;padding:1px 0;}
+.fval .vsrc{font-size:11px;color:var(--faint);margin-left:6px;}
+.kindtag{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-d);background:var(--accent-w);border-radius:10px;padding:1px 7px;margin-left:7px;font-weight:500;}
+.chip.merged{background:var(--accent-w);color:var(--accent-d);border-color:#d8e7e0;margin-left:7px;font-variant-numeric:tabular-nums;}
