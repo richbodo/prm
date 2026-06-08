@@ -147,6 +147,45 @@ def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
     }
 
 
+def preview_merge(home, contact_ids: list) -> dict:
+    """Preview merging several canonical contacts into one — which fields **union**, which stay
+    **single**, and which **conflict** (a single-valued field with >1 distinct value the reviewer must
+    pick). Read-only; drives the Duplicates review surface (M3d). For each conflict it suggests the
+    survivorship default (source priority → most-recent) but pre-selects nothing."""
+    groups = _records_by_contact(home)
+    members = [rec for cid in contact_ids for rec in groups.get(cid, [])]
+    rank = {s: i for i, s in enumerate(private_db.source_priority(home.private_db) if home.private_db.exists()
+                                       else private_db.DEFAULT_SOURCE_PRIORITY)}
+    by_name: dict[str, list] = {}
+    for rec in members:
+        for prop in rec["props"]:
+            name = prop[0].lower()
+            if name in _HIDDEN:
+                continue
+            value = _flatten(prop[3:] if len(prop) > 3 else [])
+            if value:
+                by_name.setdefault(name, []).append({"value": value, "source": rec["source"], "at": rec["ingested_at"] or ""})
+
+    fields, conflicts = [], []
+    for name, items in by_name.items():
+        distinct = {}
+        for i in items:
+            distinct.setdefault(i["value"], i)
+        opts = list(distinct.values())
+        if name in RECONCILE_FIELDS and len(opts) > 1:
+            best_rank = min(rank.get(o["source"], 999) for o in opts)
+            default = max((o for o in opts if rank.get(o["source"], 999) == best_rank), key=lambda o: o["at"])
+            fields.append({"name": name, "kind": "conflict",
+                           "options": [{"value": o["value"], "source": o["source"]} for o in opts],
+                           "suggested": {"value": default["value"], "source": default["source"]}})
+            conflicts.append(name)
+        elif name in RECONCILE_FIELDS:
+            fields.append({"name": name, "kind": "single", "values": [{"value": opts[0]["value"], "source": opts[0]["source"]}]})
+        else:
+            fields.append({"name": name, "kind": "union", "values": [{"value": o["value"], "source": o["source"]} for o in opts]})
+    return {"member_ids": list(contact_ids), "fields": fields, "conflicts": conflicts}
+
+
 def get_contact(home, contact_id: str) -> dict | None:
     """One merged canonical contact (or ``None``). Computes only that contact's group."""
     groups = _records_by_contact(home)

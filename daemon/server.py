@@ -76,6 +76,12 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
     if path == "/api/candidates":
         return _json(200, {"clusters": candidates.find_duplicate_candidates(home)})
 
+    if path == "/api/merge-preview":
+        ids = [i for i in (query.get("ids") or [""])[0].split(",") if i]
+        if len(ids) < 2:
+            return _json(400, {"error": "merge-preview needs ≥2 contact ids"})
+        return _json(200, projection.preview_merge(home, ids))
+
     if path.startswith(_CONTACT_PREFIX):
         contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
         if contact is None:

@@ -8,7 +8,7 @@
 const $ = (s) => document.querySelector(s);
 const els = {
   q: $("#q"), rows: $("#rows"), detail: $("#detail"), listhead: $("#listhead"),
-  topsub: $("#topsub"), reset: $("#reset"), dupBadge: $("#dup-badge"), dupCount: $("#dup-count"),
+  topsub: $("#topsub"), reset: $("#reset"), dupBadge: $("#dup-badge"),
   statContacts: $("#stat-contacts"), statSources: $("#stat-sources"), statImport: $("#stat-import"),
 };
 
@@ -104,18 +104,95 @@ async function selectContact(id, li) {
     `<table class="kv">${rows}</table>`;
 }
 
-// ---- duplicates (count now; full review surface is M3d-ii) ----
+// ---- duplicates review (one at a time, confident-first, neutral, reversible) ----
+let dupClusters = [], dupIndex = 0, dupPicks = {};
+
+async function postJSON(path, body) {
+  const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`${res.status} ${path}`);
+  return res.json();
+}
+
 async function loadDuplicates() {
   try {
-    const { clusters } = await api("/api/candidates");
-    const confident = clusters.filter((c) => c.tier === "confident").length;
-    if (els.dupBadge) els.dupBadge.textContent = clusters.length ? String(clusters.length) : "—";
-    if (els.dupCount) {
-      els.dupCount.textContent = clusters.length
-        ? `${clusters.length} possible duplicate${clusters.length > 1 ? "s" : ""} found — ${confident} confident.`
-        : "No duplicates detected.";
+    const { clusters } = await api("/api/candidates");   // detector orders confident → review → strong → fuzzy
+    dupClusters = clusters;
+    dupIndex = 0;
+    if (els.dupBadge) els.dupBadge.textContent = clusters.length || "—";
+    const conf = clusters.filter((c) => c.tier === "confident").length;
+    const sub = $("#dup-sub");
+    if (sub) sub.textContent = clusters.length ? `${clusters.length} possible · ${conf} confident · one at a time` : "none found";
+    showCluster();
+  } catch { /* detection not ready */ }
+}
+
+async function showCluster() {
+  const merge = $("#merge"), prog = $("#dup-progress");
+  if (dupIndex >= dupClusters.length) {
+    if (prog) prog.hidden = true;
+    merge.innerHTML = `<div class="empty"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><h2 class="serif">All caught up</h2><p>No more duplicates to review.</p></div>`;
+    return;
+  }
+  const cl = dupClusters[dupIndex];
+  if (prog) { prog.hidden = false; $("#dup-pos").textContent = dupIndex + 1; $("#dup-total").textContent = dupClusters.length; $("#dup-tier").textContent = cl.tier; }
+  dupPicks = {};
+  merge.innerHTML = `<p class="ph" style="text-align:center;margin-top:40px">Loading…</p>`;
+  renderMergeCard(cl, await api(`/api/merge-preview?ids=${cl.member_ids.join(",")}`));
+}
+
+function renderMergeCard(cl, preview) {
+  const memberChips = cl.members.map((m) =>
+    `<span class="member"><span class="avatar">${esc(initial(m.name))}</span><span class="who"><b>${esc(m.name || "(no name)")}</b> <span>${esc(srcLabel(m.source))}</span></span></span>`).join("");
+  const rows = preview.fields.filter((f) => !NOISE.has(f.name)).map((f) => {
+    if (f.kind === "conflict") {
+      const opts = f.options.map((o) =>
+        `<label class="opt" data-field="${esc(f.name)}" data-val="${esc(o.value)}" data-src="${esc(o.source)}"><span class="pick"></span><span class="v">${esc(o.value)}</span><span class="from">${esc(srcLabel(o.source))}</span></label>`).join("");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="conflict"><div class="clabel">⚠ these differ — choose which to keep</div><div class="opts">${opts}</div></div></td></tr>`;
     }
-  } catch { /* leave the placeholder as-is if detection isn't ready */ }
+    if (f.kind === "union" && f.values.length > 1) {
+      const items = f.values.map((v) => `<div class="u"><span class="plus">+</span><span>${esc(v.value)}</span><span class="from">${esc(srcLabel(v.source))}</span></div>`).join("");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="union">${items}</div><div class="keepall">both kept</div></td></tr>`;
+    }
+    const v = f.values[0];
+    return `<tr><th class="f">${esc(f.name)}</th><td><div class="single">${esc(v.value)} <span class="from mono">${esc(srcLabel(v.source))}</span></div></td></tr>`;
+  }).join("");
+
+  $("#merge").innerHTML =
+    `<div class="mergecard"><div class="mc-head"><div class="eyebrow">${esc(cl.tier)} · ${esc(cl.signals.join(", "))}</div>` +
+    `<h3 class="serif">These look like the same person</h3><div class="members">${memberChips}</div></div>` +
+    `<table class="difftbl"><tbody>${rows}</tbody></table>` +
+    `<div class="mc-foot"><span class="reassure">↺ Reversible — undo anytime</span><span class="spacer"></span>` +
+    `<button class="btn ghost" id="dup-reject">Not a duplicate</button>` +
+    `<button class="btn ghost" id="dup-skip">Skip</button>` +
+    `<button class="btn primary" id="dup-approve"${preview.conflicts.length ? " disabled" : ""}>Approve merge</button></div></div>`;
+
+  document.querySelectorAll("#merge .opt").forEach((opt) => opt.addEventListener("click", () => {
+    opt.parentElement.querySelectorAll(".opt").forEach((o) => o.classList.remove("sel"));
+    opt.classList.add("sel");
+    dupPicks[opt.dataset.field] = { value: opt.dataset.val, source: opt.dataset.src };
+    $("#dup-approve").disabled = preview.conflicts.some((c) => !(c in dupPicks));
+  }));
+  $("#dup-approve").addEventListener("click", () => approveCluster(cl));
+  $("#dup-reject").addEventListener("click", () => rejectCluster(cl));
+  $("#dup-skip").addEventListener("click", () => { dupIndex++; showCluster(); });
+}
+
+async function approveCluster(cl) {
+  const resolutions = Object.entries(dupPicks).map(([field, v]) => ({ field, chosen_value: v.value, chosen_source: v.source, rule: "user" }));
+  await postJSON("/api/merge", { member_ids: cl.member_ids, into: cl.member_ids[0], resolutions });
+  dupClusters.splice(dupIndex, 1);     // merged cluster done; next one slides into this index
+  afterReviewChange();
+}
+async function rejectCluster(cl) {
+  await postJSON("/api/reject", { key: cl.key });
+  dupClusters.splice(dupIndex, 1);
+  afterReviewChange();
+}
+function afterReviewChange() {
+  if (els.dupBadge) els.dupBadge.textContent = dupClusters.length || "—";
+  showCluster();
+  refreshStats();
+  browse();          // contacts changed
 }
 
 // ---- nav / reset ----
@@ -148,20 +225,33 @@ function emptyState(msg) {
   els.listhead.textContent = "All contacts";
 }
 
+async function refreshStats() {
+  const s = await api("/api/status");
+  if (!s.shared_db) return false;
+  const contacts = s.contacts != null ? s.contacts : (s.records || 0);    // canonical (post-merge) count
+  const sources = Object.keys(s.by_source || {}).length;
+  els.statContacts.textContent = contacts.toLocaleString();
+  els.statSources.textContent = sources;
+  els.statImport.textContent = s.last_ingested_at ? String(s.last_ingested_at).slice(0, 10) : "—";
+  els.topsub.textContent = `${contacts.toLocaleString()} across ${sources} sources`;
+  return true;
+}
+
+const undoBtn = $("#undo-btn");
+if (undoBtn) undoBtn.addEventListener("click", async () => {        // restore the last snapshot
+  await postJSON("/api/undo", {});
+  await loadDuplicates();
+  refreshStats();
+  browse();
+});
+
 (async function init() {
   try {
-    const s = await api("/api/status");
-    if (!s.shared_db) {
+    if (!(await refreshStats())) {
       els.statContacts.textContent = "0";
       emptyState('Run <code>prm import &lt;file&gt;</code>, or seed the demo with <code>prm init --demo</code>, then reload.');
       return;
     }
-    const contacts = s.contacts != null ? s.contacts : (s.records || 0);    // canonical (post-merge) count
-    const sources = Object.keys(s.by_source || {}).length;
-    els.statContacts.textContent = contacts.toLocaleString();
-    els.statSources.textContent = sources;
-    els.statImport.textContent = s.last_ingested_at ? String(s.last_ingested_at).slice(0, 10) : "—";
-    els.topsub.textContent = `${contacts.toLocaleString()} across ${sources} sources`;
     await browse();
     loadDuplicates();
   } catch (err) {
