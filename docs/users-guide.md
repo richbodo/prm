@@ -7,10 +7,11 @@ data never leaves your device.
 
 > **Status (v0.1, in progress).** What works **today**: point `prm` at your real contact exports —
 > **vCard, Google Takeout, LinkedIn, Google CSV, Facebook** — and it parses them, gives each contact a
-> stable identity, **saves them into a local database**, and lets you **search from the terminal or
-> browse them in a local read-only web workspace** (`prm serve`). **AI-assisted dedup**
-> (propose → review → apply) is the next milestone (see [Roadmap](roadmap.md)). This guide marks
-> clearly what runs now vs. what's coming.
+> stable identity, **saves them into a local database**, lets you **search from the terminal or browse
+> them in a local web workspace** (`prm serve`), and **find & merge duplicate contacts** in that
+> workspace — review one at a time, pick the winner for any conflict, every merge reversible. Letting an
+> **AI** do that reviewing for you (propose → you review) is the next milestone (see
+> [Roadmap](roadmap.md)). This guide marks clearly what runs now vs. what's coming.
 
 ---
 
@@ -20,10 +21,11 @@ data never leaves your device.
 | --- | --- |
 | Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** / **Facebook** | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
-| Browse + search in a local **web workspace** — read-only (`prm serve`) | ✅ works |
+| Browse + search your contacts in a local **web workspace** (`prm serve`) | ✅ works |
+| **Find & merge duplicate contacts** in the workspace — review, reconcile, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
-| AI-assisted dedup (propose → review → apply in the workspace) | ⏳ next milestone |
+| **AI**-assisted dedup — an AI proposes the merges, you review them | ⏳ next milestone |
 
 ---
 
@@ -201,26 +203,37 @@ Search is **prefix-matched** across name, email, organization, and notes, so `lo
 `Lovelace`. Output is one contact per line (`name · email · org`); `--json` gives a structured list.
 The same data is also browsable in the local web workspace — see the next section.
 
-## 9. Browse in the web workspace (read-only)
+## 9. The web workspace — browse, and merge duplicates
 
-For a point-and-click view of the same data, start the local workspace:
+For a point-and-click view, start the local workspace:
 
 ```bash
 prm serve                      # then open http://127.0.0.1:8770
 prm serve --port 9000          # pick a different port
 ```
 
-It serves a small single-page app that lets you **search, browse the full list, and open any contact**
-to see its fields and **per-field provenance** (which source each value came from, and when). It reads
-the same `shared.db`, so import (or `prm init --demo`) first; if there's no database yet it says so.
+It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
+contact** to see its fields and **per-field provenance** (which source each value came from). It reads
+the same home, so import (or `prm init --demo`) first; if there's no database yet it says so.
+
+**Duplicates** finds contacts that look like the same person and helps you merge them — one at a time,
+most-confident first:
+
+- Each candidate is shown as a side-by-side **merge preview**: multi-valued fields (emails, phones)
+  **combine**; a single-valued field that disagrees (like a name) is flagged so **you pick which to
+  keep** — nothing is pre-selected.
+- **Approve merge** to combine them, **Not a duplicate** to dismiss it (it won't come back), or
+  **Skip**. **Undo last merge** reverses the most recent one.
+- Confident matches share an exact email or phone; weaker, name-only matches are shown lower down and
+  never merged automatically.
 
 Two guarantees worth knowing:
 
 - **Local only.** The daemon binds `127.0.0.1` — it is never reachable from the network. Your contact
-  data does not leave the device (invariant **INV-1**).
-- **Read-only, today.** The workspace can *view* but not *change* your data yet. Editing — the
-  AI-assisted **dedup propose → review → apply** flow, where you approve merges "like merging a PR" —
-  is the next milestone (see [Roadmap](roadmap.md)). Stop the daemon with `Ctrl-C`.
+  data does not leave the device (invariant **INV-1**). Stop the daemon with `Ctrl-C`.
+- **Reversible & non-destructive.** Your imported source records are never changed; a merge is a
+  decision layered on top, snapshotted before it's applied, and undoable. Letting an **AI** do the
+  reviewing for you is the next milestone (see [Roadmap](roadmap.md)).
 
 ---
 
@@ -268,9 +281,10 @@ arrive with the private-overlay and dedup milestones.)
 
 ## What's next
 
-All five source parsers are done. A local **web search-and-view workspace** and **AI-assisted dedup**
-(propose → review → apply) are the remaining v0.1 milestones, followed by the private overlay and
-custom relationship schema. See the [Roadmap](roadmap.md).
+All five source parsers, the local **web workspace**, and **find-&-merge deduplication** (review,
+reconcile, undo) are done. The remaining v0.1 milestone is letting an **AI** do the dedup reviewing for
+you (it proposes; you approve), followed by the private overlay and custom relationship schema. See the
+[Roadmap](roadmap.md).
 
 ---
 

@@ -135,6 +135,21 @@ def test_merge_resolution_overrides_survivorship():
     assert fn["values"][0]["value"] == "Bob (chosen)"
 
 
+def test_preview_merge_marks_conflicts():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        for name, src in (("Robert Smith", "apple_icloud"), ("Bob Smith", "google_takeout")):
+            v = Path(tmp) / f"{src}.vcf"
+            v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:bob@example.com\r\nEND:VCARD\r\n", encoding="utf-8")
+            ingest_mod.ingest([v], source=src, home=home, dry_run=False)
+        ids = list(private_db.identity_map(home.private_db))
+        pv = projection.preview_merge(home, ids)
+        fn = next(f for f in pv["fields"] if f["name"] == "fn")
+        assert fn["kind"] == "conflict" and len(fn["options"]) == 2 and "fn" in pv["conflicts"]
+        email = next(f for f in pv["fields"] if f["name"] == "email")
+        assert email["kind"] == "union" and len(email["values"]) == 1   # same email → one value, no conflict
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

@@ -64,17 +64,17 @@
       </div>
     </section>
 
-    <!-- ---- DUPLICATES (read-only placeholder until the dedupe milestone) ---- -->
+    <!-- ---- DUPLICATES (review & merge — one at a time, confident-first) ---- -->
     <section class="view" id="duplicates">
-      <div class="topbar"><h1 class="serif">Duplicates</h1></div>
-      <div class="empty">
-        <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.5"/><circle cx="16" cy="16" r="4.5"/><path d="M11 11l2 2"/></svg>
-        <h2 class="serif">Duplicate detection is live</h2>
-        <p id="dup-count">Scanning…</p>
-        <p>Find contacts that look like the same person and merge them — multi-valued fields combine,
-        conflicting ones (like a name) you reconcile, and every merge is reversible. The
-        <b>review &amp; merge surface</b> is wired next (M3d-ii); detection, merge, and undo already run.</p>
-        <span class="next">review UI · next</span>
+      <div class="topbar">
+        <h1 class="serif">Duplicates <span class="sub" id="dup-sub"></span></h1>
+        <button class="btn ghost" id="undo-btn" style="margin-left:auto" title="Restore the state before the last merge">↺ Undo last merge</button>
+      </div>
+      <div class="dupwrap">
+        <div class="progress" id="dup-progress" hidden>
+          <div class="lbl"><b id="dup-pos">1</b> of <span id="dup-total">0</span> · reviewing <span class="tierpill" id="dup-tier"></span></div>
+        </div>
+        <div id="merge"><p class="ph" style="text-align:center;margin-top:60px">Scanning for duplicates…</p></div>
       </div>
     </section>
 

@@ -64,6 +64,15 @@ def test_merge_route_applies():
         assert not [c for c in _body(server.route("GET", "/api/candidates", {}, home))["clusters"] if c["tier"] == "confident"]
 
 
+def test_merge_preview_route():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        cl = _confident(home)
+        pv = _body(server.route("GET", "/api/merge-preview", {"ids": [",".join(cl["member_ids"])]}, home))
+        assert "fields" in pv and "fn" in pv["conflicts"]            # Robert vs Bob → reviewer picks
+        assert server.route("GET", "/api/merge-preview", {"ids": ["onlyone"]}, home)[0] == 400
+
+
 def test_merge_route_validates():
     with tempfile.TemporaryDirectory() as tmp:
         home = _dup_home(tmp)
