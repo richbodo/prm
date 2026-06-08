@@ -256,10 +256,19 @@ Two guarantees worth knowing:
 
 An AI assistant can do the reviewing legwork: it scans for duplicates and **proposes** merges, which
 show up in this same Duplicates tab tagged **🤖 AI proposal** for you to approve or reject. The AI can
-only *propose* — it can never apply a merge. Set this up with the local MCP servers (see
-[`../mcp_servers/README.md`](../mcp_servers/README.md)). **A local AI is recommended**: once a cloud
-client can read your contacts, that data leaves the device — so the read tools warn, and the consent
-gate for cloud AI is a later milestone (see [Roadmap](roadmap.md)).
+only *propose* — it can never apply a merge.
+
+Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_servers/README.md):
+
+1. **Register the two MCP servers** (`prm-shared-data`, `prm-dedup`) with your MCP client (e.g. Claude
+   Desktop) and point them at your PRM home — the `--data-dir` arg, or the `PRM_HOME` env var.
+2. **Hand the assistant the dedup prompt** in [`../prompts/dedup.md`](../prompts/dedup.md) — paste its
+   contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
+   scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
+
+**A local AI is recommended**: once a cloud client can read your contacts, that data leaves the device
+— so the read tools warn, and the consent gate for cloud AI is a later milestone (see
+[Roadmap](roadmap.md)).
 
 ---
 

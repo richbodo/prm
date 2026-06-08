@@ -42,7 +42,18 @@ interactive use. For real use, register them with an MCP client (e.g. Claude Des
 }
 ```
 
-(Or set `PRM_HOME` instead of `--data-dir`.) Then point the assistant at `prompts/dedup.md`.
+**Pointing a server at your data.** Each server needs to know your **PRM home** — the data dir holding
+`shared.db` / `private.db` / `proposals/`. The `--data-dir` arg above sets it; equivalently, set the
+`PRM_HOME` environment variable to the same path and drop the `--data-dir` args. (Resolution order:
+`--data-dir` → `PRM_HOME` → `./prm-data/`; see the user's guide
+[§ Where your data lives](../docs/users-guide.md#where-your-data-lives).)
+
+**Driving the dedup loop.** Once the servers are registered, hand the assistant the dedup instructions
+in [`../prompts/dedup.md`](../prompts/dedup.md) — paste its contents (or attach the file) into your MCP
+client session; it is **not** auto-loaded. That prompt tells the AI how to pull duplicate candidates,
+ask you clarifying questions, build a **conservative** merge changeset, and `submit_merge_proposal` —
+after which the proposal appears in the workspace **Duplicates** tab tagged 🤖 for you to approve or
+reject. The AI only proposes; you apply.
 
 ## ⚠️ Cloud vs local AI
 
