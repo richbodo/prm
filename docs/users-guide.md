@@ -11,8 +11,9 @@ data never leaves your device.
 > them in a local web workspace** (`prm serve`), and **find & merge duplicate contacts** in that
 > workspace — review one at a time, pick the winner for any conflict, every merge reversible. An **AI
 > can also propose the merges for you** (over a local MCP server) — it can only *propose*; you still
-> review and approve each one in the workspace. What's coming next: opt-in non-destructive re-import,
-> then a private overlay + custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
+> review and approve each one in the workspace. You can also **re-import an updated export** and preview
+> exactly what changes (`prm reimport`). What's coming next: a private overlay (groups, tags, notes) +
+> a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
 > clearly what runs now vs. what's coming.
 
 ---
@@ -26,6 +27,7 @@ data never leaves your device.
 | Browse + search your contacts in a local **web workspace** (`prm serve`) | ✅ works |
 | **Find & merge duplicate contacts** in the workspace — review, reconcile, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
+| **Re-import** an updated export — preview changes, merges preserved (`prm reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 
@@ -173,9 +175,23 @@ In an interactive terminal it shows the preview and prompts `Proceed with import
 
 Re-running an import is **safe and idempotent** — each contact gets a stable identity, so importing
 the same file again updates rather than duplicates. You can import several sources into one home
-(e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together. (The full
-opt-in, non-destructive *re-import with an orphan preview* is a later milestone; today's import is
-the plain idempotent load.)
+(e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together.
+
+### Re-importing an updated export
+
+When you re-download an export later (more contacts, edits, deletions), use **`prm reimport`** to see
+exactly what would change before committing:
+
+```bash
+prm reimport ~/Downloads/takeout-20260820.zip --source google_takeout --dry-run   # preview only
+prm reimport ~/Downloads/takeout-20260820.zip --source google_takeout             # preview, then confirm
+```
+
+It reports, per source, how many records are **new**, **updated**, **unchanged**, and **stale** (in
+your store but no longer in the export). Pass `--source` so it compares against the right source.
+It is **non-destructive**: stale records are **kept** (just flagged), and **your merge decisions are
+preserved** (re-attached by stable identity — invariant **INV-6**). Before applying it takes a
+snapshot and records the re-import in the audit log. `--non-interactive` applies without prompting.
 
 ## 7. Check status
 
@@ -292,10 +308,10 @@ arrive with the private-overlay and dedup milestones.)
 ## What's next
 
 All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review,
-reconcile, undo), and **AI-proposed merges over MCP** (the AI proposes; you approve) are done. The
-remaining v0.1 milestones are opt-in **non-destructive re-import** (with an orphan preview) and the
-`Architecture.md` conformance attestation, followed by the private overlay and custom relationship
-schema. See the [Roadmap](roadmap.md).
+reconcile, undo), **AI-proposed merges over MCP** (the AI proposes; you approve), and opt-in
+**non-destructive re-import** (`prm reimport`) are done. The last v0.1 step is the `Architecture.md`
+conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
+(groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
 
 ---
 

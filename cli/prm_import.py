@@ -97,6 +97,26 @@ def cmd_import(args) -> int:
     return 0
 
 
+def cmd_reimport(args) -> int:
+    home = resolve_home(args.data_dir)
+    if not home.shared_db.exists():
+        print("no shared.db yet — run `prm import` first", file=sys.stderr)
+        return 1
+    paths = [Path(p) for p in args.paths]
+    if args.dry_run:
+        preview = ingest_mod.reimport(paths, source=args.source, home=home, apply=False)
+        print(preview.to_json() if args.json else preview.render_human())
+        return 0
+    if not (args.non_interactive or args.json) and sys.stdin.isatty():     # preview, then confirm
+        print(ingest_mod.reimport(paths, source=args.source, home=home, apply=False).render_human())
+        if not _confirm("Apply this re-import?"):
+            print("Aborted — nothing written.")
+            return 0
+    final = ingest_mod.reimport(paths, source=args.source, home=home, apply=True)
+    print(final.to_json() if args.json else final.render_human())
+    return 0
+
+
 def cmd_status(args) -> int:
     home = resolve_home(args.data_dir)
     info = {"home": str(home.root), "exists": home.exists(), "shared_db": home.shared_db.exists()}
@@ -164,6 +184,14 @@ def build_parser() -> argparse.ArgumentParser:
     pm.add_argument("--non-interactive", action="store_true", help="best-effort, no prompts")
     pm.add_argument("--json", action="store_true", help="machine-readable output")
     pm.set_defaults(func=cmd_import)
+
+    pr = sub.add_parser("reimport", help="re-import an updated export — preview changes, then confirm")
+    pr.add_argument("paths", nargs="+", help="updated export file(s)/dir(s)")
+    pr.add_argument("--source", help="match the original source label (e.g. apple_icloud) — recommended")
+    pr.add_argument("--dry-run", action="store_true", help="preview the changes only; write nothing")
+    pr.add_argument("--non-interactive", action="store_true", help="apply without prompting")
+    pr.add_argument("--json", action="store_true", help="machine-readable output")
+    pr.set_defaults(func=cmd_reimport)
 
     ps = sub.add_parser("status", help="show the PRM home and store status")
     ps.add_argument("--json", action="store_true", help="machine-readable output")

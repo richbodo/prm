@@ -239,3 +239,14 @@ def get_record(db_path, source_record_id: str) -> dict | None:
         "raw_jcard": raw_jcard,
         "provenance": [{"field": f, "value": v, "observed_at": o} for f, v, o in prov],
     }
+
+
+def records_for_source(db_path, source: str) -> dict:
+    """{source_record_id: raw_jcard} for one source — the comparison basis for re-import (added /
+    updated / unchanged / stale). Read-only."""
+    con = connect(db_path, read_only=True)
+    try:
+        return dict(con.execute(
+            "SELECT source_record_id, raw_jcard FROM source_records WHERE source = ?", (source,)).fetchall())
+    finally:
+        con.close()
