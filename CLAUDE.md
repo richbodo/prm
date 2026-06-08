@@ -63,6 +63,15 @@ When you add a fact, put it in the doc that owns its category and link from the 
 - **The ingestor is the only writer of the raw Shared DB (INV-2).** Read/search paths read it; they don't
   mutate it.
 - **Tests pin behavior** — run `pytest` after changes; put manual test/QA steps in the **PR description**.
+- **Multiple agents on one host → one git worktree each.** Give every concurrent Claude Code / agent its
+  own worktree so a `git checkout` in one can't yank the branch (or uncommitted work) out from under
+  another: `git worktree add ../prm-wt-<branch> -b <branch>`, then `just setup` in it (fresh `.venv`), or
+  symlink `.venv` / `prm-data/` in to share them. Worktrees isolate the filesystem, **not** the workspace
+  port **8770** — edits and non-server tests run in parallel, but `just serve` and any server-based run
+  must be **serialized** across worktrees (`just doctor` flags 8770 in use; `just port` *frees* it, which
+  kills whatever holds it — including a sibling's server — so coordinate). If you share `prm-data/`,
+  don't `just clean-data` / re-ingest while a sibling is serving. `git worktree remove ../prm-wt-<branch>`
+  when done.
 
 ## Fail loudly — no silent gaps
 
