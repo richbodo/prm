@@ -72,3 +72,52 @@ def validate(changeset: dict) -> None:
             raise ValueError("merge op needs source_record_ids + into")
         if kind in ("resolve_field", "flag_conflict") and (not op.get("contact_id") or not op.get("field")):
             raise ValueError(f"{kind} op needs contact_id + field")
+
+
+# --------------------------------------------------------------------------- staging (propose-only)
+# The propose-only surface (MCP dedup-ops) *stages* a changeset here as proposals/<id>.json for the
+# human to review and apply in the workspace — it never applies (INV-11 / AC-PRM-F).
+def store(home, changeset: dict, *, status: str = "pending") -> str:
+    """Stage a changeset for review. Idempotent on ``proposal_id``. Returns the id."""
+    validate(changeset)
+    home.proposals_dir.mkdir(parents=True, exist_ok=True)
+    record = {**changeset, "status": status, "stored_at": _now_iso()}
+    (home.proposals_dir / f"{changeset['proposal_id']}.json").write_text(
+        json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+    return changeset["proposal_id"]
+
+
+def load(home, proposal_id: str) -> dict | None:
+    path = home.proposals_dir / f"{proposal_id}.json"
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def list_proposals(home, *, status: str | None = None) -> list:
+    """Staged proposals (summaries), newest stored last. Filter by ``status`` if given."""
+    if not home.proposals_dir.is_dir():
+        return []
+    out = []
+    for p in sorted(home.proposals_dir.glob("*.json")):
+        try:
+            cs = json.loads(p.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if status and cs.get("status") != status:
+            continue
+        out.append({"proposal_id": cs.get("proposal_id"), "created_by": cs.get("created_by"),
+                    "created_at": cs.get("created_at"), "status": cs.get("status"),
+                    "rationale": cs.get("rationale", ""), "operations": cs.get("operations", [])})
+    return out
+
+
+def set_status(home, proposal_id: str, status: str) -> bool:
+    """Mark a staged proposal (e.g. ``applied`` / ``dismissed``) after the human acts on it."""
+    cs = load(home, proposal_id)
+    if cs is None:
+        return False
+    cs["status"] = status
+    (home.proposals_dir / f"{proposal_id}.json").write_text(
+        json.dumps(cs, ensure_ascii=False, indent=2), encoding="utf-8")
+    return True

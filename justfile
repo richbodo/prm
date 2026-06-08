@@ -156,3 +156,28 @@ port:
 clean-data:
     rm -rf prm-data
     @echo "Removed ./prm-data/ (the demo/dev home)."
+
+
+# ---- mcp servers ---------------------------------------------------------
+mcp_venv   := "mcp_servers/.venv"
+mcp_python := mcp_venv / "bin/python"
+
+# Create an isolated venv and install the mcp SDK (kept out of the project venv so core/ stays tiny-deps).
+[group('mcp')]
+mcp-install-deps:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d {{mcp_venv}} ]; then python3 -m venv {{mcp_venv}}; fi
+    {{mcp_venv}}/bin/pip install --upgrade pip --quiet
+    {{mcp_venv}}/bin/pip install -r mcp_servers/requirements.txt
+    echo "MCP venv ready ({{mcp_venv}}). See mcp_servers/README.md for Claude Desktop config."
+
+# Run the read-only Shared-Data-Ops MCP server over stdio (./prm-data by default; pass --data-dir).
+[group('mcp')]
+mcp-shared-data-ops *args="--data-dir prm-data":
+    {{mcp_python}} mcp_servers/shared_data_ops.py {{args}}
+
+# Run the propose-only Dedup-Ops MCP server over stdio.
+[group('mcp')]
+mcp-dedup-ops *args="--data-dir prm-data":
+    {{mcp_python}} mcp_servers/dedup_ops.py {{args}}
