@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PRM · Bulk approve (design mockup)</title>
+<!--
+  Self-contained design prototype for the Duplicates → "Bulk approve" mode.
+  Offline by construction (INV-1): no external requests, no web fonts, inline SVG + system serif only.
+  Mock data; not wired to the daemon. Reuses workspace/styles.css tokens verbatim so it lifts into the app.
+  Decisions reflected: (1) conflicts are resolved INLINE while flipping; (2) confident + AI groups are
+  pre-checked, strong/fuzzy/review are opt-in behind an explicit confirm.
+-->
+<style>
+:root{
+  --paper:#fbfaf7; --panel:#fff; --parch:#f4f2ec;
+  --ink:#21201b; --ink-2:#3c3a33; --muted:#6d6a60; --faint:#9c988b;
+  --line:#e7e3d8; --line-2:#efece3;
+  --accent:#3a6f5c; --accent-d:#2c5446; --accent-w:#ecf3ef;
+  --clay:#9a5a3c; --clay-w:#f7efe7;
+  --danger:#c0392b; --danger-w:#fbeeec;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --shadow:0 1px 2px rgba(40,36,28,.04),0 8px 24px -12px rgba(40,36,28,.14);
+  --shadow-lg:0 2px 6px rgba(40,36,28,.06),0 24px 60px -22px rgba(40,36,28,.28);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;color:var(--ink);background:var(--paper);
+  font-family:var(--sans);font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.018'/%3E%3C/svg%3E");
+}
+.serif{font-family:var(--serif);}
+.mono{font-family:var(--mono);}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:20px;padding:22px 34px;border-bottom:1px solid var(--line);
+  background:rgba(251,250,247,.86);backdrop-filter:saturate(1.1) blur(4px);position:sticky;top:0;z-index:20;}
+.topbar h1{font-family:var(--serif);font-weight:600;font-size:25px;margin:0;letter-spacing:-.01em;}
+.topbar h1 .sub{font-family:var(--sans);font-size:12.5px;color:var(--muted);font-weight:400;letter-spacing:.02em;margin-left:12px;}
+.mocktag{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--clay);background:var(--clay-w);
+  border:1px solid #e7d6c8;border-radius:20px;padding:2px 10px;}
+.undo-top{margin-left:auto;}
+
+/* segmented mode toggle */
+.modetoggle{display:inline-flex;background:var(--parch);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;}
+.modetoggle button{font:inherit;font-size:13px;font-weight:500;color:var(--muted);background:transparent;border:none;
+  border-radius:8px;padding:7px 15px;cursor:pointer;transition:color .16s;display:flex;align-items:center;gap:7px;}
+.modetoggle button .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);transition:background .16s;}
+.modetoggle button.on{background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-weight:600;}
+.modetoggle button.on .dot{background:var(--accent);}
+
+/* ---------- layout ---------- */
+.wrap{max-width:980px;margin:0 auto;padding:30px 34px 130px;}
+
+/* step rail */
+.steps{display:flex;align-items:center;gap:0;margin:4px 0 30px;color:var(--faint);font-size:12.5px;}
+.steps .st{display:flex;align-items:center;gap:9px;}
+.steps .st .num{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;
+  border:1.5px solid var(--line);color:var(--faint);background:var(--panel);font-variant-numeric:tabular-nums;}
+.steps .st .lab{letter-spacing:.04em;text-transform:uppercase;font-size:11px;}
+.steps .st.on .num{border-color:var(--accent);background:var(--accent);color:#fff;}
+.steps .st.on .lab{color:var(--ink-2);font-weight:600;}
+.steps .st.done .num{border-color:var(--accent);color:var(--accent-d);}
+.steps .bar{flex:1;height:1.5px;background:var(--line);margin:0 14px;border-radius:2px;}
+.steps .bar.fill{background:var(--accent);}
+
+.lede{font-family:var(--serif);font-size:18px;color:var(--ink-2);margin:0 0 4px;}
+.lede-sub{color:var(--muted);font-size:13.5px;margin:0 0 22px;}
+
+/* ---------- STEP 1 · group select ---------- */
+.grouphdr{display:flex;align-items:baseline;gap:10px;margin:26px 0 12px;}
+.grouphdr .eyebrow{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.grouphdr .hint{font-size:12px;color:var(--muted);margin-left:auto;}
+.groupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.groupcard{position:relative;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px 18px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s,transform .15s;box-shadow:var(--shadow);
+  opacity:0;transform:translateY(10px);animation:rise .5s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i) * 55ms);}
+.groupcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+@keyframes rise{to{opacity:1;transform:none;}}
+.groupcard .gtop{display:flex;align-items:flex-start;gap:12px;}
+.gcheck{width:22px;height:22px;border-radius:7px;border:1.6px solid var(--faint);flex:none;display:grid;place-items:center;
+  margin-top:1px;transition:background .15s,border-color .15s;}
+.gcheck svg{opacity:0;transform:scale(.5);transition:opacity .15s,transform .15s;}
+.groupcard.on .gcheck{background:var(--accent);border-color:var(--accent-d);}
+.groupcard.on .gcheck svg{opacity:1;transform:none;}
+.gbody{flex:1;min-width:0;}
+.gtitle{font-size:15px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.gsub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.gmeta{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap;}
+.gcount{font-size:13px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+.gcount b{font-size:15px;}
+.pill{font-size:11px;letter-spacing:.02em;padding:2px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted);background:var(--panel);}
+.pill.safe{color:var(--accent-d);background:var(--accent-w);border-color:#d8e7e0;}
+.pill.pick{color:var(--clay);background:var(--clay-w);border-color:#e7d6c8;}
+.pill.caution{color:var(--danger);background:var(--danger-w);border-color:#f0d8d3;}
+.groupcard.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w),var(--shadow);}
+.groupcard.caution.on{border-color:var(--clay);box-shadow:0 0 0 3px rgba(154,90,60,.10),var(--shadow);}
+.botbadge{font-weight:600;color:var(--accent-d);background:var(--accent-w);border:1px solid #d8e7e0;border-radius:20px;
+  padding:1px 9px;font-size:11.5px;}
+
+.sectlabel{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:34px 0 6px;
+  display:flex;align-items:center;gap:9px;}
+.sectlabel::after{content:"";flex:1;height:1px;background:var(--line);}
+.cautionnote{font-size:12.5px;color:var(--muted);margin:0 0 14px;display:flex;align-items:center;gap:7px;}
+.cautionnote svg{color:var(--clay);flex:none;}
+
+/* ---------- STEP 2 · spot-check ---------- */
+.spotnav{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.spotnav .pos{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.spotnav .pos b{color:var(--ink);font-weight:600;}
+.tierpill{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--clay);background:var(--clay-w);
+  border-radius:20px;padding:2px 9px;border:1px solid #e7d6c8;}
+.tierpill.confident{color:var(--accent-d);background:var(--accent-w);border-color:#d8e7e0;}
+.navbtns{margin-left:auto;display:flex;gap:8px;}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;
+  display:grid;place-items:center;color:var(--ink-2);transition:background .14s,border-color .14s,color .14s;}
+.iconbtn:hover{background:#f3f0e8;border-color:#d8cfc4;}
+.iconbtn:disabled{opacity:.4;cursor:not-allowed;}
+.dotsrow{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 16px;}
+.dotsrow .d{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:transform .14s,background .14s;}
+.dotsrow .d.ready{background:var(--accent);}
+.dotsrow .d.pick{background:var(--clay);}
+.dotsrow .d.excl{background:var(--faint);opacity:.5;}
+.dotsrow .d.cur{transform:scale(1.55);box-shadow:0 0 0 3px var(--paper),0 0 0 4px currentColor;}
+
+.cardstage{position:relative;}
+.mergecard{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
+.mergecard.flip{animation:flip .26s cubic-bezier(.2,.7,.2,1) both;}
+@keyframes flip{from{opacity:0;transform:translateX(var(--dir,16px));}to{opacity:1;transform:none;}}
+.mergecard.excluded{opacity:.55;filter:grayscale(.35);}
+.mc-head{padding:20px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fcfbf8);}
+.mc-head .eyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--clay);display:flex;align-items:center;gap:9px;}
+.mc-head h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:7px 0 12px;}
+.prationale{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:14px;margin:-4px 0 12px;}
+.members{display:flex;flex-wrap:wrap;gap:10px;}
+.member{display:flex;align-items:center;gap:9px;padding:7px 12px 7px 8px;border:1px solid var(--line);border-radius:30px;background:var(--paper);font-size:13px;}
+.member .avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);
+  font-size:12px;color:#fff;background:var(--accent);}
+.member.into{border-color:var(--accent);background:var(--accent-w);}
+.member.into .avatar{background:var(--accent-d);}
+.member .who b{font-weight:600;}
+.member .who span{color:var(--muted);}
+.keepbadge{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-d);font-weight:700;margin-left:2px;}
+
+.difftbl{width:100%;border-collapse:collapse;}
+.difftbl tr{border-bottom:1px solid var(--line-2);}
+.difftbl tr:last-child{border-bottom:none;}
+.difftbl th.f{text-align:left;vertical-align:top;width:120px;padding:16px 10px 16px 24px;font-size:12px;font-weight:600;color:var(--muted);}
+.difftbl td{padding:14px 24px 14px 10px;vertical-align:top;}
+.single{font-size:14.5px;}
+.single .from{font-size:11.5px;color:var(--faint);margin-left:6px;}
+.union{display:flex;flex-direction:column;gap:8px;}
+.union .u{display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--accent-w);border:1px solid #d8e7e0;border-radius:9px;font-size:14px;}
+.union .u .plus{color:var(--accent-d);font-weight:700;font-family:var(--mono);}
+.union .u .from{margin-left:auto;font-size:11px;color:var(--accent-d);opacity:.8;}
+.keepall{font-size:11.5px;color:var(--accent-d);margin-top:6px;}
+.conflict .clabel{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--danger);font-weight:700;margin-bottom:9px;}
+.conflict.resolved .clabel{color:var(--accent-d);}
+.conflict .opts{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);transition:border-color .14s,background .14s,box-shadow .14s;}
+.opt:hover{border-color:#d8cfc4;background:#fdfbf8;}
+.opt .pick{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--faint);flex:none;display:grid;place-items:center;}
+.opt .pick::after{content:"";width:9px;height:9px;border-radius:50%;background:transparent;transition:background .14s;}
+.opt .v{font-size:14.5px;}
+.opt .from{margin-left:auto;font-size:11px;color:var(--faint);}
+.opt.sel{border-color:var(--clay);background:var(--clay-w);box-shadow:0 0 0 3px rgba(154,90,60,.08);}
+.opt.sel .pick{border-color:var(--clay);}
+.opt.sel .pick::after{background:var(--clay);}
+.opt .aitag{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-d);font-weight:700;margin-left:8px;}
+
+.mc-foot{padding:14px 24px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;background:#fcfbf8;}
+.mc-foot .reassure{font-size:12px;color:var(--muted);}
+.spacer{margin-left:auto;}
+.btn{font:inherit;font-size:13.5px;padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink-2);transition:background .14s,color .14s,border-color .14s;}
+.btn:hover{background:#f3f0e8;}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);}
+.btn.ghost:hover{color:var(--clay);background:var(--clay-w);}
+.btn.danger-ghost{border-color:transparent;background:transparent;color:var(--muted);}
+.btn.danger-ghost:hover{color:var(--danger);background:var(--danger-w);}
+.btn.primary{background:var(--accent);border-color:var(--accent-d);color:#fff;font-weight:550;}
+.btn.primary:hover{background:var(--accent-d);}
+.btn.primary:disabled{background:#cdd8d2;border-color:#cdd8d2;color:#fff;cursor:not-allowed;}
+.btn.big{font-size:15px;padding:12px 22px;}
+
+/* sticky commit bar */
+.commitbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(1.1) blur(8px);border-top:1px solid var(--line);box-shadow:0 -8px 30px -20px rgba(40,36,28,.35);
+  transform:translateY(110%);transition:transform .3s cubic-bezier(.2,.7,.2,1);}
+.commitbar.show{transform:none;}
+.commitbar .inner{max-width:980px;margin:0 auto;padding:14px 34px;display:flex;align-items:center;gap:18px;}
+.tally{display:flex;align-items:center;gap:16px;font-size:13px;}
+.tally .t{display:flex;align-items:center;gap:7px;color:var(--muted);}
+.tally .t b{font-size:16px;font-variant-numeric:tabular-nums;}
+.tally .t.ready b{color:var(--accent-d);}
+.tally .t.pick b{color:var(--clay);}
+.tally .t.excl b{color:var(--faint);}
+.tally .t .swatch{width:9px;height:9px;border-radius:50%;}
+.tally .t.ready .swatch{background:var(--accent);}
+.tally .t.pick .swatch{background:var(--clay);}
+.tally .t.excl .swatch{background:var(--faint);}
+
+/* ---------- STEP 3 · done ---------- */
+.done{max-width:560px;margin:50px auto;text-align:center;}
+.done .seal{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent-w);border:1px solid #d8e7e0;color:var(--accent-d);
+  animation:pop .45s cubic-bezier(.2,1.4,.4,1) both;}
+@keyframes pop{from{opacity:0;transform:scale(.6);}to{opacity:1;transform:none;}}
+.done h2{font-family:var(--serif);font-weight:600;font-size:27px;margin:0 0 10px;}
+.done p{color:var(--muted);margin:0 auto 8px;max-width:420px;}
+.done .undoline{margin-top:22px;display:inline-flex;align-items:center;gap:10px;background:var(--parch);
+  border:1px solid var(--line);border-radius:30px;padding:8px 8px 8px 18px;font-size:13px;color:var(--muted);}
+
+/* tiny toast for the opt-in confirm */
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);z-index:40;
+  background:var(--ink);color:#f7f5ef;border-radius:12px;box-shadow:var(--shadow-lg);padding:14px 18px;
+  display:flex;align-items:center;gap:16px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  max-width:min(520px,92vw);}
+.toast.show{opacity:1;transform:translateX(-50%);pointer-events:auto;}
+.toast b{color:#fff;}
+.toast .tbtns{display:flex;gap:8px;margin-left:auto;flex:none;}
+.toast button{font:inherit;font-size:13px;border-radius:8px;padding:6px 13px;cursor:pointer;border:1px solid #4a473f;
+  background:transparent;color:#e9e6dd;}
+.toast button.go{background:var(--accent);border-color:var(--accent-d);color:#fff;font-weight:600;}
+.hidden{display:none !important;}
+
+@media (max-width:720px){
+  .groupgrid{grid-template-columns:1fr;}
+  .wrap{padding:24px 18px 130px;}
+  .topbar{flex-wrap:wrap;gap:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1 class="serif">Duplicates <span class="sub" id="topsub">scanning…</span></h1>
+  <span class="mocktag">design mockup</span>
+  <div class="modetoggle undo-top" role="tablist" aria-label="Review mode">
+    <button id="mode-one"><span class="dot"></span>Review individually</button>
+    <button id="mode-bulk" class="on"><span class="dot"></span>Bulk approve</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- step rail -->
+  <div class="steps" id="steprail">
+    <div class="st on" data-step="1"><span class="num">1</span><span class="lab">Pick groups</span></div>
+    <div class="bar"></div>
+    <div class="st" data-step="2"><span class="num">2</span><span class="lab">Spot-check</span></div>
+    <div class="bar"></div>
+    <div class="st" data-step="3"><span class="num">3</span><span class="lab">Merged</span></div>
+  </div>
+
+  <!-- ============ STEP 1 ============ -->
+  <section id="step1">
+    <p class="lede serif">Approve duplicates in bulk.</p>
+    <p class="lede-sub">Pick the groups you trust, skim them, and merge in one pass. Every merge is reversible — one Undo reverses the whole batch.</p>
+
+    <div class="grouphdr">
+      <span class="eyebrow">Safe to bulk-merge</span>
+      <span class="hint">exact matches · pre-selected</span>
+    </div>
+    <div class="groupgrid" id="safegrid"></div>
+
+    <div class="sectlabel">Higher-risk · opt in</div>
+    <p class="cautionnote">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>
+      Name-based matches. You’ll spot-check and resolve each one — nothing here is pre-selected.
+    </p>
+    <div class="groupgrid" id="cautiongrid"></div>
+  </section>
+
+  <!-- ============ STEP 2 ============ -->
+  <section id="step2" class="hidden">
+    <p class="lede serif">Flip through and spot-check.</p>
+    <p class="lede-sub">Use the arrows (or ← → keys). Resolve any field marked in red; pull anything wrong out of the batch.</p>
+
+    <div class="spotnav">
+      <span class="pos"><b id="pos">1</b> of <span id="postotal">0</span></span>
+      <span class="tierpill" id="curtier">confident</span>
+      <div class="navbtns">
+        <button class="iconbtn" id="prev" title="Previous (←)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="iconbtn" id="next" title="Next (→)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+    <div class="dotsrow" id="dots"></div>
+
+    <div class="cardstage" id="stage"></div>
+  </section>
+
+  <!-- ============ STEP 3 ============ -->
+  <section id="step3" class="hidden">
+    <div class="done">
+      <div class="seal">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+      </div>
+      <h2 class="serif" id="done-h">Merged 13 duplicate sets</h2>
+      <p id="done-p">13 contacts folded into their canonical record. Your imported source records were never changed.</p>
+      <div class="undoline">
+        ↺ One Undo reverses all 13 merges
+        <button class="btn" id="done-undo">Undo batch</button>
+      </div>
+      <div style="margin-top:26px"><button class="btn primary big" id="done-again">Back to duplicates</button></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- sticky commit bar (step 2) -->
+<div class="commitbar" id="commitbar">
+  <div class="inner">
+    <div class="tally">
+      <span class="t ready"><span class="swatch"></span><b id="t-ready">0</b> ready</span>
+      <span class="t pick"><span class="swatch"></span><b id="t-pick">0</b> need a pick</span>
+      <span class="t excl"><span class="swatch"></span><b id="t-excl">0</b> excluded</span>
+    </div>
+    <span class="reassure muted" style="font-size:12.5px" id="commit-hint"></span>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="back-to-1">← Groups</button>
+    <button class="btn primary big" id="merge-all" disabled>Merge ready</button>
+  </div>
+</div>
+
+<!-- opt-in confirm toast -->
+<div class="toast" id="toast">
+  <span id="toast-msg"></span>
+  <div class="tbtns">
+    <button id="toast-no">Not now</button>
+    <button class="go" id="toast-yes">Add to batch</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s==null?"":s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initial = (n) => { const m=String(n||"").trim(); return m?m[0].toUpperCase():"?"; };
+const SRC = {apple_icloud:"apple",google_takeout:"google",google_csv:"google csv",linkedin:"linkedin",facebook:"facebook",vcard:"vcard"};
+const sl = (s)=>SRC[s]||s||"";
+
+// ---------- mock data ----------
+// field kinds: single {name, values:[{value,source}]}, union {name, values:[...]}, conflict {name, options:[...], ai?}
+function F(name, kind, vals, opts){ return {name, kind, values:vals, options:opts}; }
+function clean(name, members, fields){ return {kind:"candidate", members, fields, conflicts:[]}; }
+
+let UID = 0;
+function mk(o){ o.key="k"+(UID++); o.excluded=false; o.picks={}; return o; }
+
+// confident · contact-info matches
+const GA = [
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["email_exact"],members:[
+      {name:"Ada Lovelace",source:"apple_icloud"},{name:"Ada Lovelace",source:"google_takeout"}],
+    fields:[F("fn","single",[{value:"Ada Lovelace",source:"apple_icloud"}]),
+      F("email","union",[{value:"ada@analytical.org",source:"apple_icloud"},{value:"ada.lovelace@gmail.com",source:"google_takeout"}]),
+      F("tel","union",[{value:"+1 415-555-0142",source:"apple_icloud"},{value:"+44 20 7946 0958",source:"google_takeout"}]),
+      F("org","single",[{value:"Analytical Engines",source:"apple_icloud"}])]}),
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["phone_exact"],members:[
+      {name:"Grace Hopper",source:"apple_icloud"},{name:"Grace B. Hopper",source:"google_csv"}],
+    fields:[F("fn","conflict",null,[{value:"Grace Hopper",source:"apple_icloud"},{value:"Grace B. Hopper",source:"google_csv"}]),
+      F("tel","union",[{value:"+1 202-555-0179",source:"apple_icloud"}]),
+      F("email","single",[{value:"grace.hopper@navy.mil",source:"google_csv"}]),
+      F("org","single",[{value:"US Navy",source:"apple_icloud"}])]}),
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["email_exact"],members:[
+      {name:"Katherine Johnson",source:"google_takeout"},{name:"Katherine Johnson",source:"vcard"}],
+    fields:[F("fn","single",[{value:"Katherine Johnson",source:"google_takeout"}]),
+      F("email","union",[{value:"k.johnson@nasa.gov",source:"google_takeout"}]),
+      F("org","conflict",null,[{value:"NASA",source:"google_takeout"},{value:"NACA",source:"vcard"}])]}),
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["email_exact","phone_exact"],members:[
+      {name:"Alan Turing",source:"apple_icloud"},{name:"Alan Turing",source:"linkedin"}],
+    fields:[F("fn","single",[{value:"Alan Turing",source:"apple_icloud"}]),
+      F("email","single",[{value:"a.turing@npl.uk",source:"apple_icloud"}]),
+      F("url","union",[{value:"linkedin.com/in/alanturing",source:"linkedin"}]),
+      F("org","single",[{value:"National Physical Laboratory",source:"apple_icloud"}])]}),
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["email_exact"],members:[
+      {name:"Donald Knuth",source:"apple_icloud"},{name:"Donald Knuth",source:"google_takeout"}],
+    fields:[F("fn","single",[{value:"Donald Knuth",source:"apple_icloud"}]),
+      F("email","union",[{value:"knuth@cs.stanford.edu",source:"apple_icloud"},{value:"don.knuth@gmail.com",source:"google_takeout"}]),
+      F("org","single",[{value:"Stanford",source:"apple_icloud"}])]}),
+  mk({group:"confA",kind:"candidate",tier:"confident",signals:["email_exact"],members:[
+      {name:"Barbara Liskov",source:"google_takeout"},{name:"Barbara Liskov",source:"google_csv"}],
+    fields:[F("fn","single",[{value:"Barbara Liskov",source:"google_takeout"}]),
+      F("email","single",[{value:"liskov@mit.edu",source:"google_takeout"}]),
+      F("org","single",[{value:"MIT CSAIL",source:"google_csv"}])]}),
+];
+// confident · LinkedIn profile
+const GL = [
+  mk({group:"confL",kind:"candidate",tier:"confident",signals:["profile_url"],members:[
+      {name:"Radia Perlman",source:"linkedin"},{name:"Radia Perlman",source:"google_takeout"}],
+    fields:[F("fn","single",[{value:"Radia Perlman",source:"google_takeout"}]),
+      F("url","union",[{value:"linkedin.com/in/radiaperlman",source:"linkedin"}]),
+      F("org","single",[{value:"Spanning Tree",source:"linkedin"}])]}),
+  mk({group:"confL",kind:"candidate",tier:"confident",signals:["profile_url"],members:[
+      {name:"Vint Cerf",source:"linkedin"},{name:"Vinton Cerf",source:"apple_icloud"}],
+    fields:[F("fn","conflict",null,[{value:"Vint Cerf",source:"linkedin"},{value:"Vinton Cerf",source:"apple_icloud"}]),
+      F("url","union",[{value:"linkedin.com/in/vintcerf",source:"linkedin"}]),
+      F("org","single",[{value:"Internet",source:"apple_icloud"}])]}),
+];
+// AI proposals
+const GAI = [
+  mk({group:"ai",kind:"proposal",tier:"ai",created_by:"ai:local-dedup",
+    rationale:"Same mobile +1 415-555-0177 and both at Cure Records — almost certainly one person.",
+    signals:["phone_exact"],members:[{name:"Bob Smith",source:"linkedin"},{name:"Robert Smith",source:"apple_icloud"}],
+    fields:[F("fn","conflict",null,[{value:"Robert Smith",source:"apple_icloud"},{value:"Bob Smith",source:"linkedin"}]),
+      F("tel","union",[{value:"+1 415-555-0177",source:"apple_icloud"}]),
+      F("org","single",[{value:"Cure Records",source:"linkedin"}])],
+    aiPicks:{fn:"Robert Smith"}}),
+  mk({group:"ai",kind:"proposal",tier:"ai",created_by:"ai:local-dedup",
+    rationale:"Exact email margaret@mit.edu across both records.",
+    signals:["email_exact"],members:[{name:"Margaret Hamilton",source:"apple_icloud"},{name:"Margaret Hamilton",source:"google_takeout"}],
+    fields:[F("fn","single",[{value:"Margaret Hamilton",source:"apple_icloud"}]),
+      F("email","single",[{value:"margaret@mit.edu",source:"apple_icloud"}]),
+      F("org","single",[{value:"MIT",source:"google_takeout"}])],aiPicks:{}}),
+  mk({group:"ai",kind:"proposal",tier:"ai",created_by:"ai:local-dedup",
+    rationale:"Identical LinkedIn profile; titles differ but the person is the same.",
+    signals:["profile_url"],members:[{name:"Hedy Lamarr",source:"linkedin"},{name:"Hedy Lamarr",source:"facebook"}],
+    fields:[F("fn","single",[{value:"Hedy Lamarr",source:"linkedin"}]),
+      F("title","conflict",null,[{value:"Inventor",source:"linkedin"},{value:"Actress & Inventor",source:"facebook"}]),
+      F("url","union",[{value:"linkedin.com/in/hedylamarr",source:"linkedin"}])],aiPicks:{title:"Actress & Inventor"}}),
+];
+// strong · name + company (opt-in)
+const GS = ["Grace Park / Grace Park · Acme","John Doe / Jon Doe · Globex","Maria Garcia / Maria Garcia · Initech"].map((n,i)=>{
+  const [a,rest]=n.split(" / "); const co=rest.split(" · ")[1];
+  return mk({group:"strong",kind:"candidate",tier:"strong",signals:["name+org"],members:[
+      {name:a,source:"linkedin"},{name:rest.split(" · ")[0],source:"google_csv"}],
+    fields:[F("fn","single",[{value:a,source:"linkedin"}]),F("org","single",[{value:co,source:"linkedin"}])]});
+});
+// fuzzy · name-only (opt-in)
+const GF = ["Sam Lee","Chris Park","Pat Morgan","Alex Kim","Jamie Cole"].map((n)=>
+  mk({group:"fuzzy",kind:"candidate",tier:"fuzzy",signals:["name_similar"],members:[
+      {name:n,source:"facebook"},{name:n,source:"linkedin"}],
+    fields:[F("fn","single",[{value:n,source:"facebook"}])]}));
+
+const ITEMS = [...GA, ...GL, ...GAI, ...GS, ...GF];
+const conflictsOf = (it)=> it.fields.filter(f=>f.kind==="conflict").map(f=>f.name);
+
+const GROUPS = [
+  {id:"confA", klass:"safe", title:"Same email or phone", sub:"exact contact-info match", ai:false},
+  {id:"confL", klass:"safe", title:"Same LinkedIn profile", sub:"identical profile URL", ai:false},
+  {id:"ai",    klass:"safe", title:"AI proposed", sub:"each carries the AI’s rationale", ai:true},
+  {id:"strong",klass:"caution", title:"Name + same company", sub:"strong, but not an exact match", ai:false},
+  {id:"fuzzy", klass:"caution", title:"Name-only", sub:"weakest signal — review with care", ai:false},
+];
+const selected = new Set(["confA","confL","ai"]);   // confident + AI pre-checked (decision 2)
+
+// ---------- step 1 render ----------
+function groupItems(id){ return ITEMS.filter(i=>i.group===id); }
+function groupCard(g, idx){
+  const items = groupItems(g.id);
+  const nConf = items.filter(i=>conflictsOf(i).length).length;
+  const on = selected.has(g.id);
+  const safePill = g.klass==="safe" ? `<span class="pill safe">safe to bulk-merge</span>` : `<span class="pill caution">spot-check each</span>`;
+  const pickPill = nConf ? `<span class="pill pick">${nConf} need a pick</span>` : "";
+  const title = g.ai ? `<span class="botbadge">🤖 AI proposed</span>` : esc(g.title);
+  const el = document.createElement("div");
+  el.className = `groupcard ${g.klass}${on?" on":""}`;
+  el.style.setProperty("--i", idx);
+  el.dataset.id = g.id;
+  el.innerHTML =
+    `<div class="gtop">
+       <span class="gcheck"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span>
+       <div class="gbody">
+         <div class="gtitle">${title}</div>
+         <div class="gsub">${esc(g.sub)}</div>
+         <div class="gmeta"><span class="gcount"><b>${items.length}</b> merges</span>${safePill}${pickPill}</div>
+       </div>
+     </div>`;
+  el.addEventListener("click", ()=>toggleGroup(g));
+  return el;
+}
+function renderStep1(){
+  const safe = $("#safegrid"), caut = $("#cautiongrid");
+  safe.innerHTML = ""; caut.innerHTML = "";
+  let i=0;
+  GROUPS.filter(g=>g.klass==="safe").forEach(g=> safe.appendChild(groupCard(g,i++)));
+  GROUPS.filter(g=>g.klass==="caution").forEach(g=> caut.appendChild(groupCard(g,i++)));
+  updateTopSub();
+}
+function updateTopSub(){
+  const n = ITEMS.filter(i=>selected.has(i.group)).length;
+  $("#topsub").textContent = `${ITEMS.length} candidates · ${n} selected`;
+}
+
+function toggleGroup(g){
+  if (selected.has(g.id)) { selected.delete(g.id); renderStep1(); return; }
+  if (g.klass==="caution"){ confirmOptIn(g); return; }   // decision 2: opt-in confirm for higher-risk
+  selected.add(g.id); renderStep1();
+}
+let pendingGroup=null;
+function confirmOptIn(g){
+  pendingGroup=g;
+  $("#toast-msg").innerHTML = `<b>${esc(g.title)}</b> — ${groupItems(g.id).length} name-based matches. You’ll spot-check and resolve each before it merges. Add to the batch?`;
+  $("#toast").classList.add("show");
+}
+$("#toast-yes").addEventListener("click", ()=>{ if(pendingGroup){selected.add(pendingGroup.id);renderStep1();} $("#toast").classList.remove("show"); pendingGroup=null; });
+$("#toast-no").addEventListener("click", ()=>{ $("#toast").classList.remove("show"); pendingGroup=null; });
+
+// ---------- step nav ----------
+function setStep(n){
+  $("#step1").classList.toggle("hidden", n!==1);
+  $("#step2").classList.toggle("hidden", n!==2);
+  $("#step3").classList.toggle("hidden", n!==3);
+  $("#commitbar").classList.toggle("show", n===2);
+  $("#steprail").querySelectorAll(".st").forEach((s)=>{
+    const sn=+s.dataset.step; s.classList.toggle("on", sn===n); s.classList.toggle("done", sn<n);
+  });
+  $("#steprail").querySelectorAll(".bar").forEach((b,i)=> b.classList.toggle("fill", i < n-1));
+}
+
+// "Spot-check N →" lives at the bottom of step 1 too (added dynamically)
+function ensureGoBtn(){
+  let b = $("#go-spot");
+  if(!b){ b=document.createElement("div"); b.style.cssText="display:flex;justify-content:flex-end;margin-top:26px;";
+    b.innerHTML=`<button class="btn primary big" id="go-spot"></button>`; $("#step1").appendChild(b);
+    $("#step1").querySelector("#go-spot").addEventListener("click", startSpotCheck); b=$("#go-spot"); }
+  const n = ITEMS.filter(i=>selected.has(i.group)).length;
+  b.textContent = `Spot-check ${n} merge${n===1?"":"s"} →`;
+  b.disabled = n===0;
+}
+
+// ---------- step 2 spot-check ----------
+let queue=[], idx=0;
+function startSpotCheck(){
+  queue = ITEMS.filter(i=>selected.has(i.group));
+  idx=0; setStep(2); $("#postotal").textContent=queue.length; renderDots(); showCard(0); updateTally();
+}
+function ready(it){ return !it.excluded && conflictsOf(it).every(f=> it.picks[f]); }
+function status(it){ return it.excluded?"excl":(ready(it)?"ready":"pick"); }
+
+function renderDots(){
+  const d=$("#dots"); d.innerHTML="";
+  queue.forEach((it,i)=>{ const s=document.createElement("span");
+    s.className=`d ${status(it)}${i===idx?" cur":""}`;
+    s.style.color = status(it)==="ready"?"var(--accent)":status(it)==="pick"?"var(--clay)":"var(--faint)";
+    s.title=`#${i+1}`; s.addEventListener("click",()=>showCard(i)); d.appendChild(s); });
+}
+function memberChips(it){
+  return it.members.map((m,i)=>
+    `<span class="member${i===0?" into":""}"><span class="avatar">${esc(initial(m.name))}</span><span class="who"><b>${esc(m.name)}</b> <span>${esc(sl(m.source))}</span></span>${i===0?'<span class="keepbadge">keep</span>':""}</span>`).join("");
+}
+function diffRows(it){
+  return it.fields.map((f)=>{
+    if(f.kind==="conflict"){
+      const picked = it.picks[f.name];
+      const resolved = !!picked;
+      const opts = f.options.map((o)=>{
+        const sel = picked===o.value ? " sel":"";
+        const aiTag = (it.aiPicks && it.aiPicks[f.name]===o.value && !picked) ? `<span class="aitag">AI’s pick</span>`:"";
+        return `<label class="opt${sel}" data-field="${esc(f.name)}" data-val="${esc(o.value)}"><span class="pick"></span><span class="v">${esc(o.value)}</span>${aiTag}<span class="from">${esc(sl(o.source))}</span></label>`;
+      }).join("");
+      const lbl = resolved ? `✓ you chose “${esc(picked)}”` : (it.aiPicks&&it.aiPicks[f.name] ? "⚠ differ — confirm the AI’s pick or change it" : "⚠ these differ — choose which to keep");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="conflict${resolved?" resolved":""}"><div class="clabel">${lbl}</div><div class="opts">${opts}</div></div></td></tr>`;
+    }
+    if(f.kind==="union" && f.values.length>1){
+      const items = f.values.map((v)=>`<div class="u"><span class="plus">+</span><span>${esc(v.value)}</span><span class="from">${esc(sl(v.source))}</span></div>`).join("");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="union">${items}</div><div class="keepall">both kept</div></td></tr>`;
+    }
+    const v=f.values[0];
+    return `<tr><th class="f">${esc(f.name)}</th><td><div class="single">${esc(v.value)} <span class="from mono">${esc(sl(v.source))}</span></div></td></tr>`;
+  }).join("");
+}
+function showCard(i, dir){
+  idx=Math.max(0,Math.min(queue.length-1,i));
+  const it=queue[idx];
+  $("#pos").textContent=idx+1;
+  const ct=$("#curtier"); ct.textContent = it.tier==="ai"?"ai proposal":it.tier;
+  ct.className = "tierpill"+(it.tier==="confident"||it.tier==="ai"?" confident":"");
+  $("#prev").disabled = idx===0; $("#next").disabled = idx===queue.length-1;
+
+  const isAI = it.kind==="proposal";
+  const eyebrow = isAI
+    ? `<span class="botbadge">🤖 AI proposal</span> · ${esc(it.created_by)}`
+    : `${esc(it.tier)} · ${esc(it.signals.join(", "))}`;
+  const head = isAI ? "The AI proposes merging these" : "These look like the same person";
+  const stage=$("#stage");
+  stage.innerHTML =
+    `<div class="mergecard flip${it.excluded?" excluded":""}" style="--dir:${dir==="prev"?"-16px":"16px"}">
+       <div class="mc-head">
+         <div class="eyebrow">${eyebrow}</div>
+         <h3 class="serif">${head}</h3>
+         ${isAI && it.rationale ? `<p class="prationale">“${esc(it.rationale)}”</p>`:""}
+         <div class="members">${memberChips(it)}</div>
+       </div>
+       <table class="difftbl"><tbody>${diffRows(it)}</tbody></table>
+       <div class="mc-foot">
+         <span class="reassure">↺ Reversible — part of one batch</span>
+         <span class="spacer"></span>
+         <button class="btn ${it.excluded?'':'danger-ghost'}" id="excl-btn">${it.excluded?"↩ Include in batch":"✕ Exclude this"}</button>
+         <button class="btn" id="next-btn">Next →</button>
+       </div>
+     </div>`;
+  stage.querySelectorAll(".opt").forEach((opt)=> opt.addEventListener("click", ()=>{
+    it.picks[opt.dataset.field]=opt.dataset.val;
+    showCard(idx); renderDots(); updateTally();
+  }));
+  $("#excl-btn").addEventListener("click", ()=>{ it.excluded=!it.excluded; showCard(idx); renderDots(); updateTally(); });
+  $("#next-btn").addEventListener("click", ()=>{ if(idx<queue.length-1) showCard(idx+1,"next"); });
+  renderDots();
+}
+function updateTally(){
+  const r=queue.filter(ready).length;
+  const p=queue.filter(i=>!i.excluded && !ready(i)).length;
+  const e=queue.filter(i=>i.excluded).length;
+  $("#t-ready").textContent=r; $("#t-pick").textContent=p; $("#t-excl").textContent=e;
+  const btn=$("#merge-all"); btn.disabled = r===0;
+  btn.textContent = `Merge ${r} ready`;
+  $("#commit-hint").textContent = p>0 ? `${p} still need a pick — resolve or exclude them` : (r>0?"all set":"");
+}
+
+$("#prev").addEventListener("click", ()=>{ if(idx>0) showCard(idx-1,"prev"); });
+$("#next").addEventListener("click", ()=>{ if(idx<queue.length-1) showCard(idx+1,"next"); });
+document.addEventListener("keydown", (e)=>{
+  if($("#step2").classList.contains("hidden")) return;
+  if(e.key==="ArrowLeft" && idx>0) showCard(idx-1,"prev");
+  if(e.key==="ArrowRight" && idx<queue.length-1) showCard(idx+1,"next");
+});
+$("#back-to-1").addEventListener("click", ()=> setStep(1) || ensureGoBtn());
+
+// ---------- step 3 ----------
+$("#merge-all").addEventListener("click", ()=>{
+  const r=queue.filter(ready).length;
+  $("#done-h").textContent = `Merged ${r} duplicate set${r===1?"":"s"}`;
+  $("#done-p").textContent = `${r} contact${r===1?" was":"s were"} folded into ${r===1?"its":"their"} canonical record, in one transaction. Your imported source records were never changed.`;
+  $(".undoline").firstChild.textContent = `↺ One Undo reverses all ${r} merges `;
+  setStep(3);
+});
+$("#done-again").addEventListener("click", ()=>{ setStep(1); ensureGoBtn(); });
+$("#done-undo").addEventListener("click", ()=>{ setStep(1); ensureGoBtn(); });
+
+// mode toggle (visual only in the mockup)
+$("#mode-one").addEventListener("click", ()=>{ $("#mode-one").classList.add("on"); $("#mode-bulk").classList.remove("on");
+  alert("(mockup) ‘Review individually’ is the existing one-at-a-time flow."); $("#mode-one").classList.remove("on"); $("#mode-bulk").classList.add("on"); });
+
+// ---------- init ----------
+renderStep1(); ensureGoBtn(); setStep(1);
+</script>
+</body>
+</html>

@@ -64,17 +64,97 @@
       </div>
     </section>
 
-    <!-- ---- DUPLICATES (review & merge — one at a time, confident-first) ---- -->
+    <!-- ---- DUPLICATES (review one-at-a-time, or bulk-approve in groups) ---- -->
     <section class="view" id="duplicates">
       <div class="topbar">
         <h1 class="serif">Duplicates <span class="sub" id="dup-sub"></span></h1>
-        <button class="btn ghost" id="undo-btn" style="margin-left:auto" title="Restore the state before the last merge">↺ Undo last merge</button>
+        <div class="modetoggle" id="dupmode" role="tablist" aria-label="Review mode">
+          <button data-mode="bulk" class="on"><span class="dot"></span>Bulk approve</button>
+          <button data-mode="one"><span class="dot"></span>Review individually</button>
+        </div>
+        <button class="btn ghost" id="undo-btn" title="Restore the state before the last merge">↺ Undo last merge</button>
       </div>
-      <div class="dupwrap">
+
+      <!-- one at a time -->
+      <div class="dupwrap" id="dupone" hidden>
         <div class="progress" id="dup-progress" hidden>
           <div class="lbl"><b id="dup-pos">1</b> of <span id="dup-total">0</span> · reviewing <span class="tierpill" id="dup-tier"></span></div>
         </div>
         <div id="merge"><p class="ph" style="text-align:center;margin-top:60px">Scanning for duplicates…</p></div>
+      </div>
+
+      <!-- bulk approve -->
+      <div class="dupwrap wide" id="dupbulk">
+        <div class="steps" id="b-rail">
+          <div class="st on" data-step="1"><span class="num">1</span><span class="lab">Pick groups</span></div>
+          <div class="bar"></div>
+          <div class="st" data-step="2"><span class="num">2</span><span class="lab">Spot-check</span></div>
+          <div class="bar"></div>
+          <div class="st" data-step="3"><span class="num">3</span><span class="lab">Merged</span></div>
+        </div>
+
+        <!-- STEP 1 -->
+        <section id="b-step1">
+          <p class="lede serif">Approve duplicates in bulk.</p>
+          <p class="lede-sub">Pick the groups you trust, skim them, and merge in one pass — one Undo reverses the whole batch.</p>
+          <div class="grouphdr"><span class="eyebrow">Safe to bulk-merge</span><span class="hint">exact matches · pre-selected</span></div>
+          <div class="groupgrid" id="b-safe"></div>
+          <div class="sectlabel" id="b-cautionlabel" hidden>Higher-risk · opt in</div>
+          <p class="cautionnote" id="b-cautionnote" hidden>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>
+            Name-based matches. You’ll spot-check and resolve each — nothing here is pre-selected.
+          </p>
+          <div class="groupgrid" id="b-caution"></div>
+          <div class="step1foot"><button class="btn primary big" id="b-go"></button></div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section id="b-step2" hidden>
+          <p class="lede serif">Flip through and spot-check.</p>
+          <p class="lede-sub">Use the arrows (or ← → keys). Resolve any field marked in red; pull anything wrong out of the batch.</p>
+          <div class="spotnav">
+            <span class="pos"><b id="b-pos">1</b> of <span id="b-total">0</span></span>
+            <span class="tierpill" id="b-tier">confident</span>
+            <div class="navbtns">
+              <button class="iconbtn" id="b-prev" title="Previous (←)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button class="iconbtn" id="b-next" title="Next (→)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <div class="dotsrow" id="b-dots"></div>
+          <div class="cardstage" id="b-stage"></div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section id="b-step3" hidden>
+          <div class="done">
+            <div class="seal"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+            <h2 class="serif" id="b-done-h">Merged</h2>
+            <p id="b-done-p"></p>
+            <div class="undoline"><span id="b-undoline"></span><button class="btn" id="b-done-undo">Undo batch</button></div>
+            <div style="margin-top:26px"><button class="btn primary big" id="b-done-again">Back to duplicates</button></div>
+          </div>
+        </section>
+
+        <!-- sticky commit bar -->
+        <div class="commitbar" id="b-commit">
+          <div class="inner">
+            <div class="tally">
+              <span class="t ready"><span class="swatch"></span><b id="b-ready">0</b> ready</span>
+              <span class="t pick"><span class="swatch"></span><b id="b-pick">0</b> need a pick</span>
+              <span class="t excl"><span class="swatch"></span><b id="b-excl">0</b> excluded</span>
+            </div>
+            <span class="muted" id="b-hint" style="font-size:12.5px"></span>
+            <span class="spacer"></span>
+            <button class="btn ghost" id="b-back">← Groups</button>
+            <button class="btn primary big" id="b-mergeall" disabled>Merge ready</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- opt-in confirm toast -->
+      <div class="toast" id="b-toast">
+        <span id="b-toast-msg"></span>
+        <div class="tbtns"><button id="b-toast-no">Not now</button><button class="go" id="b-toast-yes">Add to batch</button></div>
       </div>
     </section>
 

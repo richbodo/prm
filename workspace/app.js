@@ -104,8 +104,9 @@ async function selectContact(id, li) {
     `<table class="kv">${rows}</table>`;
 }
 
-// ---- duplicates review: AI proposals + deterministic candidates, one at a time ----
+// ---- duplicates review: AI proposals + deterministic candidates ----
 let dupItems = [], dupIndex = 0, dupPicks = {};
+let dupMode = "bulk";                                       // "bulk" (default) | "one"
 
 async function postJSON(path, body) {
   const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
@@ -122,19 +123,23 @@ function updateDupCounts() {
   if (els.dupBadge) els.dupBadge.textContent = total || "—";
   const sub = $("#dup-sub");
   if (sub) sub.textContent = total
-    ? `${total} to review${ai ? ` · ${ai} from AI 🤖` : ""} · one at a time`
+    ? `${total} possible duplicate${total === 1 ? "" : "s"}${ai ? ` · ${ai} from AI 🤖` : ""}`
     : "none found";
 }
 
 async function loadDuplicates() {
   try {
     const [props, cands] = await Promise.all([api("/api/proposals"), api("/api/candidates")]);
-    const aiItems = (props.proposals || []).map((p) => ({ kind: "proposal", ...p }));
-    const detItems = (cands.clusters || []).map((c) => ({ kind: "candidate", ...c }));
+    const proposals = props.proposals || [];
+    const propKeys = new Set(proposals.map((p) => p.cluster_key).filter(Boolean));
+    const aiItems = proposals.map((p) => ({ kind: "proposal", ...p }));
+    const detItems = (cands.clusters || [])
+      .filter((c) => !propKeys.has(c.key))          // dedup: a pending proposal already covers this cluster
+      .map((c) => ({ kind: "candidate", ...c }));
     dupItems = aiItems.concat(detItems);            // AI proposals first — review the AI's work, then the detector
     dupIndex = 0;
     updateDupCounts();
-    showItem();
+    if (dupMode === "bulk") renderBulkGroups(); else showItem();
   } catch { /* not ready */ }
 }
 
@@ -230,6 +235,243 @@ function advance() {
   refreshStats();
   browse();          // contacts changed
 }
+
+// ---- bulk approve: select groups → flip & spot-check (inline conflict resolution) → merge in one batch ----
+const GROUP_META = {
+  confA:  { title: "Same email or phone", sub: "exact contact-info match", klass: "safe", order: 1 },
+  confL:  { title: "Same LinkedIn profile", sub: "identical profile URL", klass: "safe", order: 2 },
+  ai:     { title: "AI proposed", sub: "each carries the AI’s rationale", klass: "safe", ai: true, order: 3 },
+  strong: { title: "Name + same company", sub: "strong signal, not exact", klass: "caution", order: 4 },
+  fuzzy:  { title: "Name-only", sub: "weakest signal — review with care", klass: "caution", order: 5 },
+  review: { title: "Needs a closer look", sub: "oversized / low-cohesion cluster", klass: "caution", order: 6 },
+};
+const groupOf = (it) => it.kind === "proposal" ? "ai"
+  : it.tier === "confident" ? ((it.signals || []).includes("profile_url") ? "confL" : "confA") : it.tier;
+const itemConflicts = (it) => it.kind === "candidate" ? (it.conflicts || []) : [];
+
+let bulkQueue = [], bulkIdx = 0, bulkSelected = new Set(), bulkInit = false, bulkPending = null;
+const selectedItems = () => dupItems.filter((it) => bulkSelected.has(groupOf(it)));
+
+function bulkStep(n) {
+  $("#b-step1").hidden = n !== 1; $("#b-step2").hidden = n !== 2; $("#b-step3").hidden = n !== 3;
+  $("#b-commit").classList.toggle("show", n === 2);
+  document.querySelectorAll("#b-rail .st").forEach((s) => {
+    const sn = +s.dataset.step; s.classList.toggle("on", sn === n); s.classList.toggle("done", sn < n);
+  });
+  document.querySelectorAll("#b-rail .bar").forEach((bar, i) => bar.classList.toggle("fill", i < n - 1));
+}
+
+function renderBulkGroups() {
+  bulkStep(1);
+  const buckets = {};
+  dupItems.forEach((it) => { (buckets[groupOf(it)] ||= []).push(it); });
+  if (!bulkInit && Object.keys(buckets).length) {            // confident + AI pre-checked on first entry
+    Object.keys(buckets).forEach((g) => { if (GROUP_META[g] && GROUP_META[g].klass === "safe") bulkSelected.add(g); });
+    bulkInit = true;
+  }
+  [...bulkSelected].forEach((g) => { if (!buckets[g]) bulkSelected.delete(g); });   // prune vanished groups
+
+  const safe = $("#b-safe"), caut = $("#b-caution");
+  safe.innerHTML = ""; caut.innerHTML = "";
+  const groups = Object.keys(buckets).sort((a, b) => (GROUP_META[a]?.order || 99) - (GROUP_META[b]?.order || 99));
+  let i = 0, anyCaution = false;
+  groups.forEach((g) => {
+    const meta = GROUP_META[g] || { title: g, sub: "", klass: "caution", order: 99 };
+    (meta.klass === "safe" ? safe : caut).appendChild(groupCard(g, meta, buckets[g], i++));
+    if (meta.klass !== "safe") anyCaution = true;
+  });
+  $("#b-cautionlabel").hidden = !anyCaution;
+  $("#b-cautionnote").hidden = !anyCaution;
+  if (!dupItems.length) {
+    safe.innerHTML = `<div class="empty" style="grid-column:1/-1;margin:20px auto"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><h2 class="serif">All caught up</h2><p>No duplicates to review.</p></div>`;
+  }
+  updateGoBtn();
+}
+
+function groupCard(g, meta, items, idx) {
+  const nConf = items.filter((it) => itemConflicts(it).length).length;
+  const on = bulkSelected.has(g);
+  const safePill = meta.klass === "safe" ? `<span class="pill safe">safe to bulk-merge</span>` : `<span class="pill caution">spot-check each</span>`;
+  const pickPill = nConf ? `<span class="pill pick">${nConf} need a pick</span>` : "";
+  const title = meta.ai ? `<span class="botbadge">🤖 AI proposed</span>` : esc(meta.title);
+  const el = document.createElement("div");
+  el.className = `groupcard ${meta.klass}${on ? " on" : ""}`;
+  el.style.setProperty("--i", idx);
+  el.innerHTML =
+    `<div class="gtop"><span class="gcheck"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span>` +
+    `<div class="gbody"><div class="gtitle">${title}</div><div class="gsub">${esc(meta.sub)}</div>` +
+    `<div class="gmeta"><span class="gcount"><b>${items.length}</b> merge${items.length === 1 ? "" : "s"}</span>${safePill}${pickPill}</div></div></div>`;
+  el.addEventListener("click", () => toggleGroup(g, meta, items.length));
+  return el;
+}
+
+function toggleGroup(g, meta, count) {
+  if (bulkSelected.has(g)) { bulkSelected.delete(g); renderBulkGroups(); return; }
+  if (meta.klass === "caution") {                           // opt-in confirm for higher-risk groups
+    bulkPending = g;
+    $("#b-toast-msg").innerHTML = `<b>${esc(meta.title)}</b> — ${count} name-based match${count === 1 ? "" : "es"}. You’ll spot-check and resolve each before it merges. Add to the batch?`;
+    $("#b-toast").classList.add("show");
+    return;
+  }
+  bulkSelected.add(g); renderBulkGroups();
+}
+
+function updateGoBtn() {
+  const n = selectedItems().length;
+  const b = $("#b-go");
+  b.textContent = `Spot-check ${n} merge${n === 1 ? "" : "s"} →`;
+  b.disabled = n === 0;
+}
+
+// readiness: a card is ready when not excluded and every conflicting field has a pick
+const bReady = (it) => !it._excluded && (it._conflicts || []).every((f) => it._picks[f] != null);
+const bStatus = (it) => it._excluded ? "excl" : (bReady(it) ? "ready" : "pick");
+
+async function startSpotCheck() {
+  bulkQueue = selectedItems();
+  bulkStep(2);
+  $("#b-total").textContent = bulkQueue.length;
+  $("#b-stage").innerHTML = `<p class="ph" style="text-align:center;margin-top:40px">Loading previews…</p>`;
+  await Promise.all(bulkQueue.map(async (it) => {           // prefetch previews → know conflicts up front
+    it._preview = await api(`/api/merge-preview?ids=${(it.member_ids || []).join(",")}`);
+    it._conflicts = it._preview.conflicts || [];
+    it._aiPicks = {};
+    if (it.kind === "proposal") (it.operations || []).forEach((op) => {
+      if (op.op === "resolve_field") it._aiPicks[op.field] = { value: op.chosen_value, source: op.chosen_source };
+    });
+    it._picks = { ...it._aiPicks };                         // start from the AI's picks (editable)
+    it._excluded = false;
+  }));
+  bulkIdx = 0;
+  showBulkCard(0);
+  updateTally();
+}
+
+function renderBDots() {
+  const d = $("#b-dots"); d.innerHTML = "";
+  bulkQueue.forEach((it, i) => {
+    const st = bStatus(it), s = document.createElement("span");
+    s.className = `d ${st}${i === bulkIdx ? " cur" : ""}`;
+    s.style.color = st === "ready" ? "var(--accent)" : st === "pick" ? "var(--clay)" : "var(--faint)";
+    s.title = `#${i + 1}`;
+    s.addEventListener("click", () => showBulkCard(i));
+    d.appendChild(s);
+  });
+}
+
+function bulkDiffRows(it) {
+  return it._preview.fields.filter((f) => !NOISE.has(f.name)).map((f) => {
+    if (f.kind === "conflict") {
+      const pick = it._picks[f.name], ai = it._aiPicks[f.name], resolved = pick != null;
+      const opts = f.options.map((o) => {
+        const sel = pick && pick.value === o.value ? " sel" : "";
+        const aiTag = ai && ai.value === o.value ? `<span class="aitag">AI’s pick</span>` : "";
+        return `<label class="opt${sel}" data-field="${esc(f.name)}" data-val="${esc(o.value)}" data-src="${esc(o.source)}"><span class="pick"></span><span class="v">${esc(o.value)}</span>${aiTag}<span class="from">${esc(srcLabel(o.source))}</span></label>`;
+      }).join("");
+      const lbl = resolved ? `✓ keeping “${esc(pick.value)}”` : (ai ? "⚠ differ — confirm the AI’s pick or change it" : "⚠ these differ — choose which to keep");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="conflict${resolved ? " resolved" : ""}"><div class="clabel">${lbl}</div><div class="opts">${opts}</div></div></td></tr>`;
+    }
+    if (f.kind === "union" && f.values.length > 1) {
+      const items = f.values.map((v) => `<div class="u"><span class="plus">+</span><span>${esc(v.value)}</span><span class="from">${esc(srcLabel(v.source))}</span></div>`).join("");
+      return `<tr><th class="f">${esc(f.name)}</th><td><div class="union">${items}</div><div class="keepall">both kept</div></td></tr>`;
+    }
+    const v = f.values[0];
+    return `<tr><th class="f">${esc(f.name)}</th><td><div class="single">${esc(v.value)} <span class="from mono">${esc(srcLabel(v.source))}</span></div></td></tr>`;
+  }).join("");
+}
+
+function showBulkCard(i, dir) {
+  bulkIdx = Math.max(0, Math.min(bulkQueue.length - 1, i));
+  const it = bulkQueue[bulkIdx], isAI = it.kind === "proposal", preview = it._preview, into = it.into;
+  $("#b-pos").textContent = bulkIdx + 1;
+  const ct = $("#b-tier");
+  ct.textContent = isAI ? "ai proposal" : it.tier;
+  ct.className = "tierpill" + (isAI || it.tier === "confident" ? " confident" : "");
+  $("#b-prev").disabled = bulkIdx === 0; $("#b-next").disabled = bulkIdx === bulkQueue.length - 1;
+
+  const eyebrow = isAI ? `<span class="botbadge">🤖 AI proposal</span> · ${esc(it.created_by)}` : `${esc(it.tier)} · ${esc((it.signals || []).join(", "))}`;
+  const head = isAI ? "The AI proposes merging these" : "These look like the same person";
+  const memberHtml = (preview.members || []).map((m) => {
+    const keep = m.id === into;
+    return `<span class="member${keep ? " into" : ""}"><span class="avatar">${esc(initial(m.name))}</span><span class="who"><b>${esc(m.name || "(no name)")}</b> <span>${esc(srcLabel(m.source))}</span></span>${keep ? '<span class="keepbadge">keep</span>' : ""}</span>`;
+  }).join("");
+
+  $("#b-stage").innerHTML =
+    `<div class="mergecard flip${it._excluded ? " excluded" : ""}" style="--dir:${dir === "prev" ? "-16px" : "16px"}">` +
+    `<div class="mc-head"><div class="eyebrow">${eyebrow}</div><h3 class="serif">${head}</h3>` +
+    (isAI && it.rationale ? `<p class="prationale">“${esc(it.rationale)}”</p>` : "") +
+    `<div class="members">${memberHtml}</div></div>` +
+    `<table class="difftbl"><tbody>${bulkDiffRows(it)}</tbody></table>` +
+    `<div class="mc-foot"><span class="reassure">↺ Reversible — part of one batch</span><span class="spacer"></span>` +
+    `<button class="btn ${it._excluded ? "" : "danger-ghost"}" id="b-exclbtn">${it._excluded ? "↩ Include in batch" : "✕ Exclude this"}</button>` +
+    `<button class="btn" id="b-cardnext">Next →</button></div></div>`;
+
+  $("#b-stage").querySelectorAll(".opt").forEach((opt) => opt.addEventListener("click", () => {
+    it._picks[opt.dataset.field] = { value: opt.dataset.val, source: opt.dataset.src };
+    showBulkCard(bulkIdx); updateTally();
+  }));
+  $("#b-exclbtn").addEventListener("click", () => { it._excluded = !it._excluded; showBulkCard(bulkIdx); updateTally(); });
+  $("#b-cardnext").addEventListener("click", () => { if (bulkIdx < bulkQueue.length - 1) showBulkCard(bulkIdx + 1, "next"); });
+  renderBDots();
+}
+
+function updateTally() {
+  const r = bulkQueue.filter(bReady).length;
+  const p = bulkQueue.filter((it) => !it._excluded && !bReady(it)).length;
+  const e = bulkQueue.filter((it) => it._excluded).length;
+  $("#b-ready").textContent = r; $("#b-pick").textContent = p; $("#b-excl").textContent = e;
+  const btn = $("#b-mergeall");
+  btn.disabled = r === 0; btn.textContent = `Merge ${r} ready`;
+  $("#b-hint").textContent = p > 0 ? `${p} still need a pick — resolve or exclude them` : (r > 0 ? "all set" : "");
+  renderBDots();
+}
+
+async function mergeBatch() {
+  const ready = bulkQueue.filter(bReady);
+  const items = ready.map((it) => {
+    if (it.kind === "proposal") {
+      const resolutions = (it._conflicts || []).filter((f) => {           // only overrides of the AI's pick
+        const ai = it._aiPicks[f], pk = it._picks[f];
+        return pk && (!ai || ai.value !== pk.value);
+      }).map((f) => ({ field: f, chosen_value: it._picks[f].value, chosen_source: it._picks[f].source, rule: "user" }));
+      return { kind: "proposal", proposal_id: it.proposal_id, resolutions };
+    }
+    const resolutions = (it._conflicts || []).map((f) => ({ field: f, chosen_value: it._picks[f].value, chosen_source: it._picks[f].source, rule: "user" }));
+    return { kind: "candidate", member_ids: it.member_ids, into: it.into, resolutions };
+  });
+  let res;
+  try { res = await postJSON("/api/merge-batch", { items, rationale: "bulk approve" }); }
+  catch (err) { alert("Merge failed: " + err.message); return; }
+  const n = res.merged != null ? res.merged : ready.length;
+  $("#b-done-h").textContent = `Merged ${n} duplicate set${n === 1 ? "" : "s"}`;
+  $("#b-done-p").textContent = `${n} contact${n === 1 ? " was" : "s were"} folded into ${n === 1 ? "its" : "their"} canonical record, in one transaction. Your imported source records were never changed.`;
+  $("#b-undoline").textContent = `↺ One Undo reverses all ${n} merges `;
+  bulkStep(3);
+  refreshStats(); browse();
+}
+
+document.querySelectorAll("#dupmode button").forEach((b) =>
+  b.addEventListener("click", () => {
+    dupMode = b.dataset.mode;
+    document.querySelectorAll("#dupmode button").forEach((x) => x.classList.toggle("on", x === b));
+    $("#dupone").hidden = dupMode !== "one";
+    $("#dupbulk").hidden = dupMode !== "bulk";
+    loadDuplicates();                                       // refetch + dispatch to the active mode
+  }));
+$("#b-go").addEventListener("click", startSpotCheck);
+$("#b-prev").addEventListener("click", () => { if (bulkIdx > 0) showBulkCard(bulkIdx - 1, "prev"); });
+$("#b-next").addEventListener("click", () => { if (bulkIdx < bulkQueue.length - 1) showBulkCard(bulkIdx + 1, "next"); });
+$("#b-back").addEventListener("click", renderBulkGroups);
+$("#b-mergeall").addEventListener("click", mergeBatch);
+$("#b-done-again").addEventListener("click", loadDuplicates);
+$("#b-done-undo").addEventListener("click", async () => { await postJSON("/api/undo", {}); await loadDuplicates(); refreshStats(); browse(); });
+$("#b-toast-yes").addEventListener("click", () => { if (bulkPending) { bulkSelected.add(bulkPending); renderBulkGroups(); } $("#b-toast").classList.remove("show"); bulkPending = null; });
+$("#b-toast-no").addEventListener("click", () => { $("#b-toast").classList.remove("show"); bulkPending = null; });
+document.addEventListener("keydown", (e) => {              // ← → flip through the spot-check gallery
+  if (dupMode !== "bulk" || !$("#duplicates").classList.contains("show") || $("#b-step2").hidden) return;
+  if (e.key === "ArrowLeft" && bulkIdx > 0) showBulkCard(bulkIdx - 1, "prev");
+  if (e.key === "ArrowRight" && bulkIdx < bulkQueue.length - 1) showBulkCard(bulkIdx + 1, "next");
+});
 
 // ---- nav / reset ----
 function show(view) {

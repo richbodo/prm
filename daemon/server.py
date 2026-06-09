@@ -74,7 +74,13 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
                                                     offset=_int(query.get("offset"), 0)))
 
     if path == "/api/candidates":
-        return _json(200, {"clusters": candidates.find_duplicate_candidates(home)})
+        clusters = candidates.find_duplicate_candidates(home)
+        meta = {m["key"]: m for m in projection.clusters_meta(home, clusters)}
+        for cl in clusters:                                  # annotate for the bulk-approve surface
+            m = meta.get(cl["key"], {})
+            cl["conflicts"] = m.get("conflicts", [])
+            cl["into"] = m.get("into") or (cl["member_ids"][0] if cl.get("member_ids") else None)
+        return _json(200, {"clusters": clusters})
 
     if path == "/api/merge-preview":
         ids = [i for i in (query.get("ids") or [""])[0].split(",") if i]
@@ -83,7 +89,11 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
         return _json(200, projection.preview_merge(home, ids))
 
     if path == "/api/proposals":
-        return _json(200, {"proposals": proposals.list_proposals(home, status="pending")})
+        props = proposals.list_proposals(home, status="pending")
+        for p in props:                                      # cluster_key lets the SPA dedup a proposal
+            mids = p.get("member_ids") or []                 # against its detected candidate (same hash)
+            p["cluster_key"] = candidates.cluster_key(mids) if mids else None
+        return _json(200, {"proposals": props})
 
     if path.startswith(_CONTACT_PREFIX):
         contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
@@ -107,6 +117,27 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
                                              created_by="manual:workspace", rationale=body.get("rationale", ""))
             result = apply.apply_changeset(home, cs)
             return _json(200, {"ok": True, "into": into, "proposal_id": result["proposal_id"]})
+
+        if path == "/api/merge-batch":
+            items = body.get("items") or []
+            if not isinstance(items, list) or not items:
+                return _json(400, {"error": "merge-batch needs a non-empty `items` list"})
+            for it in items:                                  # thin shape checks; apply_batch owns the rest
+                kind = it.get("kind")
+                if kind == "candidate":
+                    mids, into = it.get("member_ids") or [], it.get("into")
+                    if not into or into not in mids:
+                        return _json(400, {"error": "candidate item needs member_ids and an `into` among them"})
+                elif kind == "proposal":
+                    cs = proposals.load(home, it.get("proposal_id") or "")
+                    if cs is None:
+                        return _json(404, {"error": f"no such proposal {it.get('proposal_id')!r}"})
+                    if cs.get("status") != "pending":         # refuse before applying anything
+                        return _json(409, {"error": f"proposal {cs.get('proposal_id')} already {cs.get('status')}"})
+                else:
+                    return _json(400, {"error": f"unknown item kind: {kind!r}"})
+            return _json(200, apply.apply_batch(home, items, created_by="manual:workspace-batch",
+                                                rationale=body.get("rationale", "")))
 
         if path == "/api/reject":
             key = body.get("key")

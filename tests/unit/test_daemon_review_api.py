@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
+from core import candidates, proposals  # noqa: E402
 from daemon import server  # noqa: E402
 from mcp_servers import tools as mcp_tools  # noqa: E402  (pure tools, no SDK import)
 
@@ -134,6 +135,86 @@ def test_dismiss_proposal_route():
         assert not _body(server.route("GET", "/api/proposals", {}, home))["proposals"]    # dismissed
         # dismissing the proposal also suppresses the underlying deterministic candidate
         assert not [c for c in _body(server.route("GET", "/api/candidates", {}, home))["clusters"] if c["tier"] == "confident"]
+
+
+# ------------------------------------------------------------------ bulk approve (/api/merge-batch)
+def _two_pairs_home(tmp: str):
+    """4 records → 2 confident duplicate pairs (each pair shares an exact email across two sources)."""
+    home = resolve_home(Path(tmp) / "h")
+    recs = [("Ada Lovelace", "apple_icloud", "ada@x.org"), ("Ada Lovelace", "google_takeout", "ada@x.org"),
+            ("Alan Turing", "apple_icloud", "alan@y.uk"), ("Alan Turing", "google_csv", "alan@y.uk")]
+    for i, (name, src, email) in enumerate(recs):
+        v = Path(tmp) / f"{src}-{i}.vcf"
+        v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:{email}\r\nEND:VCARD\r\n", encoding="utf-8")
+        ingest_mod.ingest([v], source=src, home=home, dry_run=False)
+    return home
+
+
+def _confident_clusters(home):
+    return [c for c in _body(server.route("GET", "/api/candidates", {}, home))["clusters"] if c["tier"] == "confident"]
+
+
+def test_candidates_route_enriched():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        cl = _confident(home)
+        assert cl["into"] in cl["member_ids"]            # recommended survivor for bulk
+        assert "fn" in cl["conflicts"]                   # Robert vs Bob → reviewer must pick
+
+
+def test_proposals_route_has_cluster_key():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        pid = _stage_ai_proposal(home)
+        p = next(p for p in _body(server.route("GET", "/api/proposals", {}, home))["proposals"] if p["proposal_id"] == pid)
+        assert p["cluster_key"] == candidates.cluster_key(p["member_ids"])   # same hash the SPA dedups against
+
+
+def test_merge_batch_applies_all_and_one_undo():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _two_pairs_home(tmp)
+        conf = _confident_clusters(home)
+        assert len(conf) == 2
+        items = [{"kind": "candidate", "member_ids": c["member_ids"], "into": c["into"]} for c in conf]
+        res = _body(server.route("POST", "/api/merge-batch", {}, home, {"items": items}))
+        assert res["ok"] and res["merged"] == 2
+        assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 2
+        assert _body(server.route("POST", "/api/undo", {}, home, {}))["ok"]      # one undo reverses the batch
+        assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 4
+
+
+def test_merge_batch_equals_sequential_merges():
+    with tempfile.TemporaryDirectory() as t1, tempfile.TemporaryDirectory() as t2:
+        hb, hs = _two_pairs_home(t1), _two_pairs_home(t2)
+        server.route("POST", "/api/merge-batch", {}, hb,                        # one batch
+                     {"items": [{"kind": "candidate", "member_ids": c["member_ids"], "into": c["into"]} for c in _confident_clusters(hb)]})
+        for c in _confident_clusters(hs):                                       # N single merges
+            server.route("POST", "/api/merge", {}, hs, {"member_ids": c["member_ids"], "into": c["into"]})
+        names_b = sorted(r["name"] for r in _body(server.route("GET", "/api/contacts", {}, hb))["records"])
+        names_s = sorted(r["name"] for r in _body(server.route("GET", "/api/contacts", {}, hs))["records"])
+        assert names_b == names_s                                               # same final projection
+
+
+def test_merge_batch_validates():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _two_pairs_home(tmp)
+        assert server.route("POST", "/api/merge-batch", {}, home, {"items": []})[0] == 400          # empty
+        cl = _confident(home)
+        assert server.route("POST", "/api/merge-batch", {}, home,
+                            {"items": [{"kind": "candidate", "member_ids": cl["member_ids"], "into": "nope"}]})[0] == 400
+        assert server.route("POST", "/api/merge-batch", {}, home,
+                            {"items": [{"kind": "proposal", "proposal_id": "nope"}]})[0] == 404
+        assert server.route("POST", "/api/merge-batch", {}, home,
+                            {"items": [{"kind": "what"}]})[0] == 400
+
+
+def test_merge_batch_rejects_non_pending_proposal():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        pid = _stage_ai_proposal(home)
+        proposals.set_status(home, pid, "applied")                              # already applied
+        assert server.route("POST", "/api/merge-batch", {}, home,
+                            {"items": [{"kind": "proposal", "proposal_id": pid}]})[0] == 409
 
 
 def main() -> int:
