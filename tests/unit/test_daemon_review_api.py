@@ -217,6 +217,35 @@ def test_merge_batch_rejects_non_pending_proposal():
                             {"items": [{"kind": "proposal", "proposal_id": pid}]})[0] == 409
 
 
+def test_candidates_route_recommends_authoritative_survivor():
+    # a cross-source confident cluster — the recommended `into` is the more authoritative source
+    # (Apple > LinkedIn by source priority), not the arbitrary first-by-id member.
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        for src in ("linkedin", "apple_icloud"):           # linkedin loaded first, on purpose
+            v = Path(tmp) / f"{src}.vcf"
+            v.write_text("BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ada Lovelace\r\nEMAIL:ada@x.org\r\nEND:VCARD\r\n", encoding="utf-8")
+            ingest_mod.ingest([v], source=src, home=home, dry_run=False)
+        cl = _confident(home)
+        apple_id = next(m["id"] for m in cl["members"] if m["source"] == "apple_icloud")
+        assert cl["into"] == apple_id
+
+
+def test_merge_batch_collapses_proposal_and_candidate():
+    # a pending proposal AND its detected candidate (identical member-set) in one batch → applied once,
+    # with the proposal winning (the backend safety-net for the SPA's cluster_key dedup).
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _dup_home(tmp)
+        cl = _confident(home)
+        pid = _stage_ai_proposal(home)
+        items = [{"kind": "candidate", "member_ids": cl["member_ids"], "into": cl["member_ids"][0]},
+                 {"kind": "proposal", "proposal_id": pid}]
+        res = _body(server.route("POST", "/api/merge-batch", {}, home, {"items": items}))
+        assert res["ok"] and res["merged"] == 1                                 # deduped → one merge, not two
+        assert _body(server.route("GET", "/api/contacts", {}, home))["total"] == 1
+        assert proposals.load(home, pid)["status"] == "applied"                 # the proposal beat its candidate
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

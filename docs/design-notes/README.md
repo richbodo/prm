@@ -28,3 +28,7 @@ and the stdlib detection algorithm.
   — one detection core + one review/apply, with a deterministic UI (M3) and an LLM (M4) as
   interchangeable proposal authors; immutable-raw + projection makes merges reversible; field-level
   Update rides the same substrate.
+- [**Bulk-approve merges — the decisions, and where PRM differs**](bulk-merge-decisions.md)
+  — why batching merges (M3f) doesn't weaken data safety: the constraints respected vs interpreted, the
+  genuine-vs-perceived-safety split, the skip-don't-chain overlap rule, and the contrast with destructive
+  bulk-merge in mainstream contact tools.
