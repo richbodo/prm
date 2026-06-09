@@ -113,6 +113,71 @@ def test_audit_is_append_only_jsonl():
         assert [e["n"] for e in entries] == [1, 2] and all("at" in e for e in entries)
 
 
+# ------------------------------------------------------------------ bulk approve (apply_batch)
+def _two_pairs_home(tmp: str):
+    """4 records → 2 confident duplicate pairs (each pair shares an exact email across two sources)."""
+    home = resolve_home(Path(tmp) / "h")
+    recs = [("Ada Lovelace", "apple_icloud", "ada@x.org"), ("Ada Lovelace", "google_takeout", "ada@x.org"),
+            ("Alan Turing", "apple_icloud", "alan@y.uk"), ("Alan Turing", "google_csv", "alan@y.uk")]
+    for i, (name, src, email) in enumerate(recs):
+        v = Path(tmp) / f"{src}-{i}.vcf"
+        v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:{email}\r\nEND:VCARD\r\n", encoding="utf-8")
+        ingest_mod.ingest([v], source=src, home=home, dry_run=False)
+    return home
+
+
+def test_apply_batch_atomic_single_undo():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _two_pairs_home(tmp)
+        assert projection.list_contacts(home)["total"] == 4
+        conf = [c for c in candidates.find_duplicate_candidates(home) if c["tier"] == "confident"]
+        assert len(conf) == 2
+        items = [{"kind": "candidate", "member_ids": c["member_ids"], "into": c["member_ids"][0]} for c in conf]
+
+        res = apply.apply_batch(home, items)
+        assert res["ok"] and res["merged"] == 2
+        assert projection.list_contacts(home)["total"] == 2                  # both pairs merged
+        assert len(snapshots.list_snapshots(home)) == 1                      # ONE snapshot for the batch
+        log = audit.read(home)
+        assert len(log) == 1 and log[-1]["kind"] == "apply"                  # ONE audit entry
+        assert sum(1 for op in log[-1]["operations"] if op["op"] == "merge") == 2
+
+        assert apply.undo(home)                                              # ONE undo reverses everything
+        assert projection.list_contacts(home)["total"] == 4
+
+
+def test_apply_batch_guards_empty_and_overlap():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _two_pairs_home(tmp)
+        a, b, c = list(private_db.identity_map(home.private_db))[:3]
+        for bad in ([],                                                      # empty batch
+                    [{"kind": "candidate", "member_ids": [a, b], "into": a},
+                     {"kind": "candidate", "member_ids": [b, c], "into": b}]):   # overlap on b
+            try:
+                apply.apply_batch(home, bad)
+                raise AssertionError(f"expected ValueError for {bad}")
+            except ValueError:
+                pass
+
+
+def test_apply_batch_proposal_override_wins():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        for name, src in (("Robert Smith", "apple_icloud"), ("Bob Smith", "google_takeout")):
+            v = Path(tmp) / f"{src}.vcf"
+            v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:bob@example.com\r\nEND:VCARD\r\n", encoding="utf-8")
+            ingest_mod.ingest([v], source=src, home=home, dry_run=False)
+        a, b = list(private_db.identity_map(home.private_db))[:2]
+        cs = apply.build_merge_changeset(home, [a, b], a, created_by="ai:local-dedup",
+                                         resolutions=[{"field": "fn", "chosen_value": "Robert Smith", "chosen_source": "apple_icloud"}])
+        pid = proposals.store(home, cs, status="pending")
+
+        apply.apply_batch(home, [{"kind": "proposal", "proposal_id": pid,
+                                  "resolutions": [{"field": "fn", "chosen_value": "Bob Smith", "chosen_source": "google_takeout", "rule": "user"}]}])
+        assert projection.get_contact(home, a)["fn"] == "Bob Smith"          # inline override beats the AI's pick
+        assert proposals.load(home, pid)["status"] == "applied"              # constituent proposal marked applied
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

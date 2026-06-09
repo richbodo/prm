@@ -147,15 +147,17 @@ def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
     }
 
 
-def preview_merge(home, contact_ids: list) -> dict:
-    """Preview merging several canonical contacts into one — which fields **union**, which stay
-    **single**, and which **conflict** (a single-valued field with >1 distinct value the reviewer must
-    pick). Read-only; drives the Duplicates review surface (M3d). For each conflict it suggests the
-    survivorship default (source priority → most-recent) but pre-selects nothing."""
-    groups = _records_by_contact(home)
-    members = [rec for cid in contact_ids for rec in groups.get(cid, [])]
-    rank = {s: i for i, s in enumerate(private_db.source_priority(home.private_db) if home.private_db.exists()
-                                       else private_db.DEFAULT_SOURCE_PRIORITY)}
+def _rank(home) -> dict:
+    """{source: priority-index} — lower is more authoritative (Apple/Google before LinkedIn/Facebook)."""
+    order = private_db.source_priority(home.private_db) if home.private_db.exists() else private_db.DEFAULT_SOURCE_PRIORITY
+    return {s: i for i, s in enumerate(order)}
+
+
+def _preview_fields(members: list, rank: dict) -> tuple[list, list]:
+    """Classify a set of source records into merge-preview ``fields`` + the list of conflicting field
+    names. UNION fields keep all distinct values; a RECONCILE field with >1 distinct value becomes a
+    ``conflict`` carrying a survivorship ``suggested`` default (source priority → most-recent) but
+    pre-selecting nothing. Pure — no DB access. Shared by ``preview_merge`` and ``clusters_meta``."""
     by_name: dict[str, list] = {}
     for rec in members:
         for prop in rec["props"]:
@@ -183,7 +185,37 @@ def preview_merge(home, contact_ids: list) -> dict:
             fields.append({"name": name, "kind": "single", "values": [{"value": opts[0]["value"], "source": opts[0]["source"]}]})
         else:
             fields.append({"name": name, "kind": "union", "values": [{"value": o["value"], "source": o["source"]} for o in opts]})
-    members = []
+    return fields, conflicts
+
+
+def _survivor(contact_ids: list, groups: dict, rank: dict) -> str:
+    """Recommended surviving contact for a merge. Tie-break (dedupe-design Decision 3): source priority →
+    most-complete (more distinct non-empty props) → most-recent → id. Stable multi-pass sort."""
+    if not contact_ids:
+        return ""
+    def fields_of(cid):
+        return len({prop[0].lower() for rec in groups.get(cid, []) for prop in rec["props"]
+                    if prop[0].lower() not in _HIDDEN and _flatten(prop[3:] if len(prop) > 3 else [])})
+    def rank_of(cid):
+        return min((rank.get(r["source"], 999) for r in groups.get(cid, [])), default=999)
+    def latest_of(cid):
+        return max((r["ingested_at"] or "" for r in groups.get(cid, [])), default="")
+    ordered = sorted(contact_ids)                                          # id asc (final tiebreak)
+    ordered = sorted(ordered, key=latest_of, reverse=True)                 # then most-recent
+    ordered = sorted(ordered, key=lambda c: (rank_of(c), -fields_of(c)))   # then priority, most-complete
+    return ordered[0]
+
+
+def preview_merge(home, contact_ids: list) -> dict:
+    """Preview merging several canonical contacts into one — which fields **union**, which stay
+    **single**, and which **conflict** (a single-valued field with >1 distinct value the reviewer must
+    pick). Read-only; drives the Duplicates review surface (M3d). For each conflict it suggests the
+    survivorship default (source priority → most-recent) but pre-selects nothing."""
+    groups = _records_by_contact(home)
+    rank = _rank(home)
+    members = [rec for cid in contact_ids for rec in groups.get(cid, [])]
+    fields, conflicts = _preview_fields(members, rank)
+    member_list = []
     for cid in contact_ids:
         recs = groups.get(cid, [])
         name = ""
@@ -194,8 +226,24 @@ def preview_merge(home, contact_ids: list) -> dict:
                     break
             if name:
                 break
-        members.append({"id": cid, "name": name, "source": recs[0]["source"] if recs else ""})
-    return {"member_ids": list(contact_ids), "members": members, "fields": fields, "conflicts": conflicts}
+        member_list.append({"id": cid, "name": name, "source": recs[0]["source"] if recs else ""})
+    return {"member_ids": list(contact_ids), "members": member_list, "fields": fields, "conflicts": conflicts}
+
+
+def clusters_meta(home, clusters: list) -> list:
+    """Annotate detected duplicate clusters with bulk-merge metadata: per cluster, the conflicting
+    single-valued ``conflicts`` (fields the reviewer must pick) and a recommended survivor ``into``.
+    Loads the record map + source priority **once** for the whole batch (cheaper than per-cluster
+    ``preview_merge``). Read-only; drives the bulk-approve group cards + spot-check defaults."""
+    groups = _records_by_contact(home)
+    rank = _rank(home)
+    out = []
+    for cl in clusters:
+        ids = cl.get("member_ids", [])
+        members = [rec for cid in ids for rec in groups.get(cid, [])]
+        _, conflicts = _preview_fields(members, rank)
+        out.append({"key": cl.get("key"), "conflicts": conflicts, "into": _survivor(ids, groups, rank)})
+    return out
 
 
 def get_contact(home, contact_id: str) -> dict | None:

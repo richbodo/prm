@@ -91,11 +91,23 @@ with canopy/phonetic upgrades — but a personal store (the demo is ~1000) sits 
 ## Decision 5 — v0.1 ergonomics: neutral, one-at-a-time, nothing auto-applies
 
 v0.1 is the **review-required tier only** — even a confident match is *proposed*, never auto-applied.
-Approvals are **one-at-a-time** (Clay's finding: deliberate friction prevents accidental merges), and
-candidates are presented **neutrally** — no pre-checking, no confidence chips yet. Confidence surfacing
-and bulk-approve arrive with the **M4** AI author, where a batch of machine proposals actually needs
-triage. Rejections persist (a `dedup_decisions` record keyed on stable source ids) so a dismissed pair
-doesn't resurface on re-detect or re-import.
+The default flow is **one-at-a-time** (Clay's finding: deliberate friction prevents accidental merges),
+candidates presented **neutrally** (no pre-checking). Rejections persist (a `dedup_decisions` record
+keyed on stable source ids) so a dismissed pair doesn't resurface on re-detect or re-import.
+
+**Bulk approve (shipped).** Alongside one-at-a-time, the workspace offers a **bulk** mode that lands the
+capability this note anticipated for the M4 AI author — "a batch of machine proposals actually needs
+triage." It *replaces* the per-item friction with three equivalent safety properties rather than
+removing it: (1) you select **logical groups** whose trust is already known — the tiers
+(`confident`/`strong`/`fuzzy`/`review`) plus the AI-proposed group — with **confident + AI pre-selected
+and the name-based tiers opt-in** behind an explicit confirm; (2) a **spot-check** pass where you flip
+through the selection, **resolve any single-valued conflict inline** (so "flag, don't guess" still
+holds — Decision 3) and **exclude** anything wrong before committing; (3) the batch is applied as **one
+combined changeset** (the substrate's `operations` list, run in a single transaction with one pre-apply
+snapshot), so it is **atomic** and a **single Undo reverses the whole batch**. The combined changeset is
+the sanctioned author for the multi-op shape the substrate always allowed but the single-merge surface
+never exposed. Overlapping clusters are refused (the workspace only presents disjoint clusters); a
+proposal and its detected candidate are deduped on the stable cluster key.
 
 ## Relationship to CRUD
 

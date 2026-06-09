@@ -9,9 +9,9 @@ data never leaves your device.
 > **vCard, Google Takeout, LinkedIn, Google CSV, Facebook** — and it parses them, gives each contact a
 > stable identity, **saves them into a local database**, lets you **search from the terminal or browse
 > them in a local web workspace** (`just serve`), and **find & merge duplicate contacts** in that
-> workspace — review one at a time, pick the winner for any conflict, every merge reversible. An **AI
-> can also propose the merges for you** (over a local MCP server) — it can only *propose*; you still
-> review and approve each one in the workspace. You can also **re-import an updated export** and preview
+> workspace — review one at a time **or bulk-approve whole groups** (spot-check, then merge in one pass),
+> pick the winner for any conflict, every merge reversible. An **AI can also propose the merges for you**
+> (over a local MCP server) — it can only *propose*; you still review and approve each one in the workspace. You can also **re-import an updated export** and preview
 > exactly what changes (`just reimport`). What's coming next: a private overlay (groups, tags, notes) +
 > a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
 > clearly what runs now vs. what's coming.
@@ -25,7 +25,7 @@ data never leaves your device.
 | Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** / **Facebook** | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
 | Browse + search your contacts in a local **web workspace** (`just serve`) | ✅ works |
-| **Find & merge duplicate contacts** in the workspace — review, reconcile, reversible | ✅ works |
+| **Find & merge duplicate contacts** in the workspace — one at a time **or in bulk by group**, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -259,16 +259,20 @@ the same home, so import (or `just demo`) first; if there's no database yet it s
 
 (If a previous run left the port busy, `just port` frees it.)
 
-**Duplicates** finds contacts that look like the same person and helps you merge them — one at a time,
-most-confident first:
+**Duplicates** finds contacts that look like the same person and helps you merge them. It offers two
+modes (toggle at the top):
 
-- Each candidate is shown as a side-by-side **merge preview**: multi-valued fields (emails, phones)
-  **combine**; a single-valued field that disagrees (like a name) is flagged so **you pick which to
-  keep** — nothing is pre-selected.
-- **Approve merge** to combine them, **Not a duplicate** to dismiss it (it won't come back), or
-  **Skip**. **Undo last merge** reverses the most recent one.
-- Confident matches share an exact email or phone; weaker, name-only matches are shown lower down and
-  never merged automatically.
+- **Review individually** — walk the candidates one at a time, most-confident first. Each is shown as a
+  side-by-side **merge preview**: multi-valued fields (emails, phones) **combine**; a single-valued
+  field that disagrees (like a name) is flagged so **you pick which to keep** — nothing is pre-selected.
+  **Approve merge** to combine them, **Not a duplicate** to dismiss it (it won't come back), or **Skip**.
+- **Bulk approve** — for clearing many at once. Pick the **groups** you trust (all *same email or phone*,
+  all *AI-proposed* 🤖, …; the confident and AI groups are pre-selected, the weaker name-based groups are
+  opt-in behind a confirm), then **flip through them** (← → keys) to spot-check — resolving any field
+  conflict inline and **excluding** anything that looks wrong — and **merge the whole set in one click**.
+  The batch applies atomically, so a single **Undo** reverses all of it.
+- In both modes: confident matches share an exact email or phone; weaker, name-only matches are flagged
+  and never merged automatically. **Undo last merge** reverses the most recent merge (or the last batch).
 
 Two guarantees worth knowing:
 
@@ -343,9 +347,9 @@ arrive with the private-overlay and dedup milestones.)
 
 ## What's next
 
-All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review,
-reconcile, undo), **AI-proposed merges over MCP** (the AI proposes; you approve), and opt-in
-**non-destructive re-import** (`just reimport`) are done. The last v0.1 step is the `Architecture.md`
+All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review
+one-at-a-time **or bulk-approve by group**, reconcile, undo), **AI-proposed merges over MCP** (the AI
+proposes; you approve), and opt-in **non-destructive re-import** (`just reimport`) are done. The last v0.1 step is the `Architecture.md`
 conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
 (groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
 
