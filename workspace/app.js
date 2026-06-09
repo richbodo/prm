@@ -127,18 +127,26 @@ function updateDupCounts() {
     : "none found";
 }
 
+// Refetch the live duplicate set and refresh the nav badge + subtitle, WITHOUT changing the view.
+// Called on its own after a merge (so the header reflects the new state while staying on the summary),
+// and by loadDuplicates before it (re)renders.
+async function fetchDuplicates() {
+  const [props, cands] = await Promise.all([api("/api/proposals"), api("/api/candidates")]);
+  const proposals = props.proposals || [];
+  const propKeys = new Set(proposals.map((p) => p.cluster_key).filter(Boolean));
+  const aiItems = proposals.map((p) => ({ kind: "proposal", ...p }));
+  const detItems = (cands.clusters || [])
+    .filter((c) => !propKeys.has(c.key))            // dedup: a pending proposal already covers this cluster
+    .map((c) => ({ kind: "candidate", ...c }));
+  dupItems = aiItems.concat(detItems);              // AI proposals first — review the AI's work, then the detector
+  dupIndex = 0;
+  updateDupCounts();
+}
+
+// Land on the duplicates "home": fresh data, then pick-groups (bulk) or one-at-a-time (review).
 async function loadDuplicates() {
   try {
-    const [props, cands] = await Promise.all([api("/api/proposals"), api("/api/candidates")]);
-    const proposals = props.proposals || [];
-    const propKeys = new Set(proposals.map((p) => p.cluster_key).filter(Boolean));
-    const aiItems = proposals.map((p) => ({ kind: "proposal", ...p }));
-    const detItems = (cands.clusters || [])
-      .filter((c) => !propKeys.has(c.key))          // dedup: a pending proposal already covers this cluster
-      .map((c) => ({ kind: "candidate", ...c }));
-    dupItems = aiItems.concat(detItems);            // AI proposals first — review the AI's work, then the detector
-    dupIndex = 0;
-    updateDupCounts();
+    await fetchDuplicates();
     if (dupMode === "bulk") renderBulkGroups(); else showItem();
   } catch { /* not ready */ }
 }
@@ -254,6 +262,10 @@ const selectedItems = () => dupItems.filter((it) => bulkSelected.has(groupOf(it)
 
 function bulkStep(n) {
   $("#b-step1").hidden = n !== 1; $("#b-step2").hidden = n !== 2; $("#b-step3").hidden = n !== 3;
+  // The commit bar is position:fixed but lives inside `.view`, whose entrance animation leaves an
+  // identity-matrix transform — that makes `.view` the containing block, so translateY(110%) can't
+  // push the bar off the viewport. Hard-hide it off step 2 via `hidden` (display:none) instead.
+  $("#b-commit").hidden = n !== 2;
   $("#b-commit").classList.toggle("show", n === 2);
   document.querySelectorAll("#b-rail .st").forEach((s) => {
     const sn = +s.dataset.step; s.classList.toggle("on", sn === n); s.classList.toggle("done", sn < n);
@@ -450,8 +462,9 @@ async function mergeBatch() {
     (skipped ? ` ${skipped} that overlapped another merge ${skipped === 1 ? "was" : "were"} skipped — ${skipped === 1 ? "it" : "they"}’ll reappear next time.` : "") +
     ` Your imported source records were never changed.`;
   $("#b-undoline").textContent = `↺ One Undo reverses all ${n} merges `;
-  bulkStep(3);
+  bulkStep(3);                                       // show the summary; the commit bar hides here
   refreshStats(); browse();
+  fetchDuplicates().catch(() => {});                 // refresh the nav badge + subtitle to the post-merge count
 }
 
 document.querySelectorAll("#dupmode button").forEach((b) =>
@@ -483,7 +496,10 @@ function show(view) {
   document.querySelectorAll(".view").forEach((v) => v.classList.toggle("show", v.id === view));
 }
 document.querySelectorAll(".navitem[data-view]").forEach((n) =>
-  n.addEventListener("click", () => show(n.dataset.view)));
+  n.addEventListener("click", () => {
+    show(n.dataset.view);
+    if (n.dataset.view === "duplicates") loadDuplicates();   // re-enter at the fresh home, not a stale step
+  }));
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 els.q.addEventListener("input", debounce((e) => {

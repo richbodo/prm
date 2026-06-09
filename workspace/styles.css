@@ -59,7 +59,10 @@ nav.menu{display:flex;flex-direction:column;gap:2px;}
 
 /* ---- main ---- */
 main{min-width:0;}
-.view{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
+/* `backwards` (not `both`): the entrance still plays, but the view does NOT retain an identity-matrix
+   transform afterward — that lingering transform would make `.view` the containing block for any
+   position:fixed child (e.g. the bulk commit bar), pinning it to the view instead of the viewport. */
+.view{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1) backwards;}
 .view.show{display:block;}
 @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 .topbar{display:flex;align-items:center;gap:20px;padding:22px 34px;border-bottom:1px solid var(--line);
