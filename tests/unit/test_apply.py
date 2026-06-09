@@ -146,18 +146,27 @@ def test_apply_batch_atomic_single_undo():
         assert projection.list_contacts(home)["total"] == 4
 
 
-def test_apply_batch_guards_empty_and_overlap():
+def test_apply_batch_rejects_empty():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _two_pairs_home(tmp)
+        try:
+            apply.apply_batch(home, [])
+            raise AssertionError("expected ValueError for an empty batch")
+        except ValueError:
+            pass
+
+
+def test_apply_batch_skips_overlapping_items():
     with tempfile.TemporaryDirectory() as tmp:
         home = _two_pairs_home(tmp)
         a, b, c = list(private_db.identity_map(home.private_db))[:3]
-        for bad in ([],                                                      # empty batch
-                    [{"kind": "candidate", "member_ids": [a, b], "into": a},
-                     {"kind": "candidate", "member_ids": [b, c], "into": b}]):   # overlap on b
-            try:
-                apply.apply_batch(home, bad)
-                raise AssertionError(f"expected ValueError for {bad}")
-            except ValueError:
-                pass
+        # two items chain on b → the second is skipped (not fatal); the first still merges
+        res = apply.apply_batch(home, [{"kind": "candidate", "member_ids": [a, b], "into": a},
+                                       {"kind": "candidate", "member_ids": [b, c], "into": b}])
+        assert res["ok"] and res["merged"] == 1
+        assert len(res["skipped"]) == 1                                   # the (b, c) item was skipped
+        assert projection.get_contact(home, a)["member_count"] == 2       # a + b merged
+        assert projection.get_contact(home, c) is not None                # c untouched — resurfaces next pass
 
 
 def test_apply_batch_proposal_override_wins():

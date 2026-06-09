@@ -72,29 +72,33 @@ def apply_batch(home, items, *, created_by="manual:workspace-batch", rationale="
       - ``{"kind":"candidate", "member_ids":[...], "into":<id among member_ids>, "resolutions":[{field,...}]}``
       - ``{"kind":"proposal", "proposal_id":"p-...", "resolutions":[...optional inline overrides...]}``
 
-    The workspace presents **disjoint** clusters, so a contact may not appear in two items: identical
-    member-sets are deduped (a proposal beats its detected candidate), and any *partial* overlap is refused
-    rather than silently picking a survivor. Constituent proposals are marked ``applied`` after the commit
-    (non-fatal — reported as ``status_unmarked``)."""
+    A contact may not be merged two ways in one batch: identical member-sets are deduped (a proposal
+    beats its detected candidate), and an item that *partially* overlaps an already-accepted one is
+    **skipped and reported** (in ``skipped``) rather than chain-merged — the name-based tiers surface as
+    standalone pairs that can share a contact, so this keeps the batch moving without a silent transitive
+    merge (AC-PRM-B); a skipped pair resurfaces next pass. Constituent proposals are marked ``applied``
+    after the commit (non-fatal — reported as ``status_unmarked``)."""
     items = list(items or [])
     if not items:
         raise ValueError("merge-batch: no items to apply")
 
-    # 1) Resolve to canonical member-sets; dedup identical clusters; reject partial overlaps.
-    resolved, seen_sets, claimed = [], {}, {}
+    # 1) Resolve to canonical member-sets; dedup identical clusters (a proposal beats its detected
+    #    candidate); skip an item that partially overlaps an already-accepted one (fuzzy/strong pairs
+    #    can share a contact — a contact can't be merged two ways at once). Skips are reported, not fatal.
+    resolved, seen_sets, claimed, skipped = [], {}, {}, []
     for it in items:
         mids = _item_member_ids(home, it)
         if not mids:
             continue
         key = frozenset(mids)
-        if key in seen_sets:                                   # same cluster twice — keep the proposal
+        if key in seen_sets:                                   # exact same cluster twice — keep the proposal
             j = seen_sets[key]
             if it.get("kind") == "proposal" and resolved[j].get("kind") != "proposal":
                 resolved[j] = it
             continue
-        for cid in mids:
-            if claimed.get(cid, key) != key:
-                raise ValueError(f"merge-batch: overlapping clusters share contact {cid!r}")
+        if any(claimed.get(cid, key) != key for cid in mids):  # partial overlap → skip, resurfaces next pass
+            skipped.append(mids)
+            continue
         seen_sets[key] = len(resolved)
         for cid in mids:
             claimed[cid] = key
@@ -135,7 +139,7 @@ def apply_batch(home, items, *, created_by="manual:workspace-batch", rationale="
             unmarked.append(pid)
 
     return {"ok": True, "merged": sum(1 for op in all_ops if op.get("op") == "merge"),
-            "snapshot": result["snapshot"], "applied": result["applied"],
+            "skipped": skipped, "snapshot": result["snapshot"], "applied": result["applied"],
             "proposal_id": combined["proposal_id"], "status_unmarked": unmarked}
 
 

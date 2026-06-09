@@ -443,8 +443,12 @@ async function mergeBatch() {
   try { res = await postJSON("/api/merge-batch", { items, rationale: "bulk approve" }); }
   catch (err) { alert("Merge failed: " + err.message); return; }
   const n = res.merged != null ? res.merged : ready.length;
+  const skipped = (res.skipped || []).length;
   $("#b-done-h").textContent = `Merged ${n} duplicate set${n === 1 ? "" : "s"}`;
-  $("#b-done-p").textContent = `${n} contact${n === 1 ? " was" : "s were"} folded into ${n === 1 ? "its" : "their"} canonical record, in one transaction. Your imported source records were never changed.`;
+  $("#b-done-p").textContent =
+    `${n} contact${n === 1 ? " was" : "s were"} folded into ${n === 1 ? "its" : "their"} canonical record, in one transaction.` +
+    (skipped ? ` ${skipped} that overlapped another merge ${skipped === 1 ? "was" : "were"} skipped — ${skipped === 1 ? "it" : "they"}’ll reappear next time.` : "") +
+    ` Your imported source records were never changed.`;
   $("#b-undoline").textContent = `↺ One Undo reverses all ${n} merges `;
   bulkStep(3);
   refreshStats(); browse();

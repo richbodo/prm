@@ -106,8 +106,11 @@ holds — Decision 3) and **exclude** anything wrong before committing; (3) the 
 combined changeset** (the substrate's `operations` list, run in a single transaction with one pre-apply
 snapshot), so it is **atomic** and a **single Undo reverses the whole batch**. The combined changeset is
 the sanctioned author for the multi-op shape the substrate always allowed but the single-merge surface
-never exposed. Overlapping clusters are refused (the workspace only presents disjoint clusters); a
-proposal and its detected candidate are deduped on the stable cluster key.
+never exposed. Confident clusters are disjoint (union-find), but the opt-in name-based tiers surface as
+standalone pairs that can share a contact; so within a batch a contact can't be merged two ways — an
+item that *partially* overlaps an already-accepted one is **skipped and reported** (it resurfaces next
+pass), never chain-merged into a silent transitive merge (AC-PRM-B). A proposal and its detected
+candidate (identical member-set) are deduped on the stable cluster key.
 
 ## Relationship to CRUD
 
