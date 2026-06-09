@@ -110,7 +110,10 @@ never exposed. Confident clusters are disjoint (union-find), but the opt-in name
 standalone pairs that can share a contact; so within a batch a contact can't be merged two ways — an
 item that *partially* overlaps an already-accepted one is **skipped and reported** (it resurfaces next
 pass), never chain-merged into a silent transitive merge (AC-PRM-B). A proposal and its detected
-candidate (identical member-set) are deduped on the stable cluster key.
+candidate (identical member-set) are deduped on the stable cluster key. The full decision ledger — what
+we *respected* vs *interpreted*, the genuine-vs-perceived-safety split, the overlap reasoning, and where
+PRM diverges from other merge tools — is its own note:
+[`bulk-merge-decisions.md`](bulk-merge-decisions.md).
 
 ## Relationship to CRUD
 
