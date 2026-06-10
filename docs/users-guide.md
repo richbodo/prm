@@ -344,14 +344,21 @@ arrive with the private-overlay and dedup milestones.)
 - **`prm: command not found`** — the `just` recipes don't need `prm` on your PATH (they run `./.venv`
   directly), so prefer `just serve`, `just search`, and so on. To use `prm` itself, run `just shell`
   (activates the venv) or `source .venv/bin/activate`; or run `python3 -m cli …` from the repo root.
+- **Something's wrong / filing a bug** — run `prm doctor` (or open the workspace at `?diag`) for a
+  **sanitized** diagnostic dump (store stats, lock state, your build `<date>-<sha>` — **no contact data**)
+  you can paste into a bug report. `prm doctor --unlock` clears a stale home lock (it refuses while a PRM
+  process is actually running, so it can't create two writers).
 
 ## What's next
 
 All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review
 one-at-a-time **or bulk-approve by group**, reconcile, undo), **AI-proposed merges over MCP** (the AI
-proposes; you approve), and opt-in **non-destructive re-import** (`just reimport`) are done. The last v0.1 step is the `Architecture.md`
-conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
-(groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
+proposes; you approve), and opt-in **non-destructive re-import** (`just reimport`) are done. The **`Architecture.md` conformance attestation**
+— the toolkit reference-design deliverable — is now in place: `just conformance` regenerates
+[`docs/conformance/`](conformance/) from [`docs/Architecture.md`](Architecture.md), and the green,
+test-backed attestation makes PRM submittable as the **second Personal Network Toolkit reference design**.
+Next, v0.2 brings the private overlay (groups, tags, notes) and a custom relationship schema. See the
+[Roadmap](roadmap.md).
 
 ---
 
