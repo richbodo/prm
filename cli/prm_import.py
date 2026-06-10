@@ -12,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-from core import shared_db
+from core import build_label, shared_db
 
 from . import ingest as ingest_mod
 from .config import resolve_home
@@ -119,7 +119,8 @@ def cmd_reimport(args) -> int:
 
 def cmd_status(args) -> int:
     home = resolve_home(args.data_dir)
-    info = {"home": str(home.root), "exists": home.exists(), "shared_db": home.shared_db.exists()}
+    info = {"build_label": build_label.build_label(),
+            "home": str(home.root), "exists": home.exists(), "shared_db": home.shared_db.exists()}
     if info["shared_db"]:
         info["shared"] = shared_db.stats(home.shared_db)
 
@@ -127,6 +128,7 @@ def cmd_status(args) -> int:
         print(json.dumps(info, indent=2))
         return 0
 
+    print(f"PRM build: {info['build_label']}")                # AC-15: name the source revision
     print(f"PRM home: {home.root} ({'exists' if info['exists'] else 'not created — run `prm init`'})")
     if not info["shared_db"]:
         print("  shared.db: none yet — run `prm import` to create it")
@@ -138,6 +140,41 @@ def cmd_status(args) -> int:
         print("    by source: " + ", ".join(f"{k}={v}" for k, v in sorted(s["by_source"].items())))
     if s["last_ingested_at"]:
         print(f"    last import: {s['last_ingested_at']}")
+    return 0
+
+
+def cmd_doctor(args) -> int:
+    home = resolve_home(args.data_dir)
+    from core import diag  # lazy — keep the ingest path light
+
+    if args.unlock:                                          # AC-6: always-reachable force-unlock escape
+        state = diag.lock_state(home)
+        if state == "held":
+            print("lock is HELD by a running PRM process — stop it first; force-removing a live lock "
+                  "would risk two writers", file=sys.stderr)
+            return 1
+        home.lock_file.unlink(missing_ok=True)
+        print(f"lock cleared (was {state}): {home.lock_file}")
+        return 0
+
+    dump = diag.state_dump(home)
+    if args.json:
+        print(json.dumps(dump, indent=2))
+        return 0
+    print(f"PRM build : {dump['build_label']}")
+    print(f"home      : {dump['home']} ({'exists' if dump['home_exists'] else 'absent'})")
+    print(f"lock      : {dump['lock']}")
+    print(f"platform  : {dump['platform']['os']} · python {dump['platform']['python']}")
+    for name, st in dump["stores"].items():
+        if "error" in st:
+            print(f"{name:<10}: ERROR {st['error']}")
+        else:
+            recs = st.get("records", st.get("contacts", "?"))
+            print(f"{name:<10}: schema v{st.get('schema_version', '?')} · {recs} record(s)")
+    print(f"snapshots : {dump['snapshots']}   proposals pending: {dump['proposals_pending']}")
+    errs = dump["recent_errors"]
+    tail = f" (last: {errs[-1]['type']} @ {errs[-1]['at']})" if errs else ""
+    print(f"errors    : {len(errs)} recent{tail}")
     return 0
 
 
@@ -196,6 +233,11 @@ def build_parser() -> argparse.ArgumentParser:
     ps = sub.add_parser("status", help="show the PRM home and store status")
     ps.add_argument("--json", action="store_true", help="machine-readable output")
     ps.set_defaults(func=cmd_status)
+
+    pdoc = sub.add_parser("doctor", help="diagnostics: sanitized state dump, or --unlock to clear a stale lock")
+    pdoc.add_argument("--unlock", action="store_true", help="clear a stale home lock (AC-6 escape; refuses if held live)")
+    pdoc.add_argument("--json", action="store_true", help="machine-readable diagnostics")
+    pdoc.set_defaults(func=cmd_doctor)
 
     pv = sub.add_parser("serve", help="serve the local read-only workspace (search/view)")
     pv.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")

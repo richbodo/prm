@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, candidates, private_db, projection, proposals, shared_db
+from core import apply, build_label, candidates, diag, private_db, projection, proposals, shared_db
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
@@ -45,14 +45,18 @@ def _int(values, default: int) -> int:
 def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
     db = home.shared_db
     if path == "/api/status":
+        label = build_label.build_label()                    # AC-15: source revision, served at runtime
         if not db.exists():
-            return _json(200, {"shared_db": False, "home": str(home.root)})
-        out = {"shared_db": True, "home": str(home.root), **shared_db.stats(db)}
+            return _json(200, {"shared_db": False, "home": str(home.root), "build_label": label})
+        out = {"shared_db": True, "home": str(home.root), "build_label": label, **shared_db.stats(db)}
         if home.private_db.exists():
             p = private_db.stats(home.private_db)
             out["contacts"] = p["contacts"]              # canonical (post-merge) count
             out["merged_contacts"] = p["merged_contacts"]
         return _json(200, out)
+
+    if path == "/api/diag":                                  # AC-7: sanitized self-diagnosis (no PII), pre-db
+        return _json(200, diag.state_dump(home))
 
     if not db.exists():
         return _json(409, {"error": "no shared.db yet — run `prm import` first"})
@@ -175,12 +179,23 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
 
 
 def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None = None) -> tuple[int, str, bytes]:
-    """Pure API router. ``query`` is the ``parse_qs`` dict; ``body`` is the parsed JSON for POST."""
-    if method == "GET":
-        return _get(path, query, home)
-    if method == "POST":
-        return _post(path, home, body or {})
-    return _json(405, {"error": "method not allowed", "method": method})
+    """Pure API router. ``query`` is the ``parse_qs`` dict; ``body`` is the parsed JSON for POST.
+
+    A store schema/availability error refuses **mutations** cleanly with a 409 (reads don't version-check,
+    so they continue — AC-4); any other unexpected error is captured to the diag log (AC-7) and returned
+    sanitized, never a raw traceback to the client."""
+    try:
+        if method == "GET":
+            return _get(path, query, home)
+        if method == "POST":
+            return _post(path, home, body or {})
+        return _json(405, {"error": "method not allowed", "method": method})
+    except (shared_db.SharedDbError, private_db.PrivateDbError) as exc:
+        diag.capture_error(home, exc, context=f"{method} {path}")
+        return _json(409, {"error": f"store schema/availability error — mutations refused, reads continue: {exc}"})
+    except Exception as exc:  # noqa: BLE001
+        diag.capture_error(home, exc, context=f"{method} {path}")
+        return _json(500, {"error": "internal error — run `prm doctor` for diagnostics"})
 
 
 def _static(path: str) -> tuple[int, str, bytes]:
