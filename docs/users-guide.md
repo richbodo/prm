@@ -12,7 +12,8 @@ data never leaves your device.
 > workspace — review one at a time **or bulk-approve whole groups** (spot-check, then merge in one pass),
 > pick the winner for any conflict, every merge reversible. An **AI can also propose the merges for you**
 > (over a local MCP server) — it can only *propose*; you still review and approve each one in the workspace. You can also **re-import an updated export** and preview
-> exactly what changes (`just reimport`). What's coming next: a private overlay (groups, tags, notes) +
+> exactly what changes (`just reimport`), and **export your merged contacts to a portable vCard**
+> (`just export`) to take them anywhere. What's coming next: a private overlay (groups, tags, notes) +
 > a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
 > clearly what runs now vs. what's coming.
 
@@ -30,6 +31,7 @@ data never leaves your device.
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
+| **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 
 ---
 
@@ -302,6 +304,28 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
 
 ---
 
+## 10. Export your contacts
+
+Your contacts are yours — take them anywhere. `just export` writes your **merged** contacts
+(de-duplicated, with the conflict choices you made during dedup applied) as a portable **vCard 3.0**
+(`.vcf`) — the format Google, Apple, and Outlook all import:
+
+```bash
+just export --out contacts.vcf        # = prm export --out contacts.vcf
+just export                           # write to stdout instead (pipe it elsewhere)
+```
+
+One card per person: multi-valued fields (emails, phones) are **unioned** across the sources a contact
+came from, and for any single-valued field you reconciled, the value **you chose** is the one written.
+It reads the same PRM home as everything else, so import (or `just demo`) first.
+
+This is the *merged* view — ideal for moving your contacts into another app. (Re-importing a PRM
+export back **into** PRM creates fresh records rather than re-attaching to the originals, so it is a
+portability export, not a backup; a lossless, re-importable backup format could be added later if it's
+useful.)
+
+---
+
 ## Where your data lives
 
 Everything for one instance lives under a single **PRM home** directory. PRM finds it in this order:
@@ -349,7 +373,8 @@ arrive with the private-overlay and dedup milestones.)
 
 All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review
 one-at-a-time **or bulk-approve by group**, reconcile, undo), **AI-proposed merges over MCP** (the AI
-proposes; you approve), and opt-in **non-destructive re-import** (`just reimport`) are done. The last v0.1 step is the `Architecture.md`
+proposes; you approve), opt-in **non-destructive re-import** (`just reimport`), and **vCard export**
+(`just export`) are done. The last v0.1 step is the `Architecture.md`
 conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
 (groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
 

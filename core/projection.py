@@ -246,6 +246,65 @@ def clusters_meta(home, clusters: list) -> list:
     return out
 
 
+def _clean_prop(prop: list) -> list:
+    """A fresh property array with the export-irrelevant ``group`` param stripped (the ``itemN``
+    binding for ``x-ablabel`` labels, which the projection already treats as noise); ``type``/``pref``
+    and the structured value are kept verbatim."""
+    name, params, vtype, *values = prop
+    return [name, {k: v for k, v in (params or {}).items() if k != "group"}, vtype, *values]
+
+
+def _merge_props(cid: str, members: list, rank: dict, resolutions: dict) -> list:
+    """The merged property set for one canonical contact, **preserving jCard structure** — the
+    structure-keeping inverse of ``_merge``'s flattened view. UNION names keep every distinct value;
+    a RECONCILE name collapses to one (an explicit ``field_resolution`` wins, else survivorship:
+    source priority -> most-recent), exactly as the projection a user sees."""
+    by_name: dict[str, list] = {}
+    for rec in members:
+        for prop in rec["props"]:
+            name = prop[0].lower()
+            if name in _HIDDEN or not _flatten(prop[3:] if len(prop) > 3 else []):
+                continue
+            by_name.setdefault(name, []).append({"prop": prop, "source": rec["source"], "at": rec["ingested_at"] or ""})
+
+    out = []
+    for name, items in by_name.items():
+        if name in RECONCILE_FIELDS:
+            res = resolutions.get((cid, name))
+            if res and res[0] is not None:
+                # Keep the structured property whose flattened value matches the chosen one; if the
+                # choice was a manual edit with no matching source value, emit it as a plain text prop.
+                match = next((i["prop"] for i in items
+                              if _flatten(i["prop"][3:] if len(i["prop"]) > 3 else []) == res[0]), None)
+                out.append(_clean_prop(match) if match is not None else [name, {}, "text", res[0]])
+            else:
+                best_rank = min(rank.get(i["source"], 999) for i in items)
+                chosen = max((i for i in items if rank.get(i["source"], 999) == best_rank), key=lambda i: i["at"])
+                out.append(_clean_prop(chosen["prop"]))
+        else:
+            seen: dict[str, list] = {}
+            for i in items:
+                seen.setdefault(_flatten(i["prop"][3:] if len(i["prop"]) > 3 else []), i["prop"])
+            out.extend(_clean_prop(p) for p in seen.values())
+    return out
+
+
+def export_jcards(home) -> list:
+    """Every canonical contact as an RFC 7095 jCard array (``["vcard", [props]]``), name-ordered
+    (named first). The merged, structure-preserving basis for export — the inverse of ingest, consumed
+    by ``cli.vcard_writer``. Pure read; never writes."""
+    groups = _records_by_contact(home)
+    rank = _rank(home)
+    resolutions = private_db.field_resolutions(home.private_db) if home.private_db.exists() else {}
+    rows = []
+    for cid, members in groups.items():
+        props = _merge_props(cid, members, rank, resolutions)
+        fn = next((_flatten(p[3:] if len(p) > 3 else []) for p in props if p[0].lower() == "fn"), "")
+        rows.append((fn == "", fn.casefold(), cid, props))       # named first, A–Z, stable by id
+    rows.sort(key=lambda r: r[:3])
+    return [["vcard", props] for *_, props in rows]
+
+
 def get_contact(home, contact_id: str) -> dict | None:
     """One merged canonical contact (or ``None``). Computes only that contact's group."""
     groups = _records_by_contact(home)
