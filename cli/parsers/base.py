@@ -18,6 +18,7 @@ class SourceFormat(enum.Enum):
     GOOGLE_TAKEOUT = "takeout"  # a Takeout .zip (vCards under Contacts/)
     VENDOR_CSV = "csv"          # a vendor CSV (LinkedIn, Google CSV), incl. a LinkedIn export zip
     FACEBOOK_JSON = "facebook"  # a Facebook DYI friends .json, or an export .zip containing one
+    PRM_BACKUP = "prm_backup"   # PRM's own lossless raw-records backup .json (re-importable)
     UNKNOWN = "unknown"
 
 
@@ -63,6 +64,8 @@ def detect_format(path: str | Path) -> SourceFormat:
         return SourceFormat.VENDOR_CSV
     if suffix == ".json":
         head = p.read_bytes()[:4096]
+        if b'"prm_backup"' in head:       # PRM's own raw-records backup
+            return SourceFormat.PRM_BACKUP
         if b'"friends' in head:          # "friends" or "friends_v2"
             return SourceFormat.FACEBOOK_JSON
         return SourceFormat.UNKNOWN

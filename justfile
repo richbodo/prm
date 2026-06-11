@@ -144,7 +144,8 @@ reimport *paths:
 status:
     {{prm}} status
 
-# Export your merged contacts to a portable vCard (.vcf). To a file or stdout. E.g. `just export --out contacts.vcf`.
+# Export your contacts: merged portable vCard, or a lossless re-importable backup with `--raw`.
+# E.g. `just export --out contacts.vcf`  ·  `just export --raw --out backup.json`.
 [group('dev')]
 export *args:
     {{prm}} export {{args}}

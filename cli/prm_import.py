@@ -156,15 +156,21 @@ def cmd_export(args) -> int:
     if not home.shared_db.exists():
         print("no shared.db yet — run `prm import` first", file=sys.stderr)
         return 1
-    from core import projection                 # imported lazily so the ingest path never pays for it
-    from .vcard_writer import write_vcards
 
-    cards = projection.export_jcards(home)
-    text = write_vcards(cards)
+    if args.raw:                                # lossless JSON backup of the raw source records
+        from . import backup
+        records = shared_db.all_records(home.shared_db)
+        text, count, noun = backup.dump(records), len(records), "record(s)"
+    else:                                       # merged contacts → portable vCard
+        from core import projection             # imported lazily so the ingest path never pays for it
+        from .vcard_writer import write_vcards
+        cards = projection.export_jcards(home)
+        text, count, noun = write_vcards(cards), len(cards), "contact(s)"
+
     if args.out:
-        out = Path(args.out)
-        out.write_text(text, encoding="utf-8")
-        print(f"Exported {len(cards)} contact(s) to {out}", file=sys.stderr)
+        Path(args.out).write_text(text, encoding="utf-8")
+        kind = "raw backup" if args.raw else "vCard"
+        print(f"Exported {count} {noun} ({kind}) to {args.out}", file=sys.stderr)
     else:
         sys.stdout.write(text)
     return 0
@@ -221,9 +227,12 @@ def build_parser() -> argparse.ArgumentParser:
     pv.add_argument("--port", type=int, default=8770, help="port (default 8770)")
     pv.set_defaults(func=cmd_serve)
 
-    pe = sub.add_parser("export", help="export your merged contacts to a portable vCard (.vcf)")
+    pe = sub.add_parser("export", help="export your contacts — merged vCard, or a lossless raw backup")
     pe.add_argument("--out", help="write to this file (default: stdout)")
-    pe.add_argument("--format", choices=["vcard"], default="vcard", help="export format (vCard 3.0)")
+    pe.add_argument("--format", choices=["vcard"], default="vcard",
+                    help="merged-export format (vCard 3.0); ignored with --raw")
+    pe.add_argument("--raw", action="store_true",
+                    help="lossless JSON backup of all raw source records (re-importable into PRM)")
     pe.set_defaults(func=cmd_export)
 
     pq = sub.add_parser("search", help="full-text search the imported contacts")

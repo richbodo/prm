@@ -18,6 +18,7 @@ from pathlib import Path
 from core import audit, private_db, shared_db, snapshots
 from core.lock import file_lock
 
+from . import backup
 from .config import PrmHome
 from .normalize import CanonicalContact, normalize_all
 from .parsers import csv as csv_parser
@@ -122,6 +123,15 @@ def parse_one(path: Path, source_override: str | None = None) -> PathResult:
             records = facebook.parse(_read_facebook_bytes(path), source)
         except (ValueError, json.JSONDecodeError) as exc:
             return PathResult(path, fmt, source, confidence, skipped_reason=str(exc))
+    elif fmt is SourceFormat.PRM_BACKUP:
+        # A PRM raw backup already holds canonical contacts (source + stable_key + provenance), so it
+        # restores verbatim — bypassing normalization to preserve identity exactly (INV-5).
+        try:
+            contacts = backup.load(path.read_bytes())
+        except (ValueError, json.JSONDecodeError) as exc:
+            return PathResult(path, fmt, source, confidence, skipped_reason=str(exc))
+        return PathResult(path, fmt, source_override or "prm_backup", "override" if source_override else "high",
+                          contacts=contacts)
     else:
         return PathResult(path, fmt, source, confidence, skipped_reason="unrecognized format")
 

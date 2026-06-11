@@ -241,6 +241,33 @@ def get_record(db_path, source_record_id: str) -> dict | None:
     }
 
 
+def all_records(db_path) -> list[dict]:
+    """Every raw source record with its full per-field provenance — the lossless basis for a raw
+    backup export. Read-only; ordered by (source, id) for a stable, diffable dump. Each row is the
+    same envelope ``get_record`` returns, with ``raw_jcard`` left as the stored TEXT (the caller owns
+    jCard rendering, keeping this a leaf that never imports ``cli``)."""
+    con = connect(db_path, read_only=True)
+    try:
+        records = con.execute(
+            "SELECT source_record_id, source, source_uid, stable_key, ingested_at, raw_jcard "
+            "FROM source_records ORDER BY source, source_record_id"
+        ).fetchall()
+        prov = con.execute(
+            "SELECT source_record_id, field, value, observed_at FROM field_provenance "
+            "ORDER BY source_record_id, field"
+        ).fetchall()
+    finally:
+        con.close()
+    by_id: dict[str, list] = {}
+    for srid, fieldname, value, observed_at in prov:
+        by_id.setdefault(srid, []).append({"field": fieldname, "value": value, "observed_at": observed_at})
+    return [
+        {"id": srid, "source": source, "source_uid": source_uid, "stable_key": stable_key,
+         "ingested_at": ingested_at, "raw_jcard": raw_jcard, "provenance": by_id.get(srid, [])}
+        for srid, source, source_uid, stable_key, ingested_at, raw_jcard in records
+    ]
+
+
 def records_for_source(db_path, source: str) -> dict:
     """{source_record_id: raw_jcard} for one source — the comparison basis for re-import (added /
     updated / unchanged / stale). Read-only."""
