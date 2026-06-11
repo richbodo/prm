@@ -10,6 +10,7 @@ const els = {
   q: $("#q"), rows: $("#rows"), detail: $("#detail"), listhead: $("#listhead"),
   topsub: $("#topsub"), reset: $("#reset"), dupBadge: $("#dup-badge"),
   statContacts: $("#stat-contacts"), statSources: $("#stat-sources"), statImport: $("#stat-import"),
+  statBuild: $("#stat-build"),
 };
 
 const PAGE = 50;
@@ -525,6 +526,7 @@ function emptyState(msg) {
 
 async function refreshStats() {
   const s = await api("/api/status");
+  if (els.statBuild) els.statBuild.textContent = s.build_label || "—";   // AC-15: shown even before any import
   if (!s.shared_db) return false;
   const contacts = s.contacts != null ? s.contacts : (s.records || 0);    // canonical (post-merge) count
   const sources = Object.keys(s.by_source || {}).length;
@@ -543,9 +545,36 @@ if (undoBtn) undoBtn.addEventListener("click", async () => {        // restore t
   browse();
 });
 
+// ---- AC-7 diagnostics overlay (?diag) — always reachable (AC-6), sanitized, no contact data ----
+async function showDiag() {
+  let dump;
+  try { dump = await api("/api/diag"); } catch (e) { dump = { error: String(e && e.message || e) }; }
+  const text = JSON.stringify(dump, null, 2);
+  const el = document.createElement("div");
+  el.className = "diagoverlay";
+  el.innerHTML =
+    `<div class="diagcard"><div class="diaghead"><b class="serif">Diagnostics</b>` +
+    `<span class="muted">sanitized · no contact data · for a bug report</span><span class="spacer"></span>` +
+    `<button class="btn" id="diag-copy">Copy</button><button class="btn" id="diag-close">Close</button></div>` +
+    `<pre class="diagpre">${esc(text)}</pre></div>`;
+  document.body.appendChild(el);
+  $("#diag-copy").addEventListener("click", () => { try { navigator.clipboard.writeText(text); } catch {} });
+  $("#diag-close").addEventListener("click", () => { el.remove(); history.replaceState(null, "", location.pathname); });
+}
+
+// ---- boot, with a watchdog so a wedged daemon shows diagnostics instead of hanging ----
+let booted = false;
+const bootWatchdog = setTimeout(() => {
+  if (!booted) emptyState('Still loading after 8s — the daemon may be wedged. Open <a href="?diag">?diag</a> for ' +
+    'sanitized diagnostics, or restart <code>just serve</code>.');
+}, 8000);
+
 (async function init() {
+  if (/[?&]diag\b/.test(location.search)) showDiag();        // always reachable, even if boot fails
   try {
-    if (!(await refreshStats())) {
+    const ready = await refreshStats();
+    booted = true; clearTimeout(bootWatchdog);               // the API answered — boot succeeded
+    if (!ready) {
       els.statContacts.textContent = "0";
       emptyState('Run <code>prm import &lt;file&gt;</code>, or seed the demo with <code>prm init --demo</code>, then reload.');
       return;
@@ -553,6 +582,7 @@ if (undoBtn) undoBtn.addEventListener("click", async () => {        // restore t
     await browse();
     loadDuplicates();
   } catch (err) {
-    emptyState(`Couldn’t reach the workspace API (${esc(err.message)}).`);
+    booted = true; clearTimeout(bootWatchdog);
+    emptyState(`Couldn’t reach the workspace API (${esc(err.message)}). Open <a href="?diag">?diag</a> for diagnostics.`);
   }
 })();
