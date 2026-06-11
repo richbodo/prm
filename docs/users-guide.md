@@ -381,6 +381,10 @@ arrive with the private-overlay and dedup milestones.)
 - **`prm: command not found`** — the `just` recipes don't need `prm` on your PATH (they run `./.venv`
   directly), so prefer `just serve`, `just search`, and so on. To use `prm` itself, run `just shell`
   (activates the venv) or `source .venv/bin/activate`; or run `python3 -m cli …` from the repo root.
+- **Something's wrong / filing a bug** — run `prm doctor` (or open the workspace at `?diag`) for a
+  **sanitized** diagnostic dump (store stats, lock state, your build `<date>-<sha>` — **no contact data**)
+  you can paste into a bug report. `prm doctor --unlock` clears a stale home lock (it refuses while a PRM
+  process is actually running, so it can't create two writers).
 
 ## What's next
 

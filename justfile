@@ -107,6 +107,21 @@ test-fixtures:
 test-all: test test-fixtures
 
 
+# ---- conformance (M6 PNT reference-design attestation) -------------------
+
+# Regenerate the conformance artifacts (evaluate-report.json + report.md) from docs/Architecture.md.
+[group('conformance')]
+evaluate-report:
+    {{python}} scripts/evaluate_report.py
+    {{python}} scripts/conformance_report.py
+
+# Conformance gate: the attestation-evidence shape check + the full suite (every cited test must pass).
+[group('conformance')]
+conformance:
+    {{python}} scripts/evaluate_report.py --check
+    {{python}} -m pytest -q
+
+
 # ---- dev -----------------------------------------------------------------
 
 # Seed a realistic ~1000-contact demo home from synthetic fixtures (no personal data).

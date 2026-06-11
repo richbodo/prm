@@ -1,0 +1,383 @@
+{
+  "report_schema_version": "0.1",
+  "generated_by": "scripts/evaluate_report.py (deterministic; derived from docs/Architecture.md)",
+  "candidate": {
+    "name": "prm",
+    "repo_url": "https://github.com/richbodo/prm",
+    "commit": "37806aad0b58bb0f9e0f270916e9ec8ef91ba723",
+    "pna_spec_version": "0.1",
+    "picks_source": "declared",
+    "axis_picks": {
+      "distribution": "never-distributed-single-user",
+      "storage": "native-sqlite-via-filesystem",
+      "ingestion": "multi-source-merge-with-dedup",
+      "workspace": "vanilla-js-spa",
+      "comms": "none",
+      "mcp-exposure": "shared-only"
+    }
+  },
+  "summary": {
+    "posture": "conformant",
+    "headline": "PRM is deterministically attested conformant to PNA Spec 0.1 for its declared flavor: 12 conformant, 4 not-applicable, 0 non-conformant across 18 evaluated ACs. 2 AC(s) carry self-attested partial-conformance flagged for human review (AC-PRM-A, AC-MCP-A); the EX-CLOUD-LLM exception is handled best-effort server-side (consent + honest signaling — an MCP server cannot identify the consuming LLM).",
+    "leading_concerns": [
+      "AC-PRM-A",
+      "AC-MCP-A"
+    ]
+  },
+  "findings": [
+    {
+      "ac_id": "AC-1",
+      "ac_source": "universal",
+      "goals": [
+        1
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_private_store.py",
+          "note": "cited test: test_import_seeds_private_and_keeps_shared_intact"
+        },
+        {
+          "path": "tests/db/test_shared_db.py"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_private_store.py::test_import_seeds_private_and_keeps_shared_intact, tests/db/test_shared_db.py."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-4",
+      "ac_source": "universal",
+      "goals": [
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/db/test_shared_db.py",
+          "note": "cited test: test_incompatible_schema_version_is_rejected"
+        },
+        {
+          "path": "tests/db/test_private_db_version.py",
+          "note": "cited test: test_private_mismatch_refuses_seed"
+        },
+        {
+          "path": "tests/unit/test_daemon_diag.py",
+          "note": "cited test: test_schema_mismatch_refuses_write_reads_continue"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/db/test_shared_db.py::test_incompatible_schema_version_is_rejected, tests/db/test_private_db_version.py::test_private_mismatch_refuses_seed, tests/unit/test_daemon_diag.py::test_schema_mismatch_refuses_write_reads_continue."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-6",
+      "ac_source": "universal",
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_doctor.py",
+          "note": "cited test: test_unlock_clears_stale_lock"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_doctor.py::test_unlock_clears_stale_lock."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-7",
+      "ac_source": "universal",
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_diag.py",
+          "note": "cited test: test_state_dump_is_sanitized_metadata"
+        },
+        {
+          "path": "tests/unit/test_daemon_diag.py",
+          "note": "cited test: test_diag_route_sanitized"
+        },
+        {
+          "path": "tests/unit/test_doctor.py",
+          "note": "cited test: test_doctor_dump_runs"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_diag.py::test_state_dump_is_sanitized_metadata, tests/unit/test_daemon_diag.py::test_diag_route_sanitized, tests/unit/test_doctor.py::test_doctor_dump_runs."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-9",
+      "ac_source": "universal",
+      "goals": [
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_apply.py",
+          "note": "cited test: test_snapshot_and_restore"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_apply.py::test_snapshot_and_restore."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-10",
+      "ac_source": "universal",
+      "goals": [
+        2,
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_reimport.py",
+          "note": "cited test: test_reimport_added_updated_stale"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_reimport.py::test_reimport_added_updated_stale."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-11",
+      "ac_source": "universal",
+      "goals": [
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_lock.py",
+          "note": "cited test: test_second_holder_refused_with_message"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_lock.py::test_second_holder_refused_with_message."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-15",
+      "ac_source": "universal",
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_build_label.py",
+          "note": "cited test: test_running_label_is_git_date_sha"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_build_label.py::test_running_label_is_git_date_sha."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-16",
+      "ac_source": "universal",
+      "status": "not-applicable",
+      "rationale": "Not applicable — `comms-transport-set: none` (PRM v0.1 has no outreach surface)."
+    },
+    {
+      "ac_id": "AC-17",
+      "ac_source": "universal",
+      "goals": [
+        2
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/db/test_shared_db.py",
+          "note": "cited test: test_load_writes_records_provenance_and_fts"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/db/test_shared_db.py::test_load_writes_records_provenance_and_fts."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-18",
+      "ac_source": "universal",
+      "status": "not-applicable",
+      "rationale": "Not applicable — `comms-transport-set: none`."
+    },
+    {
+      "ac_id": "AC-19",
+      "ac_source": "universal",
+      "status": "not-applicable",
+      "rationale": "Not applicable — `comms-transport-set: none`."
+    },
+    {
+      "ac_id": "AC-PRM-A",
+      "ac_source": "universal",
+      "goals": [
+        3
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_mcp_consent.py"
+        }
+      ],
+      "needs_human_review": true,
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_mcp_consent.py."
+        },
+        {
+          "source": "human",
+          "detail": "Self-attested partial-conformance (consent + signaling, not enforcement — an MCP server cannot gate which LLM consumes its output)"
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-PRM-D",
+      "ac_source": "universal",
+      "goals": [
+        1,
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_reimport.py"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_reimport.py."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-MCP-A",
+      "ac_source": "universal",
+      "goals": [
+        1,
+        3
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_mcp_tools.py",
+          "note": "cited test: test_submit_is_propose_only"
+        },
+        {
+          "path": "tests/unit/test_mcp_consent.py"
+        }
+      ],
+      "needs_human_review": true,
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_mcp_tools.py::test_submit_is_propose_only, tests/unit/test_mcp_consent.py."
+        },
+        {
+          "source": "human",
+          "detail": "Self-attested partial-conformance (consent + signaling; not per-call server-side gating)"
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-MCP-B",
+      "ac_source": "universal",
+      "status": "not-applicable",
+      "rationale": "Not applicable — no Communications MCP surface (`comms: none`)."
+    },
+    {
+      "ac_id": "AC-PRM-B",
+      "ac_source": "flavor-derived",
+      "goals": [
+        2
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_candidates.py",
+          "note": "cited test: test_detect_clusters_and_tiers"
+        },
+        {
+          "path": "tests/unit/test_private_store.py",
+          "note": "cited test: test_preview_merge_marks_conflicts"
+        },
+        {
+          "path": "tests/unit/test_reimport.py",
+          "note": "cited test: test_reimport_preserves_merges"
+        },
+        {
+          "path": "tests/e2e/test_dedup_flow.py",
+          "note": "cited test: test_bulk_flow_scenario"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_candidates.py::test_detect_clusters_and_tiers, tests/unit/test_private_store.py::test_preview_merge_marks_conflicts, tests/unit/test_reimport.py::test_reimport_preserves_merges, tests/e2e/test_dedup_flow.py::test_bulk_flow_scenario."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-PRM-C",
+      "ac_source": "flavor-derived",
+      "goals": [
+        4
+      ],
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_lock.py",
+          "note": "cited test: test_second_holder_refused_with_message"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_lock.py::test_second_holder_refused_with_message."
+        }
+      ]
+    }
+  ]
+}

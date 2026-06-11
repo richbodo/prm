@@ -296,3 +296,12 @@ footer.foot{display:none;}
 .toast button.go{background:var(--accent);border-color:var(--accent-d);color:#fff;font-weight:600;}
 
 @media (max-width:820px){ .commitbar{left:0;} .groupgrid{grid-template-columns:1fr;} }
+
+/* ---- AC-7 diagnostics overlay (?diag) ---- */
+.diagoverlay{position:fixed;inset:0;z-index:50;background:rgba(40,36,28,.4);display:grid;place-items:center;padding:24px;}
+.diagcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);max-width:680px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+.diaghead{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:#fcfbf8;font-size:13px;}
+.diagpre{margin:0;padding:16px 18px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--ink-2);white-space:pre-wrap;word-break:break-word;}
+#stat-build{font-size:11px;}
+#diag-link{color:var(--muted);}
+#diag-link:hover{color:var(--clay);}
