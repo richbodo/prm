@@ -159,6 +159,12 @@ reimport *paths:
 status:
     {{prm}} status
 
+# Export your contacts: merged portable vCard, or a lossless re-importable backup with `--raw`.
+# E.g. `just export --out contacts.vcf`  ·  `just export --raw --out backup.json`.
+[group('dev')]
+export *args:
+    {{prm}} export {{args}}
+
 # Full-text search your imported contacts (e.g. `just search ada`).
 [group('dev')]
 search *args:

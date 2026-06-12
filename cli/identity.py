@@ -33,6 +33,15 @@ class StableKey:
     def as_str(self) -> str:
         return f"{self.kind}:{self.value}"
 
+    @classmethod
+    def from_str(cls, text: str) -> "StableKey":
+        """Reconstruct a key from its ``as_str()`` form (``kind:value``). Used by the raw-backup
+        restore to preserve the *stored* key verbatim rather than re-deriving it — so a backup
+        re-imports to the exact same ``source_record_id``. Splits on the first ``:`` (a ``uid`` value
+        may itself contain one)."""
+        kind, _, value = text.partition(":")
+        return cls(kind=kind, value=value)
+
 
 def normalize_email(addr: str) -> str:
     return addr.strip().lower()

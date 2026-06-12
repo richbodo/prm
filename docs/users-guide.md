@@ -12,7 +12,8 @@ data never leaves your device.
 > workspace — review one at a time **or bulk-approve whole groups** (spot-check, then merge in one pass),
 > pick the winner for any conflict, every merge reversible. An **AI can also propose the merges for you**
 > (over a local MCP server) — it can only *propose*; you still review and approve each one in the workspace. You can also **re-import an updated export** and preview
-> exactly what changes (`just reimport`). What's coming next: a private overlay (groups, tags, notes) +
+> exactly what changes (`just reimport`), and **export your contacts** — a portable vCard to move them to
+> another app, or a lossless `--raw` backup you can re-import (`just export`). What's coming next: a private overlay (groups, tags, notes) +
 > a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
 > clearly what runs now vs. what's coming.
 
@@ -30,6 +31,8 @@ data never leaves your device.
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
+| **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
+| **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
 
 ---
 
@@ -302,6 +305,40 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
 
 ---
 
+## 10. Export your contacts
+
+Your contacts are yours — take them anywhere, or keep a backup. `just export` does both, in two modes.
+
+**Portable vCard (the default) — to move contacts into another app.** Writes your **merged** contacts
+(de-duplicated, with the conflict choices you made during dedup applied) as a **vCard 3.0** (`.vcf`) —
+the format Google, Apple, and Outlook all import:
+
+```bash
+just export --out contacts.vcf        # = prm export --out contacts.vcf
+just export                           # write to stdout instead (pipe it elsewhere)
+```
+
+One card per person: multi-valued fields (emails, phones) are **unioned** across the sources a contact
+came from, and for any single-valued field you reconciled, the value **you chose** is the one written.
+This is the *merged* view, so re-importing it back **into** PRM creates fresh records rather than
+re-attaching — it's a portability export, not a backup. For that, use `--raw`.
+
+**Lossless backup (`--raw`) — a re-importable copy of everything.** Writes a JSON file holding **every
+raw record exactly as stored** — its source, stable identity, fields, and per-field provenance, with
+nothing merged or dropped:
+
+```bash
+just export --raw --out backup.json   # = prm export --raw --out backup.json
+```
+
+Re-importing that file rebuilds the same records with the same identities (`just ingest backup.json`),
+so it's a true round-trip — ideal as a periodic backup of your mirrored contacts. (It backs up the
+**raw contacts store**; your private merge decisions live separately in `private.db`.)
+
+Both modes read the same PRM home as everything else, so import (or `just demo`) first.
+
+---
+
 ## Where your data lives
 
 Everything for one instance lives under a single **PRM home** directory. PRM finds it in this order:
@@ -338,8 +375,8 @@ arrive with the private-overlay and dedup milestones.)
 - **`ModuleNotFoundError: vobjectx`** — run `just setup` (it installs it), or `pip install vobjectx`.
   If you already have the older `vobject`, PRM uses it automatically.
 - **A file is "SKIPPED" as unrecognized** — PRM imports vCard (`.vcf`), Google Takeout (`.zip`),
-  LinkedIn (`.zip`/`Connections.csv`), Google CSV (`.csv`), and Facebook friends (`.zip`/`.json`).
-  Other files in an export folder are ignored. **Note:** a Facebook friend is just a *name and the
+  LinkedIn (`.zip`/`Connections.csv`), Google CSV (`.csv`), Facebook friends (`.zip`/`.json`), and its
+  own raw backup (`.json` from `just export --raw`). Other files in an export folder are ignored. **Note:** a Facebook friend is just a *name and the
   date you connected* — no email or phone — so those contacts are intentionally thin.
 - **`prm: command not found`** — the `just` recipes don't need `prm` on your PATH (they run `./.venv`
   directly), so prefer `just serve`, `just search`, and so on. To use `prm` itself, run `just shell`
@@ -353,12 +390,10 @@ arrive with the private-overlay and dedup milestones.)
 
 All five source parsers, the local **web workspace**, **find-&-merge deduplication** (review
 one-at-a-time **or bulk-approve by group**, reconcile, undo), **AI-proposed merges over MCP** (the AI
-proposes; you approve), and opt-in **non-destructive re-import** (`just reimport`) are done. The **`Architecture.md` conformance attestation**
-— the toolkit reference-design deliverable — is now in place: `just conformance` regenerates
-[`docs/conformance/`](conformance/) from [`docs/Architecture.md`](Architecture.md), and the green,
-test-backed attestation makes PRM submittable as the **second Personal Network Toolkit reference design**.
-Next, v0.2 brings the private overlay (groups, tags, notes) and a custom relationship schema. See the
-[Roadmap](roadmap.md).
+proposes; you approve), opt-in **non-destructive re-import** (`just reimport`), and **export** (a
+portable vCard plus a lossless `--raw` backup, `just export`) are done. The last v0.1 step is the `Architecture.md`
+conformance attestation (the toolkit reference-design deliverable); then v0.2 brings the private overlay
+(groups, tags, notes) and a custom relationship schema. See the [Roadmap](roadmap.md).
 
 ---
 
