@@ -258,7 +258,9 @@ just serve 9000                # pick a different port → http://127.0.0.1:9000
 
 It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
 contact** to see its fields and **per-field provenance** (which source each value came from). It reads
-the same home, so import (or `just demo`) first; if there's no database yet it says so.
+the same home, so import (or `just demo`) first; if there's no database yet it says so. The sidebar
+footer also has an **About** card (next to Diagnostics) describing what PRM is and linking to the
+upstream [Personal Network Toolkit](https://github.com/richbodo/personal_network_toolkit).
 
 (If a previous run left the port busy, `just port` frees it.)
 
