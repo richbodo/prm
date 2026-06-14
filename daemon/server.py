@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, build_label, candidates, diag, private_db, projection, proposals, shared_db
+from core import apply, build_label, candidates, diag, relationships_db, projection, proposals, shared_db
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
@@ -49,8 +49,8 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
         if not db.exists():
             return _json(200, {"shared_db": False, "home": str(home.root), "build_label": label})
         out = {"shared_db": True, "home": str(home.root), "build_label": label, **shared_db.stats(db)}
-        if home.private_db.exists():
-            p = private_db.stats(home.private_db)
+        if home.relationships_db.exists():
+            p = relationships_db.stats(home.relationships_db)
             out["contacts"] = p["contacts"]              # canonical (post-merge) count
             out["merged_contacts"] = p["merged_contacts"]
         return _json(200, out)
@@ -63,7 +63,7 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
 
     if path == "/api/search":
         q = (query.get("q") or [""])[0]
-        imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+        imap = relationships_db.identity_map(home.relationships_db) if home.relationships_db.exists() else {}
         seen, results = set(), []
         for name, email, org, srid in shared_db.search(db, q, limit=_int(query.get("limit"), 30)):
             cid = imap.get(srid, srid)                   # map the raw hit to its canonical contact
@@ -190,7 +190,7 @@ def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None 
         if method == "POST":
             return _post(path, home, body or {})
         return _json(405, {"error": "method not allowed", "method": method})
-    except (shared_db.SharedDbError, private_db.PrivateDbError) as exc:
+    except (shared_db.SharedDbError, relationships_db.RelationshipsDbError) as exc:
         diag.capture_error(home, exc, context=f"{method} {path}")
         return _json(409, {"error": f"store schema/availability error — mutations refused, reads continue: {exc}"})
     except Exception as exc:  # noqa: BLE001
@@ -244,6 +244,7 @@ class _Handler(BaseHTTPRequestHandler):
 def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> ThreadingHTTPServer:
     """Build (but don't run) the daemon bound to ``host:port``. Localhost only (INV-1). Split from
     ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly."""
+    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename
     httpd = ThreadingHTTPServer((host, port), _Handler)
     httpd.home = home
     return httpd

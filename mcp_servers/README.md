@@ -68,7 +68,7 @@ the SDK venv (`mcp_servers/.venv`, created by `just mcp-install-deps`) holds onl
 `core`'s deliberately tiny dependency surface stays clean.
 
 **Pointing a server at your data.** Each server reads your **PRM home** — the data dir holding
-`shared.db` / `private.db` / `proposals/`. `just mcp-install` and `--print-config` bind it for you; the
+`shared.db` / `relationships.db` / `proposals/`. `just mcp-install` and `--print-config` bind it for you; the
 standalone commands above accept `--data-dir DIR`, or set `$PRM_HOME` (resolution order:
 `--data-dir` → `$PRM_HOME` → `./prm-data/`; see the user's guide
 [§ Where your data lives](../docs/users-guide.md#where-your-data-lives)).

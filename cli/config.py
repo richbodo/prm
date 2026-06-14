@@ -33,8 +33,19 @@ class PrmHome:
         return self.root / "shared.db"
 
     @property
-    def private_db(self) -> Path:
+    def relationships_db(self) -> Path:
+        return self.root / "relationships.db"
+
+    @property
+    def legacy_private_db(self) -> Path:
+        """The v0.1 store name. Present only until the one-time rename migration runs (see
+        ``core.relationships_db.migrate_legacy``)."""
         return self.root / "private.db"
+
+    @property
+    def media_dir(self) -> Path:
+        """Content-addressed image/media store (bytes on disk; refs in relationships.db)."""
+        return self.root / "media"
 
     @property
     def proposals_dir(self) -> Path:
@@ -64,6 +75,7 @@ class PrmHome:
         self.root.mkdir(parents=True, exist_ok=True)
         self.proposals_dir.mkdir(exist_ok=True)
         self.snapshots_dir.mkdir(exist_ok=True)
+        self.media_dir.mkdir(exist_ok=True)
         return self
 
 

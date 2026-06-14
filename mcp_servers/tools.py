@@ -10,14 +10,14 @@ is never invoked here.
 
 from __future__ import annotations
 
-from core import apply, candidates, private_db, projection, proposals, shared_db
+from core import apply, candidates, relationships_db, projection, proposals, shared_db
 
 
 # --------------------------------------------------------------------------- read (shared-data-ops)
 def search_contacts(home, query: str, limit: int = 20) -> dict:
     if not home.shared_db.exists():
         return {"query": query, "results": []}
-    imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+    imap = relationships_db.identity_map(home.relationships_db) if home.relationships_db.exists() else {}
     seen, results = set(), []
     for name, email, org, srid in shared_db.search(home.shared_db, query, limit=limit):
         cid = imap.get(srid, srid)

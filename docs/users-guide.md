@@ -333,7 +333,7 @@ just export --raw --out backup.json   # = prm export --raw --out backup.json
 
 Re-importing that file rebuilds the same records with the same identities (`just ingest backup.json`),
 so it's a true round-trip — ideal as a periodic backup of your mirrored contacts. (It backs up the
-**raw contacts store**; your private merge decisions live separately in `private.db`.)
+**raw contacts store**; your private merge decisions live separately in `relationships.db`.)
 
 Both modes read the same PRM home as everything else, so import (or `just demo`) first.
 
@@ -353,14 +353,16 @@ The home will hold all of an instance's stores:
 ```
 prm-data/
   shared.db          # mirrored contacts (read-only at runtime)
-  private.db         # your private relationship data (local-only)
+  relationships.db   # your private relationship data + merge decisions (local-only)
+  media/             # content-addressed contact images (local-only)
   proposals/         # staged AI change-sets awaiting your review
   snapshots/         # pre-change backups
   audit.log.jsonl    # append-only log of applied changes
 ```
 
-(`shared.db` is created on your first import. `private.db`, `proposals/`, and `audit.log.jsonl`
-arrive with the private-overlay and dedup milestones.)
+(`shared.db` is created on your first import. `relationships.db` (the private store, renamed from
+`private.db` in v0.2 — an existing home is migrated automatically on first run), `proposals/`, and
+`audit.log.jsonl` arrive with the private-overlay and dedup milestones.)
 
 ## Privacy
 

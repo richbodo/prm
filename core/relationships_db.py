@@ -1,4 +1,4 @@
-"""private.db — the private store (identity_map, field_resolutions, decisions, settings).
+"""relationships.db — the private store (identity_map, field_resolutions, decisions, settings).
 
 A leaf, like ``shared_db``: it does **not** import ``cli`` or ``shared_db``. Two sanctioned writers,
 serialized by the AC-PRM-C file-lock — the ingester seeds the 1:1 identity baseline at import
@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-_SCHEMA_SQL = (Path(__file__).resolve().parent / "schema" / "private.sql").read_text(encoding="utf-8")
+_SCHEMA_SQL = (Path(__file__).resolve().parent / "schema" / "relationships.sql").read_text(encoding="utf-8")
 
 # Default reconcile order: user-curated address books (Apple/Google) outrank scraped professional /
 # social graphs (LinkedIn/Facebook). Stored in `settings` at init so it is config, not hardcoded —
@@ -23,7 +23,7 @@ _SCHEMA_SQL = (Path(__file__).resolve().parent / "schema" / "private.sql").read_
 DEFAULT_SOURCE_PRIORITY = ["apple_icloud", "google_takeout", "google_csv", "vcard", "linkedin", "facebook"]
 
 
-class PrivateDbError(RuntimeError):
+class RelationshipsDbError(RuntimeError):
     pass
 
 
@@ -31,12 +31,35 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+# --------------------------------------------------------------------------- v0.1 → v0.2 migration
+_LEGACY_NAME = "private.db"   # the v0.1 store name; renamed to relationships.db on first v0.2 run
+
+
+def migrate_legacy(new_path, legacy_path=None) -> bool:
+    """One-time rename of the v0.1 ``private.db`` store to ``relationships.db`` (with its ``-wal`` /
+    ``-shm`` sidecars, so an uncheckpointed WAL is preserved and replayed against the renamed file).
+
+    Idempotent and safe: a no-op if the new store already exists or no legacy store is present. The
+    schema is unchanged by the rename (still v1), so the renamed file opens directly. Returns True iff
+    a rename happened. Pure path I/O — keeps this module a leaf (it never imports ``cli``)."""
+    new_path = Path(new_path)
+    legacy_path = Path(legacy_path) if legacy_path is not None else new_path.with_name(_LEGACY_NAME)
+    if new_path.exists() or not legacy_path.exists():
+        return False
+    for suffix in ("", "-wal", "-shm"):
+        src = legacy_path.with_name(legacy_path.name + suffix)
+        if src.exists():
+            src.rename(new_path.with_name(new_path.name + suffix))
+    return True
+
+
 # --------------------------------------------------------------------------- connections / schema
 def connect(db_path, *, read_only: bool = False) -> sqlite3.Connection:
     db_path = Path(db_path)
+    migrate_legacy(db_path)                      # defense: never create a fresh store beside a legacy one
     if read_only:
         if not db_path.exists():
-            raise PrivateDbError(f"no private.db at {db_path}")
+            raise RelationshipsDbError(f"no relationships.db at {db_path}")
         return sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(db_path)
@@ -56,8 +79,8 @@ def _ensure_schema(con: sqlite3.Connection) -> None:
         con.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
         con.commit()
     elif version != SCHEMA_VERSION:
-        raise PrivateDbError(
-            f"private.db schema version {version} != expected {SCHEMA_VERSION} (incompatible build)"
+        raise RelationshipsDbError(
+            f"relationships.db schema version {version} != expected {SCHEMA_VERSION} (incompatible build)"
         )
 
 
@@ -138,7 +161,7 @@ def apply_operations(db_path, operations) -> list:
                         (op["contact_id"], op["field"], default.get("value"), default.get("source"), _now_iso()),
                     )
                 else:
-                    raise PrivateDbError(f"unknown changeset op: {kind!r}")
+                    raise RelationshipsDbError(f"unknown changeset op: {kind!r}")
                 applied.append(op)
             con.commit()
         except Exception:

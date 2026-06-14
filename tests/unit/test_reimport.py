@@ -18,7 +18,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
-from core import apply, audit, private_db, projection, shared_db, snapshots  # noqa: E402
+from core import apply, audit, relationships_db, projection, shared_db, snapshots  # noqa: E402
 
 SRC = "apple_icloud"
 
@@ -73,7 +73,7 @@ def test_reimport_apply_keeps_stale_and_snapshots():
 # ------------------------------------------------------------------ INV-6 + stale-merge heads-up
 def _merged_home(tmp: str):
     home = _home(tmp, _vcf("FN:Robert\r\nEMAIL:r@x.com", "FN:Bob\r\nEMAIL:bob@y.com"))
-    a, b = list(private_db.identity_map(home.private_db))[:2]
+    a, b = list(relationships_db.identity_map(home.relationships_db))[:2]
     apply.apply_changeset(home, apply.build_merge_changeset(home, [a, b], a, created_by="manual:test"))
     assert projection.list_contacts(home)["total"] == 1
     return home

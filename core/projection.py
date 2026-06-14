@@ -1,6 +1,6 @@
 """The canonical-contact projection: identity_map ⨝ source_records ⨝ field_resolutions.
 
-Composes the two stores — raw records from ``core.shared_db`` + decisions from ``core.private_db`` —
+Composes the two stores — raw records from ``core.shared_db`` + decisions from ``core.relationships_db`` —
 into the merged contact a user sees. **Pure read; never writes.** Multi-valued properties *union*;
 single-valued ones *reconcile* to one chosen value (an explicit ``field_resolution`` if present, else
 survivorship: source priority → most-recent). Rationale + field classification:
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 
-from core import private_db, shared_db
+from core import relationships_db, shared_db
 
 # Multi-valued → keep all distinct values. Single-valued → reconcile to one. Anything not listed here
 # defaults to UNION, so an unrecognized property never silently drops data.
@@ -45,7 +45,7 @@ def _props(raw_jcard: str) -> list:
 
 def _records_by_contact(home) -> dict:
     """{contact_id: [ {source, ingested_at, props}, … ]}, grouped via the identity_map (a record with
-    no mapping defaults to its own contact, so the projection is robust if private.db is absent)."""
+    no mapping defaults to its own contact, so the projection is robust if relationships.db is absent)."""
     con = shared_db.connect(home.shared_db, read_only=True)
     try:
         rows = con.execute(
@@ -53,7 +53,7 @@ def _records_by_contact(home) -> dict:
         ).fetchall()
     finally:
         con.close()
-    imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+    imap = relationships_db.identity_map(home.relationships_db) if home.relationships_db.exists() else {}
     groups: dict[str, list] = {}
     for srid, source, ingested_at, raw in rows:
         cid = imap.get(srid, srid)
@@ -112,9 +112,9 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict) -> dict:
 
 def _all(home) -> list:
     groups = _records_by_contact(home)
-    rank = {s: i for i, s in enumerate(private_db.source_priority(home.private_db) if home.private_db.exists()
-                                       else private_db.DEFAULT_SOURCE_PRIORITY)}
-    resolutions = private_db.field_resolutions(home.private_db) if home.private_db.exists() else {}
+    rank = {s: i for i, s in enumerate(relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists()
+                                       else relationships_db.DEFAULT_SOURCE_PRIORITY)}
+    resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     return [_merge(cid, members, rank, resolutions) for cid, members in groups.items()]
 
 
@@ -149,7 +149,7 @@ def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
 
 def _rank(home) -> dict:
     """{source: priority-index} — lower is more authoritative (Apple/Google before LinkedIn/Facebook)."""
-    order = private_db.source_priority(home.private_db) if home.private_db.exists() else private_db.DEFAULT_SOURCE_PRIORITY
+    order = relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists() else relationships_db.DEFAULT_SOURCE_PRIORITY
     return {s: i for i, s in enumerate(order)}
 
 
@@ -295,7 +295,7 @@ def export_jcards(home) -> list:
     by ``cli.vcard_writer``. Pure read; never writes."""
     groups = _records_by_contact(home)
     rank = _rank(home)
-    resolutions = private_db.field_resolutions(home.private_db) if home.private_db.exists() else {}
+    resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     rows = []
     for cid, members in groups.items():
         props = _merge_props(cid, members, rank, resolutions)
@@ -311,7 +311,7 @@ def get_contact(home, contact_id: str) -> dict | None:
     members = groups.get(contact_id)
     if not members:
         return None
-    rank = {s: i for i, s in enumerate(private_db.source_priority(home.private_db) if home.private_db.exists()
-                                       else private_db.DEFAULT_SOURCE_PRIORITY)}
-    resolutions = private_db.field_resolutions(home.private_db) if home.private_db.exists() else {}
+    rank = {s: i for i, s in enumerate(relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists()
+                                       else relationships_db.DEFAULT_SOURCE_PRIORITY)}
+    resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     return _merge(contact_id, members, rank, resolutions)

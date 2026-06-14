@@ -18,7 +18,7 @@ import re
 import sys
 from datetime import datetime, timezone
 
-from core import build_label, private_db, shared_db
+from core import build_label, relationships_db, shared_db
 from core.lock import LockError, file_lock
 
 _MAX_ERRORS = 20
@@ -92,10 +92,10 @@ def state_dump(home) -> dict:
         "proposals_pending": len(list(home.proposals_dir.glob("*.json"))) if home.proposals_dir.is_dir() else 0,
         "recent_errors": tail_errors(home),
     }
-    for name, db in (("shared", home.shared_db), ("private", home.private_db)):
+    for name, db in (("shared", home.shared_db), ("private", home.relationships_db)):
         if not db.exists():
             continue
-        stats = shared_db.stats if name == "shared" else private_db.stats
+        stats = shared_db.stats if name == "shared" else relationships_db.stats
         try:
             out["stores"][name] = stats(db)
         except Exception as exc:  # noqa: BLE001  (a corrupt/mismatched store is exactly what diag must report)

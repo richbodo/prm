@@ -5,8 +5,8 @@
 
 Runs as a plain script or under pytest.
 
-    python tests/unit/test_private_store.py
-    pytest tests/unit/test_private_store.py
+    python tests/unit/test_relationships_store.py
+    pytest tests/unit/test_relationships_store.py
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
-from core import private_db, projection, shared_db  # noqa: E402
+from core import relationships_db, projection, shared_db  # noqa: E402
 
 FIX = REPO / "tests" / "fixtures"
 APPLE = FIX / "apple_icloud" / "sources" / "icloud-export.vcf"
@@ -36,45 +36,81 @@ def _imported_home(tmp: str):
 # ------------------------------------------------------------------ schema + seeding
 def test_schema_bootstrap_and_settings():
     with tempfile.TemporaryDirectory() as tmp:
-        db = Path(tmp) / "private.db"
-        private_db.ensure(db)
+        db = Path(tmp) / "relationships.db"
+        relationships_db.ensure(db)
         assert db.exists()
-        con = private_db.connect(db, read_only=True)
+        con = relationships_db.connect(db, read_only=True)
         try:
-            assert con.execute("PRAGMA user_version").fetchone()[0] == private_db.SCHEMA_VERSION
+            assert con.execute("PRAGMA user_version").fetchone()[0] == relationships_db.SCHEMA_VERSION
         finally:
             con.close()
         # source_priority is seeded as config, Apple/Google ahead of LinkedIn/Facebook
-        prio = private_db.source_priority(db)
+        prio = relationships_db.source_priority(db)
         assert prio.index("apple_icloud") < prio.index("linkedin") < prio.index("facebook")
+
+
+# ------------------------------------------------------------------ v0.1 → v0.2 migration (R0)
+def test_legacy_private_db_is_migrated_with_data():
+    """A v0.1 home whose private store is still named `private.db` is renamed to `relationships.db`
+    on first v0.2 access, preserving the identity decisions; the migration is idempotent."""
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        home.create()
+        relationships_db.seed_identities(home.legacy_private_db, ["a", "b"])   # write under the OLD name
+        assert home.legacy_private_db.exists() and not home.relationships_db.exists()
+
+        assert relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db) is True
+        assert home.relationships_db.exists() and not home.legacy_private_db.exists()
+        assert relationships_db.identity_map(home.relationships_db) == {"a": "a", "b": "b"}  # data preserved
+
+        # idempotent + safe: nothing to do once migrated (and never when no legacy store exists)
+        assert relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db) is False
+
+
+def test_legacy_migration_moves_wal_sidecars_and_is_noop_when_absent():
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        home.create()
+        # no legacy store at all → no-op
+        assert relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db) is False
+        # a legacy store plus its WAL sidecars → all three move under the new name (WAL preserved)
+        legacy = home.legacy_private_db
+        legacy.write_bytes(b"db")
+        (legacy.parent / (legacy.name + "-wal")).write_bytes(b"wal")
+        (legacy.parent / (legacy.name + "-shm")).write_bytes(b"shm")
+        assert relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db) is True
+        new = home.relationships_db
+        assert new.read_bytes() == b"db" and not legacy.exists()
+        assert (new.parent / (new.name + "-wal")).read_bytes() == b"wal"
+        assert (new.parent / (new.name + "-shm")).read_bytes() == b"shm"
 
 
 def test_seed_1to1_and_idempotent():
     with tempfile.TemporaryDirectory() as tmp:
-        db = Path(tmp) / "private.db"
-        assert private_db.seed_identities(db, ["a", "b", "c"]) == 3
-        imap = private_db.identity_map(db)
+        db = Path(tmp) / "relationships.db"
+        assert relationships_db.seed_identities(db, ["a", "b", "c"]) == 3
+        imap = relationships_db.identity_map(db)
         assert imap == {"a": "a", "b": "b", "c": "c"}          # 1:1 baseline
         # re-seeding existing ids is a no-op; only the genuinely new one is added…
-        assert private_db.seed_identities(db, ["a", "b", "c", "d"]) == 1
+        assert relationships_db.seed_identities(db, ["a", "b", "c", "d"]) == 1
         # …and an existing *merge* decision is preserved across a re-seed.
-        con = private_db.connect(db)
+        con = relationships_db.connect(db)
         con.execute("UPDATE identity_map SET contact_id='a' WHERE source_record_id='b'")  # b merged into a
         con.commit(); con.close()
-        assert private_db.seed_identities(db, ["a", "b"]) == 0
-        assert private_db.identity_map(db)["b"] == "a"          # merge survived
+        assert relationships_db.seed_identities(db, ["a", "b"]) == 0
+        assert relationships_db.identity_map(db)["b"] == "a"          # merge survived
 
 
 def test_import_seeds_private_and_keeps_shared_intact():
     with tempfile.TemporaryDirectory() as tmp:
         home = _imported_home(tmp)
         # import seeded a 1:1 baseline: one contact per source record, none merged yet
-        st = private_db.stats(home.private_db)
+        st = relationships_db.stats(home.relationships_db)
         assert st["contacts"] == 4 and st["mapped_records"] == 4 and st["merged_contacts"] == 0
         # the private write did not touch the raw store (INV-2): shared.db still holds 4 records
         assert shared_db.stats(home.shared_db)["records"] == 4
         # every shared record is mapped
-        assert set(private_db.identity_map(home.private_db)) == \
+        assert set(relationships_db.identity_map(home.relationships_db)) == \
             {r["id"] for r in shared_db.list_records(home.shared_db, limit=10)["records"]}
 
 
@@ -92,9 +128,9 @@ def test_projection_baseline_one_per_record():
 def test_projection_merges_records():
     with tempfile.TemporaryDirectory() as tmp:
         home = _imported_home(tmp)
-        ids = list(private_db.identity_map(home.private_db))
+        ids = list(relationships_db.identity_map(home.relationships_db))
         a, b = ids[0], ids[1]
-        con = private_db.connect(home.private_db)                          # merge b into a
+        con = relationships_db.connect(home.relationships_db)                          # merge b into a
         con.execute("UPDATE identity_map SET contact_id=? WHERE source_record_id=?", (a, b))
         con.commit(); con.close()
 
@@ -142,7 +178,7 @@ def test_preview_merge_marks_conflicts():
             v = Path(tmp) / f"{src}.vcf"
             v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:bob@example.com\r\nEND:VCARD\r\n", encoding="utf-8")
             ingest_mod.ingest([v], source=src, home=home, dry_run=False)
-        ids = list(private_db.identity_map(home.private_db))
+        ids = list(relationships_db.identity_map(home.relationships_db))
         pv = projection.preview_merge(home, ids)
         fn = next(f for f in pv["fields"] if f["name"] == "fn")
         assert fn["kind"] == "conflict" and len(fn["options"]) == 2 and "fn" in pv["conflicts"]

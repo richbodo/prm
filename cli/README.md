@@ -44,7 +44,7 @@ prm status [--json]                        # counts from shared.db
 prm search QUERY [--limit N] [--json]      # FTS over imported contacts
 ```
 
-- **PRM home** (`config.py`): one directory for all stores (`shared.db`, `private.db`,
+- **PRM home** (`config.py`): one directory for all stores (`shared.db`, `relationships.db`,
   `proposals/`, `snapshots/`, `audit.log.jsonl`). Resolves `--data-dir` → `$PRM_HOME` →
   `./prm-data/`. Demo mode never writes outside the repo.
 - **`import`** detects format, infers the source label (shown with a confidence), and previews it.

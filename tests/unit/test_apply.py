@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
-from core import apply, audit, candidates, private_db, projection, proposals, snapshots  # noqa: E402
+from core import apply, audit, candidates, relationships_db, projection, proposals, snapshots  # noqa: E402
 
 FIX = REPO / "tests" / "fixtures"
 APPLE = FIX / "apple_icloud" / "sources" / "icloud-export.vcf"
@@ -35,7 +35,7 @@ def _apple_home(tmp: str):
 def test_apply_merge_then_undo():
     with tempfile.TemporaryDirectory() as tmp:
         home = _apple_home(tmp)
-        a, b = list(private_db.identity_map(home.private_db))[:2]
+        a, b = list(relationships_db.identity_map(home.relationships_db))[:2]
 
         cs = apply.build_merge_changeset(home, [a, b], a, created_by="manual:test", rationale="same person")
         assert any(op["op"] == "merge" and b in op["source_record_ids"] for op in cs["operations"])
@@ -56,7 +56,7 @@ def test_apply_merge_then_undo():
 def test_resolve_field_overrides_projection():
     with tempfile.TemporaryDirectory() as tmp:
         home = _apple_home(tmp)
-        a = list(private_db.identity_map(home.private_db))[0]
+        a = list(relationships_db.identity_map(home.relationships_db))[0]
         cs = proposals.build([proposals.resolve_field_op(a, "fn", "Edited Name", rule="user")],
                              created_by="manual:test")
         apply.apply_changeset(home, cs)
@@ -75,7 +75,7 @@ def test_reject_excludes_candidate():
         assert conf
         key = conf[0]["key"]
         apply.reject_cluster(home, key)
-        assert key in private_db.rejected_pairs(home.private_db)
+        assert key in relationships_db.rejected_pairs(home.relationships_db)
         assert key not in {c["key"] for c in candidates.find_duplicate_candidates(home)}   # gone
 
 
@@ -98,10 +98,10 @@ def test_snapshot_and_restore():
         snap = snapshots.snapshot(home)
         assert snap.exists() and snap in snapshots.list_snapshots(home)
         # mutate, then restore brings the baseline back
-        private_db.record_decision(home.private_db, "k", "not_duplicate")
-        assert private_db.rejected_pairs(home.private_db) == {"k"}
+        relationships_db.record_decision(home.relationships_db, "k", "not_duplicate")
+        assert relationships_db.rejected_pairs(home.relationships_db) == {"k"}
         snapshots.restore(home, snap)
-        assert private_db.rejected_pairs(home.private_db) == set()
+        assert relationships_db.rejected_pairs(home.relationships_db) == set()
 
 
 def test_audit_is_append_only_jsonl():
@@ -159,7 +159,7 @@ def test_apply_batch_rejects_empty():
 def test_apply_batch_skips_overlapping_items():
     with tempfile.TemporaryDirectory() as tmp:
         home = _two_pairs_home(tmp)
-        a, b, c = list(private_db.identity_map(home.private_db))[:3]
+        a, b, c = list(relationships_db.identity_map(home.relationships_db))[:3]
         # two items chain on b → the second is skipped (not fatal); the first still merges
         res = apply.apply_batch(home, [{"kind": "candidate", "member_ids": [a, b], "into": a},
                                        {"kind": "candidate", "member_ids": [b, c], "into": b}])
@@ -176,7 +176,7 @@ def test_apply_batch_proposal_override_wins():
             v = Path(tmp) / f"{src}.vcf"
             v.write_text(f"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{name}\r\nEMAIL:bob@example.com\r\nEND:VCARD\r\n", encoding="utf-8")
             ingest_mod.ingest([v], source=src, home=home, dry_run=False)
-        a, b = list(private_db.identity_map(home.private_db))[:2]
+        a, b = list(relationships_db.identity_map(home.relationships_db))[:2]
         cs = apply.build_merge_changeset(home, [a, b], a, created_by="ai:local-dedup",
                                          resolutions=[{"field": "fn", "chosen_value": "Robert Smith", "chosen_source": "apple_icloud"}])
         pid = proposals.store(home, cs, status="pending")

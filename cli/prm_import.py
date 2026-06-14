@@ -12,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-from core import build_label, shared_db
+from core import build_label, relationships_db, shared_db
 
 from . import ingest as ingest_mod
 from .config import resolve_home
@@ -287,6 +287,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    # One-time v0.1→v0.2 store rename, before any command reads/writes the private store.
+    home = resolve_home(args.data_dir)
+    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)
     try:
         return args.func(args)
     except FileNotFoundError as exc:

@@ -388,7 +388,7 @@ demonstrates it.
 
 - **Where exactly do dedup/merge decisions live?** They are durable private metadata (the
   assertion "these records are the same person") that MUST survive re-import (INV-5, AC-PRM-B).
-  v0.1 models them as a minimal **private store** (`private.db`) separate from the raw mirrored
+  v0.1 models them as a minimal **private store** (`relationships.db`) separate from the raw mirrored
   Shared DB — the seed of the full private overlay that arrives in v0.2. Crucially, dedup therefore
   writes the *private* store, **never** the raw Shared DB, so INV-2 stays intact.
 - **Proposal/audit substrate** — settled: text/JSON changesets + a JSONL append-only audit log + a
