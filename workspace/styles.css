@@ -305,3 +305,16 @@ footer.foot{display:none;}
 #stat-build{font-size:11px;}
 #diag-link{color:var(--muted);}
 #diag-link:hover{color:var(--clay);}
+
+/* ---- About overlay (reached from the sidebar footer) ---- */
+.aboutoverlay{position:fixed;inset:0;z-index:50;background:rgba(40,36,28,.4);display:grid;place-items:center;padding:24px;animation:rise .3s cubic-bezier(.2,.7,.2,1) backwards;}
+.aboutcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);max-width:540px;width:100%;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;}
+.abouthead{display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#faf8f2,#f4f1e9);}
+.abouthead .mark{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink);}
+.abouthead .mark em{color:var(--accent-d);font-style:normal;}
+.abouthead .ver{font-size:11px;color:var(--faint);letter-spacing:.02em;}
+.aboutbody{padding:22px 26px 28px;overflow:auto;}
+.aboutbody p{margin:0;font-size:15px;line-height:1.7;color:var(--ink-2);}
+.aboutbody .repo{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--faint);}
+.aboutbody a{color:var(--accent-d);text-decoration:underline;text-underline-offset:2px;}
+.aboutbody a:hover{color:var(--accent);}

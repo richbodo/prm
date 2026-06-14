@@ -562,6 +562,35 @@ async function showDiag() {
   $("#diag-close").addEventListener("click", () => { el.remove(); history.replaceState(null, "", location.pathname); });
 }
 
+// ---- About card — what PRM is, and a link to the upstream Personal Network Toolkit. The link is the
+// only outward pointer in the workspace; it's a user-initiated navigation (rel=noreferrer keeps the
+// local URL off the wire), never an automatic request — contact data still never leaves the device. ----
+const PNT_URL = "https://github.com/richbodo/personal_network_toolkit";
+const PRM_URL = "https://github.com/richbodo/prm";
+function showAbout() {
+  const el = document.createElement("div");
+  el.className = "aboutoverlay";
+  el.innerHTML =
+    `<div class="aboutcard">` +
+    `<div class="abouthead"><span class="mark serif">P<em>R</em>M</span><span class="ver">v0.1</span>` +
+    `<span class="spacer"></span><button class="btn" id="about-close">Close</button></div>` +
+    `<div class="aboutbody"><p>PRM is a home-cooked meal originally built for ` +
+    `my friend Vaipunu. It is designed to be a relatively secure place to back up contact data and a ` +
+    `highly functional application through which to triage contact data and build a store of private, ` +
+    `curated relationship data. It is regularly validated against the personal network toolkit as a ` +
+    `<a href="${PNT_URL}" target="_blank" rel="noopener noreferrer">personal network application</a>.</p>` +
+    `<p class="repo">Source code · <a href="${PRM_URL}" target="_blank" rel="noopener noreferrer">github.com/richbodo/prm</a></p>` +
+    `</div></div>`;
+  document.body.appendChild(el);
+  const close = () => { el.remove(); document.removeEventListener("keydown", onKey); };
+  function onKey(e) { if (e.key === "Escape") close(); }
+  $("#about-close").addEventListener("click", close);
+  el.addEventListener("click", (e) => { if (e.target === el) close(); });   // click the backdrop to dismiss
+  document.addEventListener("keydown", onKey);
+}
+const aboutLink = $("#about-link");
+if (aboutLink) aboutLink.addEventListener("click", showAbout);
+
 // ---- boot, with a watchdog so a wedged daemon shows diagnostics instead of hanging ----
 let booted = false;
 const bootWatchdog = setTimeout(() => {
