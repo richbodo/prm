@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core import audit, private_db, shared_db, snapshots
+from core import audit, relationships_db, shared_db, snapshots
 from core.lock import file_lock
 
 from . import backup
@@ -151,7 +151,7 @@ def _persist(home: PrmHome, contacts, ingested_at: str) -> shared_db.LoadResult:
     file-lock.** Seeding is idempotent and preserves prior merge decisions (re-attach by stable id)."""
     result = shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
     srids = [shared_db.source_record_id(c.source, c.stable_key.as_str()) for c in contacts]
-    private_db.seed_identities(home.private_db, srids, created_at=ingested_at)
+    relationships_db.seed_identities(home.relationships_db, srids, created_at=ingested_at)
     return result
 
 
@@ -226,7 +226,7 @@ def _diff_source(home: PrmHome, source: str, incoming: dict) -> tuple:
     """Compare a fresh export's records for one source against the store. ``incoming`` is
     ``{source_record_id: CanonicalContact}``. Returns (summary, contacts_to_persist)."""
     current = shared_db.records_for_source(home.shared_db, source)        # {srid: raw_jcard}
-    imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+    imap = relationships_db.identity_map(home.relationships_db) if home.relationships_db.exists() else {}
     persist, added, updated, unchanged = [], 0, 0, 0
     for srid, c in incoming.items():
         if srid not in current:

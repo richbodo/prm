@@ -18,7 +18,7 @@ import hashlib
 import re
 import unicodedata
 
-from core import private_db, projection
+from core import relationships_db, projection
 
 CONFIDENT, STRONG, FUZZY, REVIEW = "confident", "strong", "fuzzy", "review"
 # A guarded (oversized/low-cohesion) confident cluster is downgraded to REVIEW — still high priority,
@@ -268,5 +268,5 @@ def find_duplicate_candidates(home) -> list[dict]:
     excluding any the user has dismissed. This is the ``find_duplicate_candidates`` of plan §6 —
     used by the workspace (M3d) and exposed over MCP (M4)."""
     contacts = projection.all_contacts(home)
-    rejected = private_db.rejected_pairs(home.private_db) if home.private_db.exists() else set()
+    rejected = relationships_db.rejected_pairs(home.relationships_db) if home.relationships_db.exists() else set()
     return detect(contacts, rejected=rejected)

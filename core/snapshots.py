@@ -1,6 +1,6 @@
-"""core/snapshots.py — the pre-apply snapshot ring for private.db (AC-9, INV-12).
+"""core/snapshots.py — the pre-apply snapshot ring for relationships.db (AC-9, INV-12).
 
-Before the daemon applies a merge it snapshots private.db here; **restoring a snapshot is v0.1 Undo**
+Before the daemon applies a merge it snapshots relationships.db here; **restoring a snapshot is v0.1 Undo**
 (the locked reversibility choice — see docs/design-notes/dedupe-design.md). Copies use sqlite's online
 backup API so a WAL-mode database is captured consistently (a bare file copy could miss the -wal).
 ISO-named, ISO-sorted; an old-tail rotation keeps the ring bounded.
@@ -12,7 +12,7 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core import private_db
+from core import relationships_db
 
 KEEP = 20   # snapshots retained in the ring
 
@@ -32,11 +32,11 @@ def _copy_db(src: Path, dest: Path) -> None:
 
 
 def snapshot(home) -> Path:
-    """Capture private.db into the ring and return the snapshot path. Rotates the ring afterward."""
-    private_db.ensure(home.private_db)
+    """Capture relationships.db into the ring and return the snapshot path. Rotates the ring afterward."""
+    relationships_db.ensure(home.relationships_db)
     home.snapshots_dir.mkdir(parents=True, exist_ok=True)
     dest = home.snapshots_dir / f"private-{_stamp()}.db"
-    _copy_db(home.private_db, dest)
+    _copy_db(home.relationships_db, dest)
     rotate(home)
     return dest
 
@@ -49,11 +49,11 @@ def list_snapshots(home) -> list:
 
 
 def restore(home, snapshot_path) -> None:
-    """Overwrite private.db with a snapshot's contents (Undo). Caller holds the file-lock."""
+    """Overwrite relationships.db with a snapshot's contents (Undo). Caller holds the file-lock."""
     snapshot_path = Path(snapshot_path)
     if not snapshot_path.exists():
         raise FileNotFoundError(f"no such snapshot: {snapshot_path}")
-    _copy_db(snapshot_path, home.private_db)
+    _copy_db(snapshot_path, home.relationships_db)
 
 
 def rotate(home, *, keep: int = KEEP) -> None:

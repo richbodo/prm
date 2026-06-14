@@ -2,7 +2,7 @@
 --
 -- Read-only at runtime (INV-2): only the ingester writes this, at import time. One row per logical
 -- record per source. The canonical contact a user eventually sees is a projection built in the
--- private store (identity_map ⨝ source_records ⨝ field_resolutions) — that lives in private.db and
+-- private store (identity_map ⨝ source_records ⨝ field_resolutions) — that lives in relationships.db and
 -- arrives with the dedup milestone (plan §11 M3); this file is only the mirror.
 
 CREATE TABLE IF NOT EXISTS source_records (

@@ -90,7 +90,7 @@ def test_ingest_persists_and_status_reads_back():
         assert report.persisted and report.stored == 4
         # Both stores exist as separate files: import writes shared.db and seeds the private store's
         # 1:1 identity baseline (M3a). The two-store separation is exercised in test_private_store.py.
-        assert home.shared_db.exists() and home.private_db.exists()
+        assert home.shared_db.exists() and home.relationships_db.exists()
         # round-trips through the real status reader
         assert prm_import.main(["--data-dir", str(home.root), "status", "--json"]) == 0
 

@@ -18,7 +18,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
-from core import apply, private_db, projection, proposals  # noqa: E402
+from core import apply, relationships_db, projection, proposals  # noqa: E402
 from mcp_servers import tools  # noqa: E402
 
 
@@ -51,12 +51,12 @@ def test_submit_is_propose_only():
     with tempfile.TemporaryDirectory() as tmp:
         home = _dup_home(tmp)
         cl = tools.find_duplicate_candidates(home)["clusters"][0]
-        before = private_db.stats(home.private_db)["contacts"]
+        before = relationships_db.stats(home.relationships_db)["contacts"]
 
         res = tools.submit_merge_proposal(home, cl["member_ids"], cl["member_ids"][0], rationale="same email")
         assert res["ok"] and res["status"] == "pending"
         # NOTHING applied: the private store is unchanged and the projection still shows two contacts
-        assert private_db.stats(home.private_db)["contacts"] == before
+        assert relationships_db.stats(home.relationships_db)["contacts"] == before
         assert projection.list_contacts(home)["total"] == 2
         # the proposal is staged for the human, authored by the AI
         staged = tools.list_proposals(home)["proposals"]

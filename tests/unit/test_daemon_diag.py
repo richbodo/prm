@@ -47,7 +47,7 @@ def test_diag_route_sanitized():
 def test_schema_mismatch_refuses_write_reads_continue():
     with tempfile.TemporaryDirectory() as tmp:
         home = _home(tmp)
-        con = sqlite3.connect(home.private_db)               # an incompatible build wrote private.db
+        con = sqlite3.connect(home.relationships_db)               # an incompatible build wrote relationships.db
         con.execute("PRAGMA user_version = 99"); con.commit(); con.close()
 
         contacts = _body(server.route("GET", "/api/contacts", {}, home))

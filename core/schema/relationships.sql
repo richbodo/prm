@@ -1,4 +1,4 @@
--- private.db — the private store (schema v1).
+-- relationships.db — the private store (schema v1).
 --
 -- Durable; survives re-import (INV-5/6/9). Two sanctioned writers, serialized by the AC-PRM-C
 -- file-lock: the ingester seeds the 1:1 identity baseline at import time, and the daemon applies
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS contacts (
 );
 
 -- Which raw record belongs to which canonical contact. One record → exactly one contact.
--- This is what dedup writes (to private.db, never shared.db). Re-import re-attaches by the stable
+-- This is what dedup writes (to relationships.db, never shared.db). Re-import re-attaches by the stable
 -- source_record_id, so merge decisions survive.
 CREATE TABLE IF NOT EXISTS identity_map (
     source_record_id TEXT PRIMARY KEY,

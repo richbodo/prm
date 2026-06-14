@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""private.db version handshake (AC-4, private half): a private store whose `PRAGMA user_version` does
+"""relationships.db version handshake (AC-4, private half): a private store whose `PRAGMA user_version` does
 not match the build's `SCHEMA_VERSION` **refuses to mutate** — every sanctioned writer goes through
 `_ensure_schema`, which raises rather than writing against an incompatible store. Mirrors the shared-side
 `test_incompatible_schema_version_is_rejected`.
 
-    python tests/db/test_private_db_version.py
-    pytest tests/db/test_private_db_version.py
+    python tests/db/test_relationships_db_version.py
+    pytest tests/db/test_relationships_db_version.py
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from core import private_db  # noqa: E402
+from core import relationships_db  # noqa: E402
 
 
 def _stamp_wrong_version(db: Path) -> None:
@@ -30,24 +30,24 @@ def _stamp_wrong_version(db: Path) -> None:
 
 def test_private_mismatch_refuses_seed():
     with tempfile.TemporaryDirectory() as tmp:
-        db = Path(tmp) / "private.db"
+        db = Path(tmp) / "relationships.db"
         _stamp_wrong_version(db)
         try:
-            private_db.seed_identities(db, ["a", "b"])       # the ingester's private write
-        except private_db.PrivateDbError:
+            relationships_db.seed_identities(db, ["a", "b"])       # the ingester's private write
+        except relationships_db.RelationshipsDbError:
             return
-        raise AssertionError("expected PrivateDbError for a private.db schema-version mismatch")
+        raise AssertionError("expected RelationshipsDbError for a relationships.db schema-version mismatch")
 
 
 def test_private_mismatch_refuses_apply():
     with tempfile.TemporaryDirectory() as tmp:
-        db = Path(tmp) / "private.db"
+        db = Path(tmp) / "relationships.db"
         _stamp_wrong_version(db)
         try:
-            private_db.apply_operations(db, [{"op": "merge", "source_record_ids": ["x"], "into": "y"}])
-        except private_db.PrivateDbError:
+            relationships_db.apply_operations(db, [{"op": "merge", "source_record_ids": ["x"], "into": "y"}])
+        except relationships_db.RelationshipsDbError:
             return
-        raise AssertionError("expected PrivateDbError on the daemon apply path too")
+        raise AssertionError("expected RelationshipsDbError on the daemon apply path too")
 
 
 def main() -> int:

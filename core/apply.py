@@ -1,7 +1,7 @@
 """core/apply.py — the apply engine: turn an approved changeset into a committed merge.
 
 This is the daemon's path to the private store and the *only* writer of applied merge decisions. Every
-apply takes the single-instance file-lock (AC-PRM-C), **snapshots private.db first** (the v0.1 Undo
+apply takes the single-instance file-lock (AC-PRM-C), **snapshots relationships.db first** (the v0.1 Undo
 point), runs the changeset in one transaction, and appends to the append-only audit log (INV-12). A
 dismissal records a ``dedup_decision`` (so the pair never resurfaces); ``undo`` restores the most
 recent snapshot. Rationale: docs/design-notes/dedupe-design.md.
@@ -9,7 +9,7 @@ recent snapshot. Rationale: docs/design-notes/dedupe-design.md.
 
 from __future__ import annotations
 
-from core import audit, private_db, proposals, snapshots
+from core import audit, relationships_db, proposals, snapshots
 from core.lock import file_lock
 
 
@@ -20,7 +20,7 @@ def build_merge_changeset(home, contact_ids, into, *, resolutions=None,
     identity_map, so the merge survives prior merges. ``resolutions`` is a list of
     ``{field, chosen_value, chosen_source?, rule?}``."""
     members = set(contact_ids) | {into}
-    imap = private_db.identity_map(home.private_db) if home.private_db.exists() else {}
+    imap = relationships_db.identity_map(home.relationships_db) if home.relationships_db.exists() else {}
     srids = [srid for srid, cid in imap.items() if cid in members and cid != into]
     ops = []
     if srids:
@@ -41,7 +41,7 @@ def apply_changeset(home, changeset: dict) -> dict:
     with file_lock(home.lock_file):
         snap = snapshots.snapshot(home)                      # pre-apply Undo point
         try:
-            applied = private_db.apply_operations(home.private_db, changeset["operations"])
+            applied = relationships_db.apply_operations(home.relationships_db, changeset["operations"])
         except Exception:
             snapshots.restore(home, snap)                    # any failure → roll back to the snapshot
             raise
@@ -147,7 +147,7 @@ def reject_cluster(home, cluster_key: str, *, by: str = "manual:user") -> dict:
     """Record a 'not a duplicate' dismissal (survives re-import; the pair won't resurface)."""
     home.create()
     with file_lock(home.lock_file):
-        private_db.record_decision(home.private_db, cluster_key, "not_duplicate")
+        relationships_db.record_decision(home.relationships_db, cluster_key, "not_duplicate")
         return audit.append(home, {"kind": "reject", "cluster_key": cluster_key, "by": by})
 
 

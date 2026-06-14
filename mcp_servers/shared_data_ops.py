@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # import core / c
 from mcp.server.fastmcp import FastMCP  # noqa: E402  (SDK; isolated venv — see just mcp-install-deps)
 
 from cli.config import resolve_home  # noqa: E402
+from core import relationships_db  # noqa: E402
 from mcp_servers import tools  # noqa: E402
 from mcp_servers.consent import CLOUD_LLM_NOTICE  # noqa: E402
 
@@ -60,6 +61,7 @@ def main() -> None:
                     help="print the Claude Desktop JSON for this server and exit (don't run it)")
     args = ap.parse_args()
     home = resolve_home(args.data_dir)
+    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename
     if args.print_config:
         from mcp_servers import claude_config
         print(claude_config.block(claude_config.server_entry("prm-shared-data", "shared_data_ops.py", home.root)))

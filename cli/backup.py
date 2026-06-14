@@ -8,7 +8,7 @@ canonical jCard, and per-field provenance. Re-importing the dump reconstructs th
 than creating fresh records (a true store round-trip — INV-5).
 
 Scope: this backs up the **mirrored contacts** (the raw Shared DB, INV-2). Private merge decisions live
-in ``private.db`` and are a separate concern — when restored into a home whose ``private.db`` still
+in ``relationships.db`` and are a separate concern — when restored into a home whose ``relationships.db`` still
 references these record ids, those decisions continue to apply.
 
     {"prm_backup": 1, "exported_at": "…Z", "records": [
