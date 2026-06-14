@@ -32,3 +32,14 @@ and the stdlib detection algorithm.
   — why batching merges (M3f) doesn't weaken data safety: the constraints respected vs interpreted, the
   genuine-vs-perceived-safety split, the skip-don't-chain overlap rule, and the contrast with destructive
   bulk-merge in mainstream contact tools.
+
+## Relationship store & contact editing
+
+How PRM lets the user edit contacts and author private relationship data without breaking the read-only
+mirror — the seam where v0.2's overlay attaches to v0.1's immutable contacts.
+
+- [**Editable contacts without a writable Shared DB — the override model**](contact-edit-override-model.md)
+  — why v0.2 contact edit mode (Update/Create/Delete) writes the private store and leaves `shared.db`
+  immutable (INV-2 / AC-1): re-mirror stays safe, edits are reversible + audited, provenance stays
+  honest; the writable-Shared-DB alternative and why it was rejected; and the one-store `relationships.db`
+  rename.
