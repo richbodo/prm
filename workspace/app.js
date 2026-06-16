@@ -276,6 +276,116 @@ async function openTagModal(fieldId, onSaved) {
   });
 }
 
+// ---- schema builder (R6): define your own relationship fields. INV-3 — authored only here. ----
+const SCHEMA_KINDS = ["text", "long_text", "number", "date", "boolean", "single_select", "multi_select", "url", "image"];
+let schemaCache = [];
+
+async function loadSchema() {
+  try { schemaCache = (await api("/api/schema")).fields || []; } catch { schemaCache = []; }
+  renderSchema();
+}
+
+function fieldBadges(f) {
+  const seal = f.disclosure_tier === "private-sealed"
+    ? `<span class="fbadge sealed">sealed</span>` : `<span class="fbadge share">shareable</span>`;
+  return `<span class="fbadge kind">${esc(f.kind)}</span>${seal}` +
+    (f.required ? `<span class="fbadge">required</span>` : "") +
+    (f.class === "builtin" ? `<span class="fbadge lock">built-in</span>` : "");
+}
+
+function renderSchema() {
+  const sub = $("#schema-sub"); if (sub) sub.textContent = `${schemaCache.length} field${schemaCache.length === 1 ? "" : "s"}`;
+  const body = $("#schema-body");
+  body.innerHTML = schemaCache.map((f) => {
+    const actions = `<button class="btn ghost tiny" data-edit="${esc(f.field_id)}">Edit</button>` +
+      (f.class === "builtin" ? "" : `<button class="btn ghost tiny danger-ghost" data-remove="${esc(f.field_id)}">Remove</button>`);
+    return `<div class="fielddef"><div class="fdbody"><div class="fdlabel">${esc(f.label)}` +
+      `<span class="fdslug mono">${esc(f.field_id)}</span></div><div class="fdmeta">${fieldBadges(f)}</div></div>` +
+      `<div class="fdactions">${actions}</div></div>`;
+  }).join("") || `<p class="hint">No fields yet.</p>`;
+  body.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () =>
+    openFieldModal(schemaCache.find((x) => x.field_id === b.dataset.edit), loadSchema)));
+  body.querySelectorAll("[data-remove]").forEach((b) => b.addEventListener("click", async () => {
+    const f = schemaCache.find((x) => x.field_id === b.dataset.remove);
+    if (!confirm(`Remove the field “${f.label}” and all values stored in it? You can Undo this.`)) return;
+    try { await postJSON("/api/remove-field", { field_id: f.field_id }); }
+    catch (e) { alert("Remove failed: " + e.message); return; }
+    loadSchema(); refreshStats();
+  }));
+}
+
+// Create / edit a field definition (a modal). `existing` null → create; otherwise edit (kind locked).
+function openFieldModal(existing, onSaved) {
+  const isEdit = !!existing;
+  const st = {
+    label: existing ? existing.label : "",
+    kind: existing ? existing.kind : "text",
+    required: existing ? !!existing.required : false,
+    ai_write_policy: existing ? existing.ai_write_policy : "review-required",
+    disclosure_tier: existing ? existing.disclosure_tier : "private-sealed",
+    options: (((existing || {}).config || {}).options || []).map((o) => ({ ...o })),
+  };
+  const isSelect = () => st.kind === "single_select" || st.kind === "multi_select";
+  const el = document.createElement("div");
+  el.className = "aboutoverlay";
+  const sel = (id, val, choices) =>
+    `<select id="${id}">${choices.map((c) => `<option value="${c}"${c === val ? " selected" : ""}>${c}</option>`).join("")}</select>`;
+  function optsBlock() {
+    if (!isSelect()) return "";
+    const rows = st.options.map((o, i) =>
+      `<div class="tagrow"><input class="oname" data-i="${i}" value="${esc(o.value)}" placeholder="option"/>` +
+      `<input class="odesc" data-i="${i}" value="${esc(o.description || "")}" placeholder="description"/>` +
+      `<button class="btn ghost orm" data-i="${i}" title="remove">✕</button></div>`).join("");
+    return `<div class="fmrow"><label>Options</label><div class="fmgrow"><div id="fm-opts">${rows}</div>` +
+      `<button class="btn tiny" id="fm-addopt">+ option</button></div></div>`;
+  }
+  function readScalars() {
+    st.label = el.querySelector("#fm-label").value;
+    if (!isEdit) st.kind = el.querySelector("#fm-kind").value;
+    st.required = el.querySelector("#fm-req").checked;
+    st.ai_write_policy = el.querySelector("#fm-policy").value;
+    st.disclosure_tier = el.querySelector("#fm-tier").value;
+  }
+  function paint() {
+    el.innerHTML =
+      `<div class="aboutcard fieldmodal"><div class="abouthead"><b class="serif">${isEdit ? "Edit field" : "New field"}</b>` +
+      `<span class="spacer"></span><button class="btn" id="fm-close">Close</button></div><div class="aboutbody">` +
+      `<div class="fmrow"><label>Label</label><input id="fm-label" value="${esc(st.label)}" placeholder="e.g. How we met"/></div>` +
+      `<div class="fmrow"><label>Kind</label>${sel("fm-kind", st.kind, SCHEMA_KINDS).replace("<select ", `<select ${isEdit ? "disabled " : ""}`)}</div>` +
+      optsBlock() +
+      `<div class="fmrow"><label>Required</label><input type="checkbox" id="fm-req"${st.required ? " checked" : ""}/></div>` +
+      `<div class="fmrow"><label>AI write</label>${sel("fm-policy", st.ai_write_policy, ["review-required", "append-only", "free-write"])}</div>` +
+      `<div class="fmrow"><label>Disclosure</label>${sel("fm-tier", st.disclosure_tier, ["private-sealed", "private-shareable-on-consent"])}</div>` +
+      `<div class="editbar"><span class="hint">Private + sealed by default. The AI never authors fields.</span>` +
+      `<span class="spacer"></span><button class="btn primary" id="fm-save">${isEdit ? "Save" : "Create field"}</button></div></div></div>`;
+    const close = () => el.remove();
+    el.querySelector("#fm-close").addEventListener("click", close);
+    el.addEventListener("click", (e) => { if (e.target === el) close(); });
+    if (!isEdit) el.querySelector("#fm-kind").addEventListener("change", (e) => { readScalars(); st.kind = e.target.value; paint(); });
+    el.querySelectorAll(".oname").forEach((inp) => inp.addEventListener("input", () => { st.options[+inp.dataset.i].value = inp.value; }));
+    el.querySelectorAll(".odesc").forEach((inp) => inp.addEventListener("input", () => { st.options[+inp.dataset.i].description = inp.value; }));
+    el.querySelectorAll(".orm").forEach((b) => b.addEventListener("click", () => { readScalars(); st.options.splice(+b.dataset.i, 1); paint(); }));
+    const add = el.querySelector("#fm-addopt");
+    if (add) add.addEventListener("click", () => { readScalars(); st.options.push({ value: "", description: "" }); paint(); });
+    el.querySelector("#fm-save").addEventListener("click", save);
+  }
+  async function save() {
+    readScalars();
+    if (!st.label.trim()) { alert("A label is required."); return; }
+    const config = isSelect() ? { options: st.options.filter((o) => (o.value || "").trim()) } : {};
+    const payload = { label: st.label.trim(), config, required: st.required,
+                      ai_write_policy: st.ai_write_policy, disclosure_tier: st.disclosure_tier };
+    try {
+      if (isEdit) await postJSON("/api/update-field", { field_id: existing.field_id, ...payload });
+      else await postJSON("/api/define-field", { kind: st.kind, ...payload });
+    } catch (e) { alert("Save failed: " + e.message); return; }
+    el.remove();
+    if (onSaved) onSaved();
+  }
+  document.body.appendChild(el);
+  paint();
+}
+
 // ---- duplicates review: AI proposals + deterministic candidates ----
 let dupItems = [], dupIndex = 0, dupPicks = {};
 let dupMode = "bulk";                                       // "bulk" (default) | "one"
@@ -671,7 +781,10 @@ document.querySelectorAll(".navitem[data-view]").forEach((n) =>
   n.addEventListener("click", () => {
     show(n.dataset.view);
     if (n.dataset.view === "duplicates") loadDuplicates();   // re-enter at the fresh home, not a stale step
+    if (n.dataset.view === "schema") loadSchema();
   }));
+const schemaNew = $("#schema-new");
+if (schemaNew) schemaNew.addEventListener("click", () => openFieldModal(null, loadSchema));
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 els.q.addEventListener("input", debounce((e) => {

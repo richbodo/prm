@@ -224,6 +224,22 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
                        ("label", "config", "ai_write_policy", "disclosure_tier", "required", "position") if k in body}
             field = apply.update_field(home, fid, **changes)     # SchemaError is a ValueError → clean 400
             return _json(200, {"ok": True, "field": field})
+
+        if path == "/api/define-field":                          # create a user custom field (schema builder)
+            if not body.get("label") or not body.get("kind"):
+                return _json(400, {"error": "define-field needs label + kind"})
+            field = apply.define_field(
+                home, label=body["label"], kind=body["kind"], config=body.get("config"),
+                required=bool(body.get("required")),
+                ai_write_policy=body.get("ai_write_policy", "review-required"),
+                disclosure_tier=body.get("disclosure_tier", "private-sealed"))
+            return _json(200, {"ok": True, "field": field})
+
+        if path == "/api/remove-field":                          # delete a user field (cascades values; snapshotted)
+            fid = body.get("field_id")
+            if not fid:
+                return _json(400, {"error": "remove-field needs field_id"})
+            return _json(200, apply.remove_field(home, fid))
     except (KeyError, ValueError) as exc:
         return _json(400, {"error": str(exc)})
 
