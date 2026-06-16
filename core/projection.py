@@ -14,9 +14,10 @@ so ``core`` stays a leaf that does not import ``cli``.
 
 from __future__ import annotations
 
+import base64
 import json
 
-from core import relationships_db, shared_db
+from core import media, relationships_db, schema, shared_db
 
 # Multi-valued → keep all distinct values. Single-valued → reconcile to one. Anything not listed here
 # defaults to UNION, so an unrecognized property never silently drops data.
@@ -41,6 +42,120 @@ def _flatten(values) -> str:
 def _props(raw_jcard: str) -> list:
     data = json.loads(raw_jcard)
     return data[1] if isinstance(data, list) and len(data) == 2 and data[0] == "vcard" else []
+
+
+# --------------------------------------------------------------------------- photos / avatar
+# A contact's avatar is never a text field — it is served as bytes by the local daemon (see
+# docs/design-notes/contact-images.md). We surface only a *presence marker* in the projected contact
+# (so base64 never bloats the JSON or crosses the MCP surface), and resolve the actual bytes on demand.
+_PHOTO = "photo"
+
+
+def _photo_prop(members: list) -> list | None:
+    """The first source PHOTO property among a contact's records (its raw jCard prop array), or None."""
+    for rec in members:
+        for prop in rec["props"]:
+            if prop[0].lower() == _PHOTO:
+                return prop
+    return None
+
+
+def _first_param(params, key: str) -> str:
+    v = (params or {}).get(key) if isinstance(params, dict) else None
+    v = v[0] if isinstance(v, list) else v
+    return str(v).lower() if v else ""
+
+
+def _photo_value(prop) -> str:
+    for v in (prop[3:] if prop else []):
+        if isinstance(v, str) and v:
+            return v
+    return ""
+
+
+def _source_photo_present(members: list) -> bool:
+    """Whether an *inline* (decodable) source PHOTO exists — a `data:` URI or base64 (``ENCODING=b``).
+    A remote ``http(s)`` URL or a bare filename ref is **not** present (we never fetch it — INV-1).
+    Cheap: inspects the value/params, never decodes (the list/dedup paths run this for every contact)."""
+    prop = _photo_prop(members)
+    val = _photo_value(prop).strip().lower()
+    if not val or val.startswith(("http://", "https://")):
+        return False
+    if val.startswith("data:"):
+        return True
+    return _first_param(prop[1] if len(prop) > 1 else {}, "encoding") in ("b", "base64")
+
+
+def _decode_inline_photo(prop) -> tuple[bytes, str] | None:
+    """``(bytes, mime)`` for an inline PHOTO prop (base64 / ``data:`` URI), or None for a URL-only /
+    non-inline photo. INV-1: a remote URL is never fetched here."""
+    val = _photo_value(prop).strip()
+    low = val.lower()
+    if not val or low.startswith(("http://", "https://")):
+        return None
+    if low.startswith("data:"):                                  # data:image/png;base64,XXXX
+        head, _, b64 = val.partition(",")
+        mime = head[5:].split(";")[0].strip() or None
+        data = _b64(b64)
+        return (data, mime or media.sniff_mime(data) or "application/octet-stream") if data else None
+    params = prop[1] if len(prop) > 1 else {}
+    if _first_param(params, "encoding") not in ("b", "base64"):  # bare ref (filename / scheme-less) — not inline
+        return None
+    data = _b64(val)
+    if not data:
+        return None
+    typ = _first_param(params, "type")
+    mime = (f"image/{typ}" if typ else None) or media.sniff_mime(data) or "application/octet-stream"
+    return data, ("image/jpeg" if mime == "image/jpg" else mime)
+
+
+def _b64(s: str) -> bytes:
+    try:
+        return base64.b64decode(s, validate=False)
+    except (ValueError, TypeError):
+        return b""
+
+
+def _photo_marker(members: list, rel_values: list | None) -> dict:
+    """Presence marker for the contact JSON: a user-uploaded override (a ``photo`` field value) wins;
+    else an imported inline PHOTO; else nothing. Carries no bytes — the daemon serves those."""
+    if any(v["field_id"] == _PHOTO and v.get("value") for v in (rel_values or [])):
+        return {"present": True, "source": "user"}
+    if _source_photo_present(members):
+        return {"present": True, "source": "import"}
+    return {"present": False, "source": None}
+
+
+def contact_photo(home, contact_id: str) -> tuple[bytes, str] | None:
+    """Resolve a contact's avatar bytes for the **local daemon** to serve: a user-uploaded override
+    (a ``photo`` field value → the content-addressed media store) wins; otherwise the imported inline
+    PHOTO is decoded from ``shared.db``. Returns ``(bytes, mime)`` or None. INV-1: a URL-only photo is
+    never fetched. The MCP surface does NOT expose this — photo bytes stay on the device."""
+    override = None
+    if home.relationships_db.exists():
+        for v in relationships_db.field_values_for(home.relationships_db, contact_id):
+            if v["field_id"] == _PHOTO and v.get("value"):
+                override = v["value"]
+                break
+    if override:
+        return media.read(home, override)                # None if the blob is missing (prm doctor flags it)
+    members = _records_by_contact(home).get(contact_id)
+    return _decode_inline_photo(_photo_prop(members)) if members else None
+
+
+def referenced_image_hashes(home) -> set:
+    """Every content hash referenced by an ``image``-kind field value — the live set for media gc /
+    verify (``prm doctor``). Imported photos are inline in shared.db and need no blob, so only uploads
+    appear here."""
+    if not home.relationships_db.exists():
+        return set()
+    image_fields = {f["field_id"] for f in schema.list_fields(home.relationships_db) if f["kind"] == "image"}
+    hashes = set()
+    for vals in relationships_db.all_field_values(home.relationships_db).values():
+        for v in vals:
+            if v["field_id"] in image_fields and v.get("value"):
+                hashes.add(v["value"])
+    return hashes
 
 
 def _records_by_contact(home) -> dict:
@@ -117,6 +232,8 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
         return f["values"][0]["value"] if f and f["values"] else ""
 
     fields.extend(_relationship_fields(rel_values or []))   # custom schema + tags/notes/photo
+    photo = _photo_marker(members, rel_values)
+    fields = [f for f in fields if f["name"] != _PHOTO]      # the avatar is served as bytes, never a text row
 
     return {
         "id": cid,
@@ -126,6 +243,7 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
         "sources": sources,
         "source": sources[0] if sources else "",
         "member_count": len(members),
+        "photo": photo,
         "fields": fields,
     }
 
@@ -173,7 +291,8 @@ def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
         "offset": offset,
         "records": [
             {"id": c["id"], "name": c["fn"], "email": c["email"], "org": c["org"],
-             "source": c["source"], "sources": c["sources"], "member_count": c["member_count"]}
+             "source": c["source"], "sources": c["sources"], "member_count": c["member_count"],
+             "has_photo": c["photo"]["present"]}
             for c in page
         ],
     }

@@ -12,6 +12,7 @@ Inbound is vCard 3.0-dominant (Google Takeout, iCloud, Outlook all emit 3.0). St
 
 from __future__ import annotations
 
+import base64
 from typing import Any
 
 from .base import ParsedRecord, RawField
@@ -36,6 +37,11 @@ def _flatten_value(value: Any) -> Any:
     # Structured address: ADR -> [po-box, extended, street, locality, region, code, country]
     if hasattr(value, "street") and hasattr(value, "city"):
         return [value.box, value.extended, value.street, value.city, value.region, value.code, value.country]
+    # Binary value: vobject decodes an ENCODING=b property (PHOTO/LOGO/SOUND/KEY) to bytes. Store it as
+    # standard base64 text, NOT str(bytes) — the repr would be lossy junk that can't round-trip out to a
+    # vCard or be decoded back to the image (the `encoding=b` param is preserved, so it stays self-describing).
+    if isinstance(value, (bytes, bytearray)):
+        return base64.b64encode(value).decode("ascii")
     if isinstance(value, list):
         return [str(v) for v in value]
     return str(value)

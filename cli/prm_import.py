@@ -171,6 +171,12 @@ def cmd_doctor(args) -> int:
         else:
             recs = st.get("records", st.get("contacts", "?"))
             print(f"{name:<10}: schema v{st.get('schema_version', '?')} · {recs} record(s)")
+    m = dump.get("media") or {}
+    if "error" in m:
+        print(f"media     : ERROR {m['error']}")
+    else:
+        flags = [f"{len(m[k])} {k}" for k in ("corrupt", "orphans", "missing") if m.get(k)]
+        print(f"media     : {m.get('stored', 0)} image(s)" + (f"   ⚠ {', '.join(flags)}" if flags else ""))
     print(f"snapshots : {dump['snapshots']}   proposals pending: {dump['proposals_pending']}")
     errs = dump["recent_errors"]
     tail = f" (last: {errs[-1]['type']} @ {errs[-1]['at']})" if errs else ""

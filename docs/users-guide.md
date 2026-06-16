@@ -14,9 +14,9 @@ data never leaves your device.
 > (over a local MCP server) — it can only *propose*; you still review and approve each one in the workspace. You can also **re-import an updated export** and preview
 > exactly what changes (`just reimport`), and **export your contacts** — a portable vCard to move them to
 > another app, or a lossless `--raw` backup you can re-import (`just export`). Building on that, you can now
-> **edit contacts, add private notes, tag them from a vocabulary you manage**, and **define your own
-> custom relationship fields** — all private, reversible, and layered over your imports (never changing
-> them). What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
+> **edit contacts, add private notes, set a contact photo, tag them from a vocabulary you manage**, and
+> **define your own custom relationship fields** — all private, reversible, and layered over your imports
+> (never changing them). What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
 > data-floor that keeps your most sensitive fields off the wire (see [Roadmap](roadmap.md)). This guide
 > marks clearly what runs now vs. what's coming.
 
@@ -33,6 +33,7 @@ data never leaves your device.
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
 | **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
 | **Define your own fields** — a typed custom schema (text, date, select, …) in the workspace; they appear on every contact | ✅ works |
+| **Contact photos** — the photo from your import shows as the avatar; upload/replace your own in Edit mode — private, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -269,13 +270,17 @@ footer also has an **About** card (next to Diagnostics) describing what PRM is a
 upstream [Personal Network Toolkit](https://github.com/richbodo/personal_network_toolkit).
 
 Open a contact and hit **✎ Edit** to correct a single-valued field (a name, an org), add private
-**notes**, or apply **tags**. Your changes are saved as a **layer on top of your imported records** —
-the import itself is never modified — so a re-import can't clobber them, every edit is **reversible**
-(one **Undo** reverses a whole save), and the field shows a `user` provenance tag where you overrode
-the source. **Tags** come from a small **vocabulary you manage** (each tag has a name and an optional
-description; create one inline while tagging, or hit *Manage tags…* to curate them); tagged contacts are
-**searchable by tag** from the same search box. Editing multi-value fields (emails, phones) and contact
-**images** is coming in the next increments.
+**notes**, set a **photo**, or apply **tags**. Your changes are saved as a **layer on top of your imported
+records** — the import itself is never modified — so a re-import can't clobber them, every edit is
+**reversible** (one **Undo** reverses a whole save), and the field shows a `user` provenance tag where you
+overrode the source. **Tags** come from a small **vocabulary you manage** (each tag has a name and an
+optional description; create one inline while tagging, or hit *Manage tags…* to curate them); tagged
+contacts are **searchable by tag** from the same search box. A contact's **photo** is its avatar: if your
+import already carried one it shows automatically, and in Edit mode you can **Upload…** your own (it
+overrides the import) or **Remove** it — your images stay on the device and never reach a connected AI.
+*(Photos from a `--raw` backup ride along inside the export's records; an uploaded photo, like your tags
+and notes, is private-store data — a full private-store backup is a separate, later feature.)* Editing
+multi-value fields (emails, phones) is coming in the next increments.
 
 **Schema** is where you **design your own relationship fields**. The built-in `photo`/`tags`/`notes` are
 always there; hit **+ New field** to add your own — pick a **kind** (text, long text, number, date,

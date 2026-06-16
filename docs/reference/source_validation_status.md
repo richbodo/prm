@@ -73,6 +73,12 @@ Quirks the export revealed that the **small** fixtures did **not** model (now re
 > includes a **name-less, email-only card carrying `CATEGORIES`**, so the parser's unit tests cover
 > both quirks directly, not only at bulk scale.
 
+> Follow-up (R7, 2026-06-16): **embedded `PHOTO;ENCODING=b`** is now stored as clean **base64** (the
+> parser previously kept the lexer's decoded `bytes` as a `str(bytes)` repr — lossy junk). The
+> `takeout-photos` fixture's embedded photo is decoded for the avatar and pinned to survive an
+> `export --raw` round-trip. External (`.jpg` sidecar) photos remain referenced-not-embedded and are not
+> shown (no inline bytes; a URL/file ref is never fetched — INV-1).
+
 ### Apple iCloud — validated 2026-06-03 (57-contact export)
 
 Structural compare confirmed the `apple_icloud/` fixture: **vCard 3.0**, **LF** endings, **no

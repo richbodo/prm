@@ -35,6 +35,24 @@ function esc(s) {
 }
 function initial(name) { const m = String(name || "").trim(); return m ? m[0].toUpperCase() : "?"; }
 
+// An avatar is the real photo when the contact has one, else the monogram. The bytes come from the
+// daemon's local photo endpoint (never the contact JSON); a broken/missing image falls back to the
+// initial via the delegated `onAvatarError` handler. `bust` cache-busts after an upload replaces it.
+function avatarHTML(id, name, present, bust) {
+  const ini = esc(initial(name));
+  if (!present || id == null) return `<span class="avatar">${ini}</span>`;
+  const q = bust ? `?t=${bust}` : "";
+  return `<span class="avatar has-img"><img src="/api/contact/${encodeURIComponent(id)}/photo${q}" alt="" data-ini="${ini}" loading="lazy"></span>`;
+}
+function onAvatarError(e) {
+  const img = e.target;
+  if (img && img.tagName === "IMG" && img.dataset && img.dataset.ini != null) {
+    const span = img.parentElement;
+    span.textContent = img.dataset.ini;       // a 404/decoding failure → show the monogram instead
+    span.classList.remove("has-img");
+  }
+}
+
 // ---- contacts list ----
 function rowItem(c) {
   const li = document.createElement("li");
@@ -44,7 +62,7 @@ function rowItem(c) {
   const chips = sources.slice(0, 3).map((s) => `<span class="chip src">${esc(srcLabel(s))}</span>`).join("");
   const merged = c.member_count > 1 ? `<span class="chip merged">${c.member_count}×</span>` : "";
   li.innerHTML =
-    `<span class="avatar">${esc(initial(c.name))}</span>` +
+    avatarHTML(c.id, c.name, c.has_photo) +
     `<span class="nm">${esc(c.name || "(no name)")}${merged}</span>` +
     `<span class="sub">${esc(c.email || c.org || "—")}</span>` +
     `<span class="srcs">${chips}</span>`;
@@ -91,7 +109,7 @@ function dHead(c, editing) {
   const srcChips = (c.sources || []).map((s) => `<span class="chip dot">${esc(srcLabel(s))}</span>`).join("");
   const n = c.member_count || (c.sources || []).length || 1;
   const btn = editing ? "" : `<button class="btn ghost" id="edit-contact" title="Edit this contact">✎ Edit</button>`;
-  return `<div class="dhead"><span class="avatar">${esc(initial(c.fn))}</span><div class="dhbody">` +
+  return `<div class="dhead">${avatarHTML(c.id, c.fn, c.photo && c.photo.present, editing ? Date.now() : 0)}<div class="dhbody">` +
     `<h2 class="serif">${esc(c.fn || "(no name)")}</h2>` +
     `<div class="dmeta">${srcChips}<span>·</span><span>merged from ${n} record${n > 1 ? "s" : ""}</span></div>` +
     `</div>${btn}</div>`;
@@ -165,8 +183,10 @@ function renderContactEdit(c, schemaFields) {
   const customRows = schemaFields.map((sf) => {
     if (sf.kind === "multi_select")
       return `<tr><th>${esc(sf.label)}</th><td>${tagPicker(sf, multiVals(byId[sf.field_id]))}</td></tr>`;
+    if (sf.kind === "image")
+      return `<tr><th>${esc(sf.label)}</th><td>${photoControl(c)}</td></tr>`;
     if (!EDITABLE_KINDS.has(sf.kind))
-      return `<tr><th>${esc(sf.label)}</th><td><span class="hint">${sf.kind === "image" ? "images (soon)" : esc(sf.kind)}</span></td></tr>`;
+      return `<tr><th>${esc(sf.label)}</th><td><span class="hint">${esc(sf.kind)}</span></td></tr>`;
     return `<tr><th>${esc(sf.label)}</th><td>${editInput("cf:" + sf.field_id, sf.kind, valFirst(byId[sf.field_id]), (sf.config || {}).options)}</td></tr>`;
   }).join("");
   const unionRows = fields.filter((f) => !NOISE.has(f.name) && !f.custom && f.kind === "union").map((f) =>
@@ -182,8 +202,50 @@ function renderContactEdit(c, schemaFields) {
   els.detail.querySelectorAll(".tagchip.add").forEach((a) => a.addEventListener("click", () => addTagInline(a, schemaFields)));
   els.detail.querySelectorAll("[data-managetags]").forEach((b) =>
     b.addEventListener("click", () => openTagModal(b.dataset.managetags, () => enterEditMode(c.id))));
+  const pin = els.detail.querySelector("[data-photo-input]");
+  if (pin) pin.addEventListener("change", () => uploadPhoto(c.id, pin.files && pin.files[0]));
+  const prm = els.detail.querySelector("[data-photo-remove]");
+  if (prm) prm.addEventListener("click", () => removePhoto(c.id));
   $("#edit-cancel").addEventListener("click", () => selectContact(c.id));
   $("#edit-save").addEventListener("click", () => saveContactEdit(c, byId));
+}
+
+// Image field (the `photo` avatar) in edit mode: preview + upload/replace + remove. The bytes go
+// straight to /api/set-photo (an audited, Undo-able write); the rest of the edit form posts separately.
+function photoControl(c) {
+  const present = !!(c.photo && c.photo.present);
+  const preview = avatarHTML(c.id, c.fn, present, Date.now()).replace('class="avatar', 'class="avatar lg');
+  const remove = present ? `<button type="button" class="btn ghost tiny" data-photo-remove>Remove</button>` : "";
+  const note = (c.photo && c.photo.source === "import")
+    ? `<span class="hint">from the import — upload to override it</span>` : "";
+  return `<div class="photoctl">${preview}<div class="photoact">` +
+    `<label class="btn ghost tiny photoup">Upload…<input type="file" accept="image/*" data-photo-input hidden></label>` +
+    `${remove}${note}</div></div>`;
+}
+
+async function uploadPhoto(id, file) {
+  if (!file) return;
+  if (file.size > 16 * 1024 * 1024) { alert("Image too large (max 16 MB)."); return; }
+  let data_base64;
+  try { data_base64 = await fileToBase64(file); } catch { alert("Couldn't read that file."); return; }
+  try { await postJSON("/api/set-photo", { contact_id: id, data_base64, mime: file.type || "" }); }
+  catch (e) { alert("Upload failed: " + e.message); return; }
+  await enterEditMode(id); browse();                         // refresh the preview + the list avatar
+}
+
+async function removePhoto(id) {
+  try { await postJSON("/api/clear-value", { contact_id: id, field_id: "photo" }); }
+  catch (e) { alert("Remove failed: " + e.message); return; }
+  await enterEditMode(id); browse();
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",", 2)[1] || "");   // drop the "data:<mime>;base64," prefix
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
 }
 
 async function addTagInline(addChip, schemaFields) {
@@ -785,6 +847,11 @@ document.querySelectorAll(".navitem[data-view]").forEach((n) =>
   }));
 const schemaNew = $("#schema-new");
 if (schemaNew) schemaNew.addEventListener("click", () => openFieldModal(null, loadSchema));
+
+// A failed avatar image falls back to the monogram. `error` on <img> doesn't bubble, so listen in the
+// capture phase on the list + detail containers.
+els.rows.addEventListener("error", onAvatarError, true);
+els.detail.addEventListener("error", onAvatarError, true);
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 els.q.addEventListener("input", debounce((e) => {
