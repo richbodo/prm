@@ -87,11 +87,18 @@ Quirks the export revealed that the **small** fixtures did **not** model (now re
 > - **The match: a contact's photo is the image whose normalized `FN` maps to exactly one distinct image**
 >   (unambiguous-only; ambiguous names are skipped, never auto-guessed). The bytes go to the media store;
 >   `shared.db` keeps a tiny `prm-media:<hash>` ref (not base64) so the read path stays lean.
-> - **Coverage is export-dependent and can be low.** In this export only **~6% (61/1000)** of the *current*
->   `All Contacts` people had a photo *anywhere* in the bundle — the other ~360 photo'd people live in
->   **archival label folders** (`Imported 3-21-12`, `Copied from iOS`, `Restored from Pixel …`) that the
->   `All Contacts`-only ingest path doesn't import. Importing those archival contacts (and their photos) is
->   a separate, larger decision (a fuller-Takeout-import feature), tracked as a follow-up.
+> - **Default coverage is export-dependent and can be low.** In this export only **~6% (61/1000)** of the
+>   *current* `All Contacts` people had a photo *anywhere* in the bundle — the other ~360 photo'd people live
+>   in **archival label folders** (`Imported 3-21-12`, `Copied from iOS`, `Restored from Pixel …`) that the
+>   default `All Contacts`-only ingest doesn't import (it now *reports* the skipped folders).
+
+> **Follow-up (fuller import, 2026-06-16) — `prm import --all-folders`, measured on the same export.**
+> Reading every label folder (not just `All Contacts`) took the import from **997 → 1,807 contacts**
+> (the +810 archival ones) and **60 → 254 photos** (~4×). Same-person duplicates collapse on the stable id
+> (email-keyed records share a `source_record_id`; `All Contacts` is loaded last so its current card wins),
+> so the dedup-review queue grew only modestly (~37 → 61 candidates) — no explosion. The photo win comes
+> from the **email bridge**: a label folder's sidecar is matched to that folder's card by FN, then keyed on
+> its email, reattaching an archival photo to the current contact even when the display name has drifted.
 
 ### Apple iCloud — validated 2026-06-03 (57-contact export)
 

@@ -73,12 +73,13 @@ def cmd_import(args) -> int:
 
     # Non-interactive / json / dry-run: one pure call, no prompt.
     if not _interactive(args):
-        report = ingest_mod.ingest(paths, source=args.source, home=home, dry_run=args.dry_run)
+        report = ingest_mod.ingest(paths, source=args.source, home=home, dry_run=args.dry_run,
+                                   all_folders=args.all_folders)
         _emit(report, args.json)
         return 0
 
     # Interactive: preview -> confirm -> attempt persist.
-    results = ingest_mod.collect(paths, source=args.source)
+    results = ingest_mod.collect(paths, source=args.source, all_folders=args.all_folders)
     preview = ImportReport.from_results(results, persisted=False, dry_run=True)
     print(preview.render_human())
     if not _confirm("Proceed with import?"):
@@ -104,15 +105,16 @@ def cmd_reimport(args) -> int:
         return 1
     paths = [Path(p) for p in args.paths]
     if args.dry_run:
-        preview = ingest_mod.reimport(paths, source=args.source, home=home, apply=False)
+        preview = ingest_mod.reimport(paths, source=args.source, home=home, apply=False, all_folders=args.all_folders)
         print(preview.to_json() if args.json else preview.render_human())
         return 0
     if not (args.non_interactive or args.json) and sys.stdin.isatty():     # preview, then confirm
-        print(ingest_mod.reimport(paths, source=args.source, home=home, apply=False).render_human())
+        print(ingest_mod.reimport(paths, source=args.source, home=home, apply=False,
+                                  all_folders=args.all_folders).render_human())
         if not _confirm("Apply this re-import?"):
             print("Aborted — nothing written.")
             return 0
-    final = ingest_mod.reimport(paths, source=args.source, home=home, apply=True)
+    final = ingest_mod.reimport(paths, source=args.source, home=home, apply=True, all_folders=args.all_folders)
     print(final.to_json() if args.json else final.render_human())
     return 0
 
@@ -248,6 +250,8 @@ def build_parser() -> argparse.ArgumentParser:
     pm = sub.add_parser("import", help="import contact files into the PRM home")
     pm.add_argument("paths", nargs="+", help="file(s) or directory(ies) to import")
     pm.add_argument("--source", help="override the inferred provenance source label")
+    pm.add_argument("--all-folders", action="store_true",
+                    help="Google Takeout: import every label folder (archival contacts + photos), not just All Contacts")
     pm.add_argument("--dry-run", action="store_true", help="parse + report only; write nothing")
     pm.add_argument("--non-interactive", action="store_true", help="best-effort, no prompts")
     pm.add_argument("--json", action="store_true", help="machine-readable output")
@@ -256,6 +260,8 @@ def build_parser() -> argparse.ArgumentParser:
     pr = sub.add_parser("reimport", help="re-import an updated export — preview changes, then confirm")
     pr.add_argument("paths", nargs="+", help="updated export file(s)/dir(s)")
     pr.add_argument("--source", help="match the original source label (e.g. apple_icloud) — recommended")
+    pr.add_argument("--all-folders", action="store_true",
+                    help="Google Takeout: re-import every label folder, not just All Contacts")
     pr.add_argument("--dry-run", action="store_true", help="preview the changes only; write nothing")
     pr.add_argument("--non-interactive", action="store_true", help="apply without prompting")
     pr.add_argument("--json", action="store_true", help="machine-readable output")

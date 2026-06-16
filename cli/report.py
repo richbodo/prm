@@ -58,6 +58,7 @@ class ImportReport:
                 confidence=r.confidence, count=n, skipped_reason=r.skipped_reason,
             ))
 
+        path_notes = [n for r in results for n in getattr(r, "notes", [])]   # per-file heads-up (e.g. Takeout)
         return cls(
             total=total,
             by_source=dict(by_source),
@@ -67,7 +68,7 @@ class ImportReport:
             persisted=persisted,
             dry_run=dry_run,
             stored=stored,
-            notes=list(notes or []),
+            notes=path_notes + list(notes or []),
         )
 
     def to_dict(self) -> dict:

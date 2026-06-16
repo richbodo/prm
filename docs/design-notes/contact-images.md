@@ -141,9 +141,11 @@ uploaded avatars *and* imported ones travel with it (planned; not yet built). Tw
    by `FN` (in the label folders); the parser indexes images **globally by `FN`** and attaches one only on
    an **unambiguous single-image match** (strip `(N)`), anything else falling to Tier 2 rather than being
    auto-guessed (the "never silently misfile" stance). The matched photo supersedes a hosted URL (INV-1).
-   `--raw`-includes-`media/` shipped with it; **coverage can be low** (see the caveat above — most photos
-   are on archival contacts the `All Contacts` ingest doesn't import). Still planned: client-side downscale,
-   "Download all (.zip)", and a **fuller Takeout import** that brings in the archival label-folder contacts.
+   `--raw`-includes-`media/` shipped with it. **Default coverage can be low** (most photos are on archival
+   contacts) — so `prm import --all-folders` *(shipped)* reads every label folder, recovering the archival
+   contacts and ~4× the photos via an **email bridge** (a label sidecar → its folder card's email → the
+   current contact, even when the name drifted); duplicates collapse on the stable id, the default mode
+   reports the folders it skipped. Still planned: client-side downscale and a "Download all (.zip)".
 3. **Tier 2 — loose folders / corrections, a guided visual matcher.** For photos *not* from a structured
    export: a workspace tour that shows each photo one at a time, **auto-suggests** a contact (filename →
    `FN`/email, reusing the dedup normalizers in `core/candidates.py`), and lets the user confirm / search
