@@ -172,6 +172,21 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             if cs.get("member_ids"):                              # also suppress the underlying candidate
                 apply.reject_cluster(home, candidates.cluster_key(cs["member_ids"]), by="manual:workspace")
             return _json(200, {"ok": True})
+
+        if path == "/api/set-value":                             # set a relationship-overlay value
+            cid, fid = body.get("contact_id"), body.get("field_id")
+            if not cid or not fid:
+                return _json(400, {"error": "set-value needs contact_id + field_id"})
+            apply.set_field_value(home, cid, fid, body.get("value"), value_json=body.get("value_json"),
+                                  written_by="manual:workspace", source=body.get("source") or "manual")
+            return _json(200, {"ok": True})
+
+        if path == "/api/clear-value":                           # clear a value (whole field, or one entry)
+            cid, fid = body.get("contact_id"), body.get("field_id")
+            if not cid or not fid:
+                return _json(400, {"error": "clear-value needs contact_id + field_id"})
+            apply.clear_field_value(home, cid, fid, body.get("value"), written_by="manual:workspace")
+            return _json(200, {"ok": True})
     except (KeyError, ValueError) as exc:
         return _json(400, {"error": str(exc)})
 

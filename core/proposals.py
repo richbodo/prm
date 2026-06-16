@@ -15,7 +15,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 
-_VALID_OPS = {"merge", "resolve_field", "flag_conflict"}
+_VALID_OPS = {"merge", "resolve_field", "flag_conflict", "set_field_value", "clear_field_value"}
 
 
 def _now_iso() -> str:
@@ -40,6 +40,19 @@ def resolve_field_op(contact_id, field, chosen_value, *, chosen_source=None, rul
 def flag_conflict_op(contact_id, field, candidates) -> dict:
     return {"op": "flag_conflict", "contact_id": contact_id, "field": field,
             "candidates": list(candidates), "status": "needs_review"}
+
+
+# Relationship-overlay value writes (R2). These write the `field_values` table (the user-defined custom
+# schema + built-in tags/notes/photo), distinct from `resolve_field` which overrides a *source* field.
+def set_field_value_op(contact_id, field_id, value, *, value_json=None,
+                       written_by="manual:user", source=None) -> dict:
+    return {"op": "set_field_value", "contact_id": contact_id, "field_id": field_id, "value": value,
+            "value_json": value_json, "written_by": written_by, "source": source}
+
+
+def clear_field_value_op(contact_id, field_id, value=None) -> dict:
+    # value=None clears the whole field; a value clears just that entry (multi-valued fields).
+    return {"op": "clear_field_value", "contact_id": contact_id, "field_id": field_id, "value": value}
 
 
 # --------------------------------------------------------------------------- assembly + validation
@@ -72,6 +85,8 @@ def validate(changeset: dict) -> None:
             raise ValueError("merge op needs source_record_ids + into")
         if kind in ("resolve_field", "flag_conflict") and (not op.get("contact_id") or not op.get("field")):
             raise ValueError(f"{kind} op needs contact_id + field")
+        if kind in ("set_field_value", "clear_field_value") and (not op.get("contact_id") or not op.get("field_id")):
+            raise ValueError(f"{kind} op needs contact_id + field_id")
 
 
 # --------------------------------------------------------------------------- staging (propose-only)
