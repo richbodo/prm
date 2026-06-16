@@ -9,7 +9,7 @@ recent snapshot. Rationale: docs/design-notes/dedupe-design.md.
 
 from __future__ import annotations
 
-from core import audit, relationships_db, proposals, snapshots
+from core import audit, relationships_db, proposals, schema, snapshots
 from core.lock import file_lock
 
 
@@ -81,21 +81,37 @@ def resolve_field(home, contact_id, field, value, *, chosen_source=None, written
     return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="edit field"))
 
 
-def edit_contact(home, contact_id, *, resolutions=None, values=None, clears=None,
+def update_field(home, field_id, **changes) -> dict:
+    """Workspace-only schema-definition edit (INV-3), serialized by the AC-PRM-C file-lock so two daemon
+    threads can't race. Used by the tag-management modal (editing the ``tags`` vocabulary) and the R6
+    schema builder. No snapshot/audit yet — non-destructive definition edits aren't in the Undo ring;
+    destructive field removal (R6) will snapshot."""
+    home.create()
+    with file_lock(home.lock_file):
+        return schema.update_field(home.relationships_db, field_id, **changes)
+
+
+def edit_contact(home, contact_id, *, resolutions=None, values=None, clears=None, multi=None,
                  written_by="manual:user") -> dict:
     """Apply ALL of a contact's edits as **one** changeset — one lock, one snapshot, one audit entry, one
     Undo. This is what the workspace edit-mode save calls: it is atomic (the whole edit reverts together)
     and avoids the concurrent-write lock contention that firing each edit as its own request would cause.
 
-    - ``resolutions``: ``[{field, value}]``  → single-valued source-field overrides (``rule="user"``)
-    - ``values``: ``[{field_id, value}]``     → relationship/custom field values (set)
-    - ``clears``: ``[field_id]``              → relationship/custom fields to clear
+    - ``resolutions``: ``[{field, value}]``     → single-valued source-field overrides (``rule="user"``)
+    - ``values``: ``[{field_id, value}]``        → single-valued relationship/custom field values (set)
+    - ``clears``: ``[field_id]``                 → relationship/custom fields to clear
+    - ``multi``: ``[{field_id, values:[...]}]``  → multi-valued fields (tags) — **replace the whole set**
+      (clear, then re-add each), atomically within this one changeset
     """
     ops = [proposals.resolve_field_op(contact_id, r["field"], r.get("value"), rule="user")
            for r in (resolutions or [])]
     ops += [proposals.set_field_value_op(contact_id, v["field_id"], v.get("value"),
                                          written_by=written_by, source="manual") for v in (values or [])]
     ops += [proposals.clear_field_value_op(contact_id, fid) for fid in (clears or [])]
+    for m in (multi or []):
+        ops.append(proposals.clear_field_value_op(contact_id, m["field_id"]))
+        ops += [proposals.set_field_value_op(contact_id, m["field_id"], v, written_by=written_by, source="manual")
+                for v in (m.get("values") or [])]
     if not ops:
         return {"ok": True, "applied": []}
     return apply_changeset(home, proposals.build(ops, created_by=written_by, rationale="edit contact"))

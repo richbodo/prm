@@ -28,6 +28,7 @@ data never leaves your device.
 | Browse + search your contacts in a local **web workspace** (`just serve`) | ✅ works |
 | **Find & merge duplicate contacts** in the workspace — one at a time **or in bulk by group**, reversible | ✅ works |
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
+| **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -263,11 +264,14 @@ the same home, so import (or `just demo`) first; if there's no database yet it s
 footer also has an **About** card (next to Diagnostics) describing what PRM is and linking to the
 upstream [Personal Network Toolkit](https://github.com/richbodo/personal_network_toolkit).
 
-Open a contact and hit **✎ Edit** to correct a single-valued field (a name, an org) or add private
-**notes**. Your changes are saved as a **layer on top of your imported records** — the import itself is
-never modified — so a re-import can't clobber them, every edit is **reversible** (one **Undo** reverses
-a whole save), and the field shows a `user` provenance tag where you overrode the source. Editing
-multi-value fields (emails, phones), **tags**, and contact **images** is coming in the next increments.
+Open a contact and hit **✎ Edit** to correct a single-valued field (a name, an org), add private
+**notes**, or apply **tags**. Your changes are saved as a **layer on top of your imported records** —
+the import itself is never modified — so a re-import can't clobber them, every edit is **reversible**
+(one **Undo** reverses a whole save), and the field shows a `user` provenance tag where you overrode
+the source. **Tags** come from a small **vocabulary you manage** (each tag has a name and an optional
+description; create one inline while tagging, or hit *Manage tags…* to curate them); tagged contacts are
+**searchable by tag** from the same search box. Editing multi-value fields (emails, phones) and contact
+**images** is coming in the next increments.
 
 (If a previous run left the port busy, `just port` frees it.)
 

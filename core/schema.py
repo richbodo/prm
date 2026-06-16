@@ -158,6 +158,8 @@ def update_field(db_path, field_id: str, **changes) -> dict:
     current = get_field(db_path, field_id)
     if current is None:
         raise SchemaError(f"no such field: {field_id!r}")
+    if not changes:                               # nothing to update — avoid building empty SET SQL
+        return current
     if "ai_write_policy" in changes and changes["ai_write_policy"] not in AI_WRITE_POLICIES:
         raise SchemaError(f"unknown ai_write_policy: {changes['ai_write_policy']!r}")
     if "disclosure_tier" in changes and changes["disclosure_tier"] not in DISCLOSURE_TIERS:

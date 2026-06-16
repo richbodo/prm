@@ -284,6 +284,28 @@ def field_values_for(db_path, contact_id: str) -> list:
     return [_fv_row(r) for r in rows]
 
 
+def _like_escape(s: str) -> str:
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def search_values(db_path, query: str) -> set:
+    """Contact ids whose relationship VALUES (tags / notes / custom) contain ``query`` (case-insensitive
+    substring). **Local-only** — feeds the workspace search so tags/notes are findable; the MCP search
+    surface deliberately does NOT use this, so a cloud client can't match against sealed values."""
+    q = (query or "").strip()
+    if not q or not Path(db_path).exists():
+        return set()
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(
+            "SELECT DISTINCT contact_id FROM field_values WHERE value LIKE ? ESCAPE '\\'",
+            (f"%{_like_escape(q)}%",),
+        ).fetchall()
+    finally:
+        con.close()
+    return {r[0] for r in rows}
+
+
 def rejected_pairs(db_path) -> set:
     """Cluster/pair keys the user marked 'not a duplicate' — excluded from re-detection so a dismissed
     candidate never resurfaces (survives re-import, keyed on the stable cluster key)."""

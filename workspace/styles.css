@@ -333,3 +333,20 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .editkv input:focus,.editkv textarea:focus,.editkv select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w);}
 .editkv input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);}
 .editbar{display:flex;align-items:center;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);}
+
+/* ---- tags (R4) ---- */
+.tagpick{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;}
+.tagchip.pick{cursor:pointer;background:var(--panel);color:var(--muted);border:1px solid var(--line);user-select:none;transition:background .13s,color .13s,border-color .13s;}
+.tagchip.pick:hover{border-color:#d8cfc4;}
+.tagchip.pick.on{background:var(--accent-w);color:var(--accent-d);border-color:#d8e7e0;font-weight:550;}
+.tagchip.add{cursor:pointer;background:transparent;color:var(--accent-d);border:1px dashed #c7d8d0;}
+.tagchip.add:hover{background:var(--accent-w);}
+.btn.tiny{font-size:12px;padding:4px 10px;}
+.tagmodal{max-width:520px;}
+.tagrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.tagrow .tname{width:130px;flex:none;}
+.tagrow .tdesc{flex:1;min-width:0;}
+.tagrow input{font:inherit;font-size:13.5px;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);}
+.tagrow input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w);}
+.tagrow .trm{flex:none;color:var(--faint);padding:4px 9px;}
+.tagrow .trm:hover{color:var(--danger);background:var(--danger-w);}

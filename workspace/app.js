@@ -142,16 +142,31 @@ function editInput(tag, kind, value, opts) {
   return `<input type="${type}" ${a} value="${esc(value)}">`;
 }
 
+const multiVals = (f) => ((f && f.values) || []).map((v) => v.value);
+const cssEsc = (s) => (window.CSS && CSS.escape) ? CSS.escape(s) : String(s).replace(/["\\]/g, "\\$&");
+
+function tagPicker(sf, selected) {
+  const opts = (sf.config || {}).options || [];
+  const sel = new Set(selected);
+  const chip = (val, label, desc, on) =>
+    `<span class="tagchip pick${on ? " on" : ""}" data-tag="${esc(val)}"${desc ? ` title="${esc(desc)}"` : ""}>${esc(label)}</span>`;
+  const known = opts.map((o) => chip(o.value, o.label || o.value, o.description, sel.has(o.value))).join("");
+  const extra = selected.filter((v) => !opts.some((o) => o.value === v)).map((v) => chip(v, v, "", true)).join("");
+  return `<div class="tagpick" data-pick="${esc(sf.field_id)}">${known}${extra}` +
+    `<span class="tagchip add" data-add="${esc(sf.field_id)}">+ new</span></div>` +
+    `<button class="btn ghost tiny" data-managetags="${esc(sf.field_id)}">Manage ${esc((sf.label || "").toLowerCase())}…</button>`;
+}
+
 function renderContactEdit(c, schemaFields) {
   const fields = c.fields || [];
+  const byId = Object.fromEntries(fields.map((f) => [f.name, f]));
   const srcRows = fields.filter((f) => !NOISE.has(f.name) && !f.custom && f.kind === "single").map((f) =>
     `<tr><th>${esc(f.name)}</th><td>${editInput("src:" + f.name, "text", valFirst(f))}</td></tr>`).join("");
-  const byId = Object.fromEntries(fields.map((f) => [f.name, f]));
   const customRows = schemaFields.map((sf) => {
-    if (!EDITABLE_KINDS.has(sf.kind)) {
-      const note = sf.kind === "multi_select" ? "managed in Tags (soon)" : sf.kind === "image" ? "images (soon)" : sf.kind;
-      return `<tr><th>${esc(sf.label)}</th><td><span class="hint">${esc(note)}</span></td></tr>`;
-    }
+    if (sf.kind === "multi_select")
+      return `<tr><th>${esc(sf.label)}</th><td>${tagPicker(sf, multiVals(byId[sf.field_id]))}</td></tr>`;
+    if (!EDITABLE_KINDS.has(sf.kind))
+      return `<tr><th>${esc(sf.label)}</th><td><span class="hint">${sf.kind === "image" ? "images (soon)" : esc(sf.kind)}</span></td></tr>`;
     return `<tr><th>${esc(sf.label)}</th><td>${editInput("cf:" + sf.field_id, sf.kind, valFirst(byId[sf.field_id]), (sf.config || {}).options)}</td></tr>`;
   }).join("");
   const unionRows = fields.filter((f) => !NOISE.has(f.name) && !f.custom && f.kind === "union").map((f) =>
@@ -163,14 +178,39 @@ function renderContactEdit(c, schemaFields) {
     `<div class="editbar"><span class="reassure">↺ Reversible — saved to your private store, never the source</span>` +
     `<span class="spacer"></span><button class="btn" id="edit-cancel">Cancel</button>` +
     `<button class="btn primary" id="edit-save">Save changes</button></div>`;
+  els.detail.querySelectorAll(".tagchip.pick").forEach((ch) => ch.addEventListener("click", () => ch.classList.toggle("on")));
+  els.detail.querySelectorAll(".tagchip.add").forEach((a) => a.addEventListener("click", () => addTagInline(a, schemaFields)));
+  els.detail.querySelectorAll("[data-managetags]").forEach((b) =>
+    b.addEventListener("click", () => openTagModal(b.dataset.managetags, () => enterEditMode(c.id))));
   $("#edit-cancel").addEventListener("click", () => selectContact(c.id));
   $("#edit-save").addEventListener("click", () => saveContactEdit(c, byId));
+}
+
+async function addTagInline(addChip, schemaFields) {
+  const fid = addChip.dataset.add;
+  const val = (prompt("New tag:") || "").trim();
+  if (!val) return;
+  const sf = schemaFields.find((f) => f.field_id === fid) || {};
+  const opts = ((sf.config || {}).options || []).slice();
+  if (!opts.some((o) => o.value === val)) {                 // append to the vocabulary (persists immediately)
+    opts.push({ value: val, label: val, description: "" });
+    try { await postJSON("/api/update-field", { field_id: fid, config: { options: opts } }); }
+    catch (e) { alert("Couldn't add tag: " + e.message); return; }
+    sf.config = sf.config || {}; sf.config.options = opts;
+  }
+  const pick = addChip.parentElement;
+  const existing = pick.querySelector(`.tagchip.pick[data-tag="${cssEsc(val)}"]`);
+  if (existing) { existing.classList.add("on"); return; }
+  const chip = document.createElement("span");
+  chip.className = "tagchip pick on"; chip.dataset.tag = val; chip.textContent = val;
+  chip.addEventListener("click", () => chip.classList.toggle("on"));
+  pick.insertBefore(chip, addChip);
 }
 
 async function saveContactEdit(c, byId) {
   // Collect every change, then apply as ONE atomic changeset (one Undo) — never N concurrent writes,
   // which would collide on the single-holder file-lock.
-  const resolutions = [], values = [], clears = [];
+  const resolutions = [], values = [], clears = [], multi = [];
   els.detail.querySelectorAll("[data-field]").forEach((el) => {
     const tag = el.dataset.field;
     const newVal = el.type === "checkbox" ? (el.checked ? "true" : "") : el.value.trim();
@@ -183,11 +223,57 @@ async function saveContactEdit(c, byId) {
       if (newVal === "") clears.push(fid); else values.push({ field_id: fid, value: newVal });
     }
   });
-  if (!resolutions.length && !values.length && !clears.length) { selectContact(c.id); return; }
-  try { await postJSON("/api/edit-contact", { contact_id: c.id, resolutions, values, clears }); }
+  els.detail.querySelectorAll(".tagpick").forEach((pick) => {
+    const fid = pick.dataset.pick;
+    const selected = [...pick.querySelectorAll(".tagchip.pick.on")].map((ch) => ch.dataset.tag);
+    const orig = multiVals(byId[fid]);
+    const key = (a) => a.slice().sort().join(" ");
+    if (key(selected) !== key(orig)) multi.push({ field_id: fid, values: selected });
+  });
+  if (!resolutions.length && !values.length && !clears.length && !multi.length) { selectContact(c.id); return; }
+  try { await postJSON("/api/edit-contact", { contact_id: c.id, resolutions, values, clears, multi }); }
   catch (e) { alert("Save failed: " + e.message); return; }
   await selectContact(c.id);
   refreshStats(); browse();
+}
+
+// Tag-management modal: edit each tag's name + description, add, remove; saves the whole vocabulary.
+async function openTagModal(fieldId, onSaved) {
+  const sch = await api("/api/schema");
+  const sf = (sch.fields || []).find((f) => f.field_id === fieldId) || { label: "Tags" };
+  const opts = (((sf.config || {}).options) || []).map((o) => ({ ...o }));
+  const el = document.createElement("div");
+  el.className = "aboutoverlay";
+  const rowHtml = (o, i) =>
+    `<div class="tagrow"><input class="tname" data-i="${i}" value="${esc(o.value)}" placeholder="name" />` +
+    `<input class="tdesc" data-i="${i}" value="${esc(o.description || "")}" placeholder="description" />` +
+    `<button class="btn ghost trm" data-i="${i}" title="remove">✕</button></div>`;
+  function paint() {
+    el.querySelector("#tm-rows").innerHTML = opts.map(rowHtml).join("") || `<p class="hint">No tags yet — add one.</p>`;
+    el.querySelectorAll(".trm").forEach((b) => b.addEventListener("click", () => { opts.splice(+b.dataset.i, 1); paint(); }));
+    el.querySelectorAll(".tname").forEach((inp) => inp.addEventListener("input", () => { opts[+inp.dataset.i].value = inp.value; }));
+    el.querySelectorAll(".tdesc").forEach((inp) => inp.addEventListener("input", () => { opts[+inp.dataset.i].description = inp.value; }));
+  }
+  el.innerHTML =
+    `<div class="aboutcard tagmodal"><div class="abouthead"><b class="serif">Manage ${esc(sf.label)}</b>` +
+    `<span class="spacer"></span><button class="btn" id="tm-close">Close</button></div>` +
+    `<div class="aboutbody"><div id="tm-rows"></div>` +
+    `<button class="btn tiny" id="tm-add">+ Add</button>` +
+    `<div class="editbar"><span class="hint">Edits to a tag's name apply to the vocabulary, not yet to contacts already tagged.</span>` +
+    `<span class="spacer"></span><button class="btn primary" id="tm-save">Save</button></div></div></div>`;
+  document.body.appendChild(el);
+  paint();
+  const close = () => el.remove();
+  el.querySelector("#tm-close").addEventListener("click", close);
+  el.addEventListener("click", (e) => { if (e.target === el) close(); });
+  el.querySelector("#tm-add").addEventListener("click", () => { opts.push({ value: "", label: "", description: "" }); paint(); });
+  el.querySelector("#tm-save").addEventListener("click", async () => {
+    const clean = opts.filter((o) => (o.value || "").trim()).map((o) => ({ value: o.value.trim(), label: o.value.trim(), description: (o.description || "").trim() }));
+    try { await postJSON("/api/update-field", { field_id: fieldId, config: { options: clean } }); }
+    catch (e) { alert("Couldn't save tags: " + e.message); return; }
+    close();
+    if (onSaved) onSaved();
+  });
 }
 
 // ---- duplicates review: AI proposals + deterministic candidates ----

@@ -71,6 +71,16 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
                 continue
             seen.add(cid)
             results.append({"id": cid, "name": name, "email": email, "org": org})
+        # also match the private overlay (tags / notes / custom values) — LOCAL ONLY; the MCP search
+        # surface never does this, so a cloud client can't match against sealed relationship values.
+        if home.relationships_db.exists():
+            for cid in relationships_db.search_values(home.relationships_db, q):
+                if cid in seen:
+                    continue
+                seen.add(cid)
+                c = projection.get_contact(home, cid)
+                if c:
+                    results.append({"id": cid, "name": c["fn"], "email": c["email"], "org": c["org"]})
         return _json(200, {"query": q, "results": results})
 
     if path == "/api/contacts":
@@ -203,8 +213,17 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             if not cid:
                 return _json(400, {"error": "edit-contact needs contact_id"})
             apply.edit_contact(home, cid, resolutions=body.get("resolutions"), values=body.get("values"),
-                               clears=body.get("clears"), written_by="manual:workspace")
+                               clears=body.get("clears"), multi=body.get("multi"), written_by="manual:workspace")
             return _json(200, {"ok": True})
+
+        if path == "/api/update-field":                          # workspace-only schema edit (tag vocab, R6 builder)
+            fid = body.get("field_id")
+            if not fid:
+                return _json(400, {"error": "update-field needs field_id"})
+            changes = {k: body[k] for k in
+                       ("label", "config", "ai_write_policy", "disclosure_tier", "required", "position") if k in body}
+            field = apply.update_field(home, fid, **changes)     # SchemaError is a ValueError → clean 400
+            return _json(200, {"ok": True, "field": field})
     except (KeyError, ValueError) as exc:
         return _json(400, {"error": str(exc)})
 
