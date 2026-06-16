@@ -38,21 +38,25 @@ foreclosed). See the size analysis in the session that produced this note.
 - **Uploads are downscaled *client-side* before upload** — the workspace resizes via a `<canvas>` (cap
   ~512 px, re-encode to JPEG) so even a camera photo lands at tens of KB. This keeps avatars in the
   "thumbnail" row **with no Python image dependency** (preserving the tiny-deps invariant — INV/CLAUDE.md).
-- **`prm export --raw` includes `media/`**, so the raw backup is genuinely lossless for photos too. (This
-  supersedes the earlier "uploaded avatars don't travel in `--raw`" position below.)
-- A workspace **"Download all (.zip)"** (and/or a CLI) bundles the home for moving between devices.
-- **Imported photos land in the media store too.** External Google Takeout photos are **`.jpg` files
-  named verbatim after the card's `FN`, co-located in the same label folder as the `.vcf`** — i.e. the
-  export *already encodes* the photo→contact link. The ingest path matches each sidecar to its card by
-  `FN`-within-folder (strip a `(N)` collision suffix), `media.put`s the bytes, and writes a `photo`
-  field value (`source = directory-import`). Hosted `PHOTO:https://…` URLs are skipped (INV-1, no fetch).
-- **Shipped in R7:** per-contact **upload / remove** in Edit mode already uses exactly this media store +
-  `photo` field value, and `prm doctor` reports media health. R7 is a valid subset of Option B.
+- **Uploads downscaled client-side** *(planned)* and a workspace **"Download all (.zip)"** *(planned)*.
+- **`prm export --raw` includes the referenced `media/` blobs** *(shipped, R7b)* — the backup base64-bundles
+  every `prm-media:` photo a record references and restores it on re-import, so it is a lossless round-trip
+  for imported photos. (This supersedes the earlier "uploaded avatars don't travel in `--raw`" note below;
+  *uploaded* avatars are relationships.db data, still out of the shared-db-only `--raw`.)
+- **Imported photos land in the media store** *(shipped, R7b — Google Takeout)*. Takeout ships each photo
+  as a sidecar **`.jpg` named verbatim by the card's `FN`** (in the label folders). At ingest the parser
+  indexes images **globally by `FN`** and attaches one only when a name maps to a **single distinct image**
+  (unambiguous-only; strip a `(N)` suffix). The bytes go to the media store; the jCard gets a tiny
+  `prm-media:<hash>` ref — so the projection's hot read path stays lean (Option B). The matched photo
+  supersedes a hosted `PHOTO:https://…` URL (never fetched — INV-1).
+- **Shipped in R7:** per-contact **upload / remove** in Edit mode uses the same media store + `photo` field
+  value; `prm doctor` reports media health (now also counting `prm-media` refs).
 
-*Finer point to settle when the Takeout ingest path is built:* embedded-base64 source photos (`PHOTO;
-ENCODING=b`, rare — the sampled export had ~0, mostly external files + hosted URLs) are today decoded
-on demand from `shared.db` (decision 3 below). Under pure Option B they would migrate into the media
-store at ingest to keep `shared.db` lean; left as a small open choice since it barely occurs in practice.
+*Coverage caveat (measured on a real export):* photo coverage is export-dependent and can be low — only
+**~6% of `All Contacts`** carried a photo in the sampled 1,101-photo export, because most photos belong to
+**archival label-folder contacts** the `All Contacts`-only ingest doesn't import. Importing those is a
+separate, larger "fuller Takeout import" decision (follow-up). Embedded-base64 source photos stay on R7's
+on-demand decode (decision 3); rare in practice, so not migrated into the media store.
 
 ## The decisions
 
@@ -90,11 +94,11 @@ everything that table would have:
 
 The payoff of the fold is that the avatar needs **zero** new code in the load-bearing paths — the
 projection, edit mode, the `set_field_value` apply path, **Undo**, and the **MCP seal** all already
-operate on `field_values`, so the avatar inherits all of them unchanged. The **GC reference set** is just
-"the content hashes held by `image`-kind field values"; `prm doctor` compares the files on disk against
-that set. (Imported photos need no row at all — they are derivable from `shared.db`.) This deviates from
-the plan's sketch, as the plan explicitly permits where an invariant-preserving simplification exists; it
-keeps the schema at v2 with **no migration**.
+operate on `field_values`, so the avatar inherits all of them unchanged. The **GC reference set** is the
+union of two things: content hashes held by `image`-kind **field values** (uploaded avatars) and
+`prm-media:<hash>` refs in **shared.db** jCards (imported photos, R7b); `prm doctor` compares the files on
+disk against that set. This deviates from the plan's sketch, as the plan explicitly permits where an
+invariant-preserving simplification exists; it keeps the schema at v2 with **no migration**.
 
 *If multi-image fields or groups later need richer per-blob bookkeeping, a `media_refs` table can be added
 then — it is additive and nothing here forecloses it.*
@@ -132,11 +136,14 @@ uploaded avatars *and* imported ones travel with it (planned; not yet built). Tw
    like tags/notes); every contact shows an avatar/placeholder; Edit mode uploads/replaces/removes via
    the media store. Small refinement still wanted: make the avatar/placeholder **itself** the click
    target (today it is an explicit "Upload…" button), and consider allowing it from the read view.
-2. **Tier 1 — Google Takeout photos, auto-matched at ingest.** Since the export co-locates each `.jpg`
-   with its card and names it by `FN`, `prm import <takeout.zip>` attaches photos automatically — no user
-   matching. Exact `FN`-within-folder match only (strip `(N)`); anything else falls to Tier 2 rather than
-   being auto-guessed (the "never silently misfile" stance). Plus the `--raw`-includes-`media/` and
-   client-side downscale work above.
+2. **Tier 1 — Google Takeout photos, auto-matched at ingest *(shipped, R7b)*.** `prm import <takeout.zip>`
+   attaches photos automatically — no user matching. The export ships each photo as a sidecar `.jpg` named
+   by `FN` (in the label folders); the parser indexes images **globally by `FN`** and attaches one only on
+   an **unambiguous single-image match** (strip `(N)`), anything else falling to Tier 2 rather than being
+   auto-guessed (the "never silently misfile" stance). The matched photo supersedes a hosted URL (INV-1).
+   `--raw`-includes-`media/` shipped with it; **coverage can be low** (see the caveat above — most photos
+   are on archival contacts the `All Contacts` ingest doesn't import). Still planned: client-side downscale,
+   "Download all (.zip)", and a **fuller Takeout import** that brings in the archival label-folder contacts.
 3. **Tier 2 — loose folders / corrections, a guided visual matcher.** For photos *not* from a structured
    export: a workspace tour that shows each photo one at a time, **auto-suggests** a contact (filename →
    `FN`/email, reusing the dedup normalizers in `core/candidates.py`), and lets the user confirm / search

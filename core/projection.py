@@ -74,16 +74,29 @@ def _photo_value(prop) -> str:
 
 
 def _source_photo_present(members: list) -> bool:
-    """Whether an *inline* (decodable) source PHOTO exists — a `data:` URI or base64 (``ENCODING=b``).
-    A remote ``http(s)`` URL or a bare filename ref is **not** present (we never fetch it — INV-1).
-    Cheap: inspects the value/params, never decodes (the list/dedup paths run this for every contact)."""
+    """Whether a servable source PHOTO exists — a media-store ref (``prm-media:``), a `data:` URI, or
+    base64 (``ENCODING=b``). A remote ``http(s)`` URL or a bare filename ref is **not** present (we never
+    fetch it — INV-1). Cheap: inspects the value/params, never decodes (the list/dedup paths run this for
+    every contact)."""
     prop = _photo_prop(members)
-    val = _photo_value(prop).strip().lower()
-    if not val or val.startswith(("http://", "https://")):
+    raw = _photo_value(prop).strip()
+    if media.parse_ref(raw):                                     # photo in the media store
+        return True
+    low = raw.lower()
+    if not low or low.startswith(("http://", "https://")):
         return False
-    if val.startswith("data:"):
+    if low.startswith("data:"):
         return True
     return _first_param(prop[1] if len(prop) > 1 else {}, "encoding") in ("b", "base64")
+
+
+def _resolve_source_photo(home, prop) -> tuple[bytes, str] | None:
+    """``(bytes, mime)`` for a source PHOTO prop: a ``prm-media:<hash>`` ref → the media store; otherwise
+    inline base64 / ``data:`` → decode. None for a URL-only / missing photo (INV-1)."""
+    h = media.parse_ref(_photo_value(prop).strip())
+    if h:
+        return media.read(home, h)                              # None if the blob is missing (doctor flags it)
+    return _decode_inline_photo(prop)
 
 
 def _decode_inline_photo(prop) -> tuple[bytes, str] | None:
@@ -140,21 +153,27 @@ def contact_photo(home, contact_id: str) -> tuple[bytes, str] | None:
     if override:
         return media.read(home, override)                # None if the blob is missing (prm doctor flags it)
     members = _records_by_contact(home).get(contact_id)
-    return _decode_inline_photo(_photo_prop(members)) if members else None
+    return _resolve_source_photo(home, _photo_prop(members)) if members else None
 
 
 def referenced_image_hashes(home) -> set:
-    """Every content hash referenced by an ``image``-kind field value — the live set for media gc /
-    verify (``prm doctor``). Imported photos are inline in shared.db and need no blob, so only uploads
-    appear here."""
-    if not home.relationships_db.exists():
-        return set()
-    image_fields = {f["field_id"] for f in schema.list_fields(home.relationships_db) if f["kind"] == "image"}
-    hashes = set()
-    for vals in relationships_db.all_field_values(home.relationships_db).values():
-        for v in vals:
-            if v["field_id"] in image_fields and v.get("value"):
-                hashes.add(v["value"])
+    """Every media content hash a contact references — the live set for media gc / verify (``prm
+    doctor``). Two sources: uploaded avatars (``image``-kind **field values** in relationships.db) and
+    imported photos (``prm-media:<hash>`` refs in **shared.db** jCards). A blob in neither set is an orphan."""
+    hashes: set = set()
+    # imported source photos — the prm-media refs in shared.db jcards
+    if home.shared_db.exists():
+        for r in shared_db.all_records(home.shared_db):
+            for prop in _props(r["raw_jcard"]):
+                if prop[0].lower() == _PHOTO and (h := media.parse_ref(_photo_value(prop).strip())):
+                    hashes.add(h)
+    # uploaded avatars — image-kind field values in relationships.db
+    if home.relationships_db.exists():
+        image_fields = {f["field_id"] for f in schema.list_fields(home.relationships_db) if f["kind"] == "image"}
+        for vals in relationships_db.all_field_values(home.relationships_db).values():
+            for v in vals:
+                if v["field_id"] in image_fields and v.get("value"):
+                    hashes.add(v["value"])
     return hashes
 
 
@@ -440,16 +459,32 @@ def _merge_props(cid: str, members: list, rank: dict, resolutions: dict) -> list
     return out
 
 
+def _export_photo_prop(home, prop) -> list | None:
+    """Resolve a photo prop for a *portable* vCard: a ``prm-media:<hash>`` ref becomes inline base64 (so
+    other apps get the actual image, not a PRM-internal URI); a missing blob is dropped rather than
+    emitting a broken line; inline/base64/url photos pass through unchanged."""
+    h = media.parse_ref(_photo_value(prop).strip())
+    if not h:
+        return prop
+    got = media.read(home, h)
+    if not got:
+        return None
+    data, mime = got
+    return ["photo", {"encoding": "b", "type": mime.split("/")[-1]}, "uri", base64.b64encode(data).decode("ascii")]
+
+
 def export_jcards(home) -> list:
     """Every canonical contact as an RFC 7095 jCard array (``["vcard", [props]]``), name-ordered
     (named first). The merged, structure-preserving basis for export — the inverse of ingest, consumed
-    by ``cli.vcard_writer``. Pure read; never writes."""
+    by ``cli.vcard_writer``. A ``prm-media`` photo is inlined as base64 here so the portable vCard carries
+    the real image. Pure read; never writes."""
     groups = _records_by_contact(home)
     rank = _rank(home)
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     rows = []
     for cid, members in groups.items():
         props = _merge_props(cid, members, rank, resolutions)
+        props = [q for p in props for q in [(_export_photo_prop(home, p) if p[0].lower() == _PHOTO else p)] if q is not None]
         fn = next((_flatten(p[3:] if len(p) > 3 else []) for p in props if p[0].lower() == "fn"), "")
         rows.append((fn == "", fn.casefold(), cid, props))       # named first, A–Z, stable by id
     rows.sort(key=lambda r: r[:3])

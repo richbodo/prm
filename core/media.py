@@ -56,6 +56,23 @@ def content_hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# A photo that lives in the media store is referenced from a jCard (in shared.db) as a tiny
+# `prm-media:<sha256>` URI — bytes stay out of the DB and off the projection's hot read path. The
+# projection resolves it to bytes via `read`; the exporters inline it as base64 for a portable vCard.
+MEDIA_REF_PREFIX = "prm-media:"
+
+
+def make_ref(h: str) -> str:
+    return f"{MEDIA_REF_PREFIX}{h}"
+
+
+def parse_ref(value) -> str | None:
+    """The content hash inside a ``prm-media:<hash>`` reference, or None if ``value`` isn't one."""
+    if isinstance(value, str) and value.startswith(MEDIA_REF_PREFIX):
+        return value[len(MEDIA_REF_PREFIX):]
+    return None
+
+
 def _shard_dir(media_dir: Path, h: str) -> Path:
     return Path(media_dir) / h[:2]
 
