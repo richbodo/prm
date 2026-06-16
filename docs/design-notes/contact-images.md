@@ -35,10 +35,10 @@ foreclosed). See the size analysis in the session that produced this note.
 
 **What this commits us to (planned unless marked shipped):**
 
-- **Uploads are downscaled *client-side* before upload** — the workspace resizes via a `<canvas>` (cap
-  ~512 px, re-encode to JPEG) so even a camera photo lands at tens of KB. This keeps avatars in the
-  "thumbnail" row **with no Python image dependency** (preserving the tiny-deps invariant — INV/CLAUDE.md).
-- **Uploads downscaled client-side** *(planned)* and a workspace **"Download all (.zip)"** *(planned)*.
+- **Uploads are downscaled *client-side* before upload** *(shipped, R7c)* — the workspace resizes via a
+  `<canvas>` (cap ~512 px, re-encode to JPEG) so even a camera photo lands at tens of KB. This keeps
+  avatars in the "thumbnail" row **with no Python image dependency** (preserving the tiny-deps invariant —
+  INV/CLAUDE.md). A workspace **"Download all (.zip)"** is still *(planned)*.
 - **`prm export --raw` includes the referenced `media/` blobs** *(shipped, R7b)* — the backup base64-bundles
   every `prm-media:` photo a record references and restores it on re-import, so it is a lossless round-trip
   for imported photos. (This supersedes the earlier "uploaded avatars don't travel in `--raw`" note below;
@@ -144,11 +144,15 @@ uploaded avatars *and* imported ones travel with it (planned; not yet built). Tw
    `--raw`-includes-`media/` shipped with it; **coverage can be low** (see the caveat above — most photos
    are on archival contacts the `All Contacts` ingest doesn't import). Still planned: client-side downscale,
    "Download all (.zip)", and a **fuller Takeout import** that brings in the archival label-folder contacts.
-3. **Tier 2 — loose folders / corrections, a guided visual matcher.** For photos *not* from a structured
-   export: a workspace tour that shows each photo one at a time, **auto-suggests** a contact (filename →
-   `FN`/email, reusing the dedup normalizers in `core/candidates.py`), and lets the user confirm / search
-   / skip. The filename is only a *hint for the suggestion* — never something the user must get right
-   (no `photo-manifest` CSV). This replaces the earlier filename-matching CLI sketch.
+3. **Tier 2 — loose folders / corrections, a guided visual matcher *(shipped, R7c)*.** For photos *not*
+   from a structured export: **＋ Match photos…** in Contacts opens a browser folder picker (images read
+   **locally**, nothing leaves the device) and a full-screen tour that shows each photo one at a time and
+   **auto-suggests** a contact via `core/suggest.py` — an email in the filename → normalized-email match;
+   otherwise the cleaned name is `fold`/`name_tokens`-matched (camelCase split, nicknames, accents, `(N)`)
+   against every contact, ranked, reusing the dedup normalizers in `core/candidates.py`. The user confirms
+   / searches / skips; the filename is only a *hint* (no `photo-manifest` CSV). Replaced the earlier
+   filename-matching CLI sketch. *Tier-0 polish still open:* make the avatar placeholder itself the click
+   target. *Also still planned:* a "Download all (.zip)".
 
 ## Out of scope here (deferred)
 

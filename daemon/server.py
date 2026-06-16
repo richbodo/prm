@@ -19,7 +19,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, build_label, candidates, diag, media, relationships_db, projection, proposals, schema, shared_db
+from core import (apply, build_label, candidates, diag, media, relationships_db, projection, proposals,
+                  schema, shared_db, suggest)
 
 _MAX_IMAGE_BYTES = 16 * 1024 * 1024   # a soft cap so an accidental huge upload can't bloat the home
 
@@ -114,6 +115,12 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
 
     if path == "/api/schema":                                # the field definitions (for the edit form + R6 builder)
         return _json(200, {"fields": schema.list_fields(home.relationships_db)})
+
+    if path == "/api/suggest-photo-match":                   # R7c: which contact does this image filename fit?
+        name = (query.get("name") or [""])[0]
+        if not name:
+            return _json(400, {"error": "suggest-photo-match needs a `name`"})
+        return _json(200, {"suggestions": suggest.suggest_for_filename(home, name, limit=_int(query.get("limit"), 5))})
 
     if path.startswith(_CONTACT_PREFIX):
         rest = path[len(_CONTACT_PREFIX):]

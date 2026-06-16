@@ -226,9 +226,9 @@ function photoControl(c) {
 async function uploadPhoto(id, file) {
   if (!file) return;
   if (file.size > 16 * 1024 * 1024) { alert("Image too large (max 16 MB)."); return; }
-  let data_base64;
-  try { data_base64 = await fileToBase64(file); } catch { alert("Couldn't read that file."); return; }
-  try { await postJSON("/api/set-photo", { contact_id: id, data_base64, mime: file.type || "" }); }
+  let img;
+  try { img = await imageForUpload(file); } catch { alert("Couldn't read that file."); return; }
+  try { await postJSON("/api/set-photo", { contact_id: id, ...img }); }
   catch (e) { alert("Upload failed: " + e.message); return; }
   await enterEditMode(id); browse();                         // refresh the preview + the list avatar
 }
@@ -246,6 +246,118 @@ function fileToBase64(file) {
     r.onerror = () => reject(r.error);
     r.readAsDataURL(file);
   });
+}
+
+// Downscale on upload (client-side, so no Python image dependency): draw the image to a canvas at a
+// thumbnail cap and re-encode as JPEG, so even a camera photo lands at tens of KB. Falls back to the raw
+// bytes when it can't decode (e.g. SVG) so nothing is ever lost.
+function downscaleToBase64(file, maxDim = 512, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height || 1));
+      const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      try {
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve({ data_base64: cv.toDataURL("image/jpeg", quality).split(",", 2)[1] || "", mime: "image/jpeg" });
+      } catch (e) { reject(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("decode failed")); };
+    img.src = url;
+  });
+}
+
+async function imageForUpload(file) {
+  if (/\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name) || /^image\/(jpeg|png|gif|webp|bmp)$/.test(file.type)) {
+    try { return await downscaleToBase64(file); } catch { /* unreadable → store the original */ }
+  }
+  return { data_base64: await fileToBase64(file), mime: file.type || "" };
+}
+
+// ---- R7c: the guided photo matcher. Point it at a folder of loose images; step through one at a time,
+// confirming a suggested contact (or searching). Files are read LOCALLY in the browser — nothing leaves
+// the device; only the chosen, downscaled photo is POSTed to the local daemon. ----
+async function openPhotoMatcher(fileList) {
+  const queue = [...fileList].filter((f) =>
+    /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp|heic|bmp)$/i.test(f.name));
+  if (!queue.length) { alert("No image files found there."); return; }
+  let i = 0, assigned = 0, skipped = 0, objUrl = null;
+  const el = document.createElement("div");
+  el.className = "matchoverlay";
+  document.body.appendChild(el);
+
+  const freeUrl = () => { if (objUrl) { URL.revokeObjectURL(objUrl); objUrl = null; } };
+  function close() { freeUrl(); el.remove(); document.removeEventListener("keydown", onKey); browse(); refreshStats(); }
+  function onKey(e) {
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowRight") advance();
+    else if (e.key === "ArrowLeft" && i > 0) { i--; render(); }
+  }
+  document.addEventListener("keydown", onKey);
+  function advance() { i++; (i >= queue.length) ? finish() : render(); }
+
+  async function assign(contactId) {
+    let img;
+    try { img = await imageForUpload(queue[i]); } catch { alert("Couldn't read that image."); return; }
+    try { await postJSON("/api/set-photo", { contact_id: contactId, ...img }); }
+    catch (e) { alert("Assign failed: " + e.message); return; }
+    assigned++; advance();
+  }
+
+  const row = (c, badge) =>
+    `<button class="matchrow" data-assign="${esc(c.id)}">${avatarHTML(c.id, c.name, false)}` +
+    `<span class="mrtext"><span class="mrname">${esc(c.name || "(no name)")}</span>` +
+    `<span class="mrsub">${esc(c.email || "—")}</span></span>` +
+    (badge ? `<span class="mrbadge">${esc(badge)}</span>` : "") + "</button>";
+  const wire = (c) => c.querySelectorAll("[data-assign]").forEach((b) =>
+    b.addEventListener("click", () => assign(b.dataset.assign)));
+
+  function finish() {
+    freeUrl();
+    el.innerHTML = `<div class="matchcard"><div class="abouthead"><b class="serif">Photos matched</b></div>` +
+      `<div class="matchdone"><p>Assigned <b>${assigned}</b> · skipped <b>${skipped}</b> of ${queue.length} image(s).</p>` +
+      `<button class="btn primary" data-done>Done</button></div></div>`;
+    el.querySelector("[data-done]").addEventListener("click", close);
+  }
+
+  async function render() {
+    freeUrl();
+    const myI = i, file = queue[i];
+    objUrl = URL.createObjectURL(file);
+    el.innerHTML =
+      `<div class="matchcard"><div class="abouthead"><b class="serif">Match photos</b>` +
+      `<span class="matchcount">${i + 1} of ${queue.length}</span><span class="spacer"></span>` +
+      `<button class="btn" data-close>Close</button></div>` +
+      `<div class="matchbody"><div class="matchimg"><img src="${objUrl}" alt=""><div class="matchfn mono">${esc(file.name)}</div></div>` +
+      `<div class="matchpick"><div class="hint">Who is this? — pick a suggestion, or search.</div>` +
+      `<div id="match-sugg" class="matchrows"><div class="hint">…</div></div>` +
+      `<input id="match-q" type="search" placeholder="Search for a contact…" autocomplete="off">` +
+      `<div id="match-res" class="matchrows"></div>` +
+      `<div class="editbar"><button class="btn ghost" data-skip>Skip</button>` +
+      `<button class="btn ghost" data-discard>Not a contact</button></div></div></div>`;
+    el.querySelector("[data-close]").addEventListener("click", close);
+    el.querySelector("[data-skip]").addEventListener("click", () => { skipped++; advance(); });
+    el.querySelector("[data-discard]").addEventListener("click", advance);
+    const q = el.querySelector("#match-q");
+    q.addEventListener("input", debounce(async () => {
+      const term = q.value.trim();
+      let res = [];
+      if (term) { try { res = (await api(`/api/search?q=${encodeURIComponent(term)}&limit=8`)).results || []; } catch {} }
+      const c = el.querySelector("#match-res"); if (c) { c.innerHTML = res.map((r) => row(r, "")).join(""); wire(c); }
+    }, 160));
+    let sugg = [];
+    try { sugg = (await api(`/api/suggest-photo-match?name=${encodeURIComponent(file.name)}`)).suggestions || []; } catch {}
+    if (i !== myI) return;                                    // user already advanced — drop stale suggestions
+    const sc = el.querySelector("#match-sugg");
+    sc.innerHTML = sugg.length ? sugg.map((s) => row(s, s.basis)).join("") : `<div class="hint">No suggestion — search below.</div>`;
+    wire(sc);
+  }
+
+  render();
 }
 
 async function addTagInline(addChip, schemaFields) {
@@ -847,6 +959,16 @@ document.querySelectorAll(".navitem[data-view]").forEach((n) =>
   }));
 const schemaNew = $("#schema-new");
 if (schemaNew) schemaNew.addEventListener("click", () => openFieldModal(null, loadSchema));
+
+// "Match photos…" → a folder picker (read locally) → the guided matcher (R7c).
+const matchBtn = $("#match-photos"), matchInput = $("#match-input");
+if (matchBtn && matchInput) {
+  matchBtn.addEventListener("click", () => matchInput.click());
+  matchInput.addEventListener("change", () => {
+    if (matchInput.files.length) openPhotoMatcher(matchInput.files);
+    matchInput.value = "";                                    // allow re-picking the same folder
+  });
+}
 
 // A failed avatar image falls back to the monogram. `error` on <img> doesn't bubble, so listen in the
 // capture phase on the list + detail containers.

@@ -33,7 +33,7 @@ data never leaves your device.
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
 | **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
 | **Define your own fields** — a typed custom schema (text, date, select, …) in the workspace; they appear on every contact | ✅ works |
-| **Contact photos** — imported photos (incl. **Google Takeout**'s separate photo files) show as the avatar; upload/replace your own in Edit mode — private, reversible | ✅ works |
+| **Contact photos** — imported photos (incl. **Google Takeout**) show as the avatar; upload your own, or **match a folder of loose photos** one-by-one with a suggested contact — private, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -280,9 +280,17 @@ import already carried one it shows automatically — including **Google Takeout
 contact's photo as a *separate image file* that PRM matches back to the right person by name on import
 (only some contacts in a Takeout export carry a photo, so don't expect every avatar to fill in). In Edit
 mode you can **Upload…** your own (it overrides the import) or **Remove** it — your images stay on the
-device and never reach a connected AI. Imported photos ride along in a `--raw` backup, so it stays a
+device and never reach a connected AI (uploads are shrunk to a thumbnail in your browser before they're
+saved, so even a big photo stays small). Imported photos ride along in a `--raw` backup, so it stays a
 lossless round-trip; an uploaded photo, like your tags and notes, is private-store data (a full
-private-store backup is a separate, later feature). Editing multi-value fields (emails, phones) is coming
+private-store backup is a separate, later feature).
+
+Got a **folder of loose photos** (headshots, photos from another app) you want to attach? Hit
+**＋ Match photos…** at the top of Contacts and pick the folder. PRM reads the images locally and walks
+you through them **one at a time**, **suggesting the contact** each photo probably belongs to (from the
+filename — it handles names, emails, nicknames, accents) so you usually just click **Assign**; otherwise
+**search** for the right person, **Skip**, or mark **Not a contact**. Nothing leaves your device — only
+the photo you assign is saved. Editing multi-value fields (emails, phones) is coming
 in the next increments.
 
 **Schema** is where you **design your own relationship fields**. The built-in `photo`/`tags`/`notes` are
