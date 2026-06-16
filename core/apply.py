@@ -91,6 +91,37 @@ def update_field(home, field_id, **changes) -> dict:
         return schema.update_field(home.relationships_db, field_id, **changes)
 
 
+def define_field(home, **kw) -> dict:
+    """Create a user-authored field definition (INV-3 — workspace-only), serialized by the file-lock.
+    ``kw`` is forwarded to ``schema.define_field`` (label, kind, config, ai_write_policy, disclosure_tier,
+    required, …). Returns the new field. Non-destructive, so no snapshot."""
+    home.create()
+    with file_lock(home.lock_file):
+        fid = schema.define_field(home.relationships_db, **kw)
+        return schema.get_field(home.relationships_db, fid)
+
+
+def remove_field(home, field_id) -> dict:
+    """Remove a **user** field — destructive (its FK cascades the field's values), so **snapshot first**
+    (the Undo point), under the file-lock, and audit it. Refuses a built-in before snapshotting. Reversible
+    by Undo, like a merge."""
+    field = schema.get_field(home.relationships_db, field_id)
+    if field is None:
+        raise schema.SchemaError(f"no such field: {field_id!r}")
+    if field["class"] == "builtin":
+        raise schema.SchemaError(f"{field_id!r} is a built-in field and cannot be removed")
+    home.create()
+    with file_lock(home.lock_file):
+        snap = snapshots.snapshot(home)                      # pre-remove Undo point (values cascade)
+        try:
+            schema.remove_field(home.relationships_db, field_id)
+        except Exception:
+            snapshots.restore(home, snap)
+            raise
+        audit.append(home, {"kind": "remove_field", "field_id": field_id, "snapshot": snap.name})
+        return {"ok": True, "snapshot": str(snap)}
+
+
 def edit_contact(home, contact_id, *, resolutions=None, values=None, clears=None, multi=None,
                  written_by="manual:user") -> dict:
     """Apply ALL of a contact's edits as **one** changeset — one lock, one snapshot, one audit entry, one

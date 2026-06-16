@@ -13,9 +13,12 @@ data never leaves your device.
 > pick the winner for any conflict, every merge reversible. An **AI can also propose the merges for you**
 > (over a local MCP server) — it can only *propose*; you still review and approve each one in the workspace. You can also **re-import an updated export** and preview
 > exactly what changes (`just reimport`), and **export your contacts** — a portable vCard to move them to
-> another app, or a lossless `--raw` backup you can re-import (`just export`). What's coming next: a private overlay (groups, tags, notes) +
-> a custom relationship schema (see [Roadmap](roadmap.md)). This guide marks
-> clearly what runs now vs. what's coming.
+> another app, or a lossless `--raw` backup you can re-import (`just export`). Building on that, you can now
+> **edit contacts, add private notes, tag them from a vocabulary you manage**, and **define your own
+> custom relationship fields** — all private, reversible, and layered over your imports (never changing
+> them). What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
+> data-floor that keeps your most sensitive fields off the wire (see [Roadmap](roadmap.md)). This guide
+> marks clearly what runs now vs. what's coming.
 
 ---
 
@@ -29,6 +32,7 @@ data never leaves your device.
 | **Find & merge duplicate contacts** in the workspace — one at a time **or in bulk by group**, reversible | ✅ works |
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
 | **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
+| **Define your own fields** — a typed custom schema (text, date, select, …) in the workspace; they appear on every contact | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -272,6 +276,16 @@ the source. **Tags** come from a small **vocabulary you manage** (each tag has a
 description; create one inline while tagging, or hit *Manage tags…* to curate them); tagged contacts are
 **searchable by tag** from the same search box. Editing multi-value fields (emails, phones) and contact
 **images** is coming in the next increments.
+
+**Schema** is where you **design your own relationship fields**. The built-in `photo`/`tags`/`notes` are
+always there; hit **+ New field** to add your own — pick a **kind** (text, long text, number, date,
+checkbox, single- or multi-select, URL), give selects their options, and set whether it's *required*.
+Every field is **private and sealed by default** (it never reaches a connected AI unless you later mark
+it shareable). A field you define **immediately appears on every contact's Edit form**, ready to fill
+in. You can edit or remove your own fields (removing one drops its values, but it's **reversible** by
+**Undo**); the built-ins can't be removed. The schema is authored **only here in the workspace** — an
+AI can never invent or change your fields (INV-3). *(Per-field AI-write controls and a shareable-data
+review surface are columns on each field today; their full enforcement lands in a later increment.)*
 
 (If a previous run left the port busy, `just port` frees it.)
 

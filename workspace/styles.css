@@ -350,3 +350,29 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .tagrow input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w);}
 .tagrow .trm{flex:none;color:var(--faint);padding:4px 9px;}
 .tagrow .trm:hover{color:var(--danger);background:var(--danger-w);}
+
+/* ---- schema builder (R6) ---- */
+.schemawrap{max-width:760px;padding:24px 34px 60px;}
+.fielddef{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin-bottom:10px;box-shadow:var(--shadow);}
+.fdbody{flex:1;min-width:0;}
+.fdlabel{font-size:15px;font-weight:600;color:var(--ink);display:flex;align-items:baseline;gap:9px;}
+.fdslug{font-size:11.5px;color:var(--faint);font-weight:400;}
+.fdmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.fbadge{font-size:10.5px;letter-spacing:.02em;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted);background:var(--parch);}
+.fbadge.kind{color:var(--ink-2);}
+.fbadge.sealed{color:var(--accent-d);background:var(--accent-w);border-color:#d8e7e0;}
+.fbadge.share{color:var(--clay);background:var(--clay-w);border-color:#e7d6c8;}
+.fbadge.lock{color:var(--faint);}
+.fdactions{display:flex;gap:6px;flex:none;}
+.btn.danger-ghost{color:var(--danger);}
+.btn.danger-ghost:hover{background:var(--danger-w);color:var(--danger);}
+/* field modal */
+.fieldmodal{max-width:520px;}
+.fmrow{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;margin-bottom:14px;}
+.fmrow>label{font-size:12.5px;color:var(--muted);font-weight:550;}
+#fm-label,.fieldmodal select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);}
+#fm-label:focus,.fieldmodal select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w);}
+.fmrow input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);justify-self:start;}
+.fmgrow{min-width:0;}
+.fmgrow .tagrow .oname{width:130px;flex:none;}
+.fmgrow .tagrow .odesc{flex:1;min-width:0;}

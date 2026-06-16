@@ -30,9 +30,12 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><circle cx="16" cy="16" r="4.2"/><path d="M11 11l2 2"/></svg>
         Duplicates <span class="count" id="dup-badge">—</span>
       </div>
+      <div class="navitem" data-view="schema">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="8" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>
+        Schema
+      </div>
       <div class="navlabel">Coming soon</div>
-      <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="9" r="2.6"/><circle cx="16" cy="9" r="2.6"/><path d="M3 19c0-2.5 1.8-4 4-4m6 4c0-2.5 1.8-4 4-4"/></svg> Groups <span class="tag">v0.2</span></div>
-      <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h9l4 4v12H6z"/><path d="M14 4v5h5M9 13h6M9 16h4"/></svg> Notes <span class="tag">v0.2</span></div>
+      <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="9" r="2.6"/><circle cx="16" cy="9" r="2.6"/><path d="M3 19c0-2.5 1.8-4 4-4m6 4c0-2.5 1.8-4 4-4"/></svg> Groups <span class="tag">v0.3</span></div>
     </nav>
 
     <div class="sidefoot">
@@ -158,6 +161,20 @@
       <div class="toast" id="b-toast">
         <span id="b-toast-msg"></span>
         <div class="tbtns"><button id="b-toast-no">Not now</button><button class="go" id="b-toast-yes">Add to batch</button></div>
+      </div>
+    </section>
+
+    <!-- ---- SCHEMA (define your own relationship fields) ---- -->
+    <section class="view" id="schema">
+      <div class="topbar">
+        <h1 class="serif">Schema <span class="sub" id="schema-sub"></span></h1>
+        <button class="btn primary" id="schema-new" style="margin-left:auto">+ New field</button>
+      </div>
+      <div class="schemawrap">
+        <p class="lede-sub" style="margin:0 0 18px">The fields you can record about a relationship. Built-in fields
+          (<b>photo</b>, <b>tags</b>, <b>notes</b>) are always here; add your own below. Authored only here — never by an AI.
+          Every field is <b>private</b> and sealed by default.</p>
+        <div id="schema-body"></div>
       </div>
     </section>
 
