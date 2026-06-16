@@ -56,6 +56,23 @@ def apply_changeset(home, changeset: dict) -> dict:
     return {"proposal_id": changeset.get("proposal_id"), "snapshot": str(snap), "applied": applied, "audit": entry}
 
 
+def set_field_value(home, contact_id, field_id, value, *, value_json=None,
+                    written_by="manual:user", source="manual") -> dict:
+    """Set a relationship-overlay value (the custom schema + built-in tags/notes/photo) through the
+    audited apply path — lock → snapshot → one transaction → audit, so it is reversible by Undo. A
+    single-valued field is replaced; a multi-valued field (tags) gains the value."""
+    op = proposals.set_field_value_op(contact_id, field_id, value, value_json=value_json,
+                                      written_by=written_by, source=source)
+    return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="set field value"))
+
+
+def clear_field_value(home, contact_id, field_id, value=None, *, written_by="manual:user") -> dict:
+    """Clear a relationship value (the whole field, or one entry of a multi-valued field). Audited +
+    reversible, same path as ``set_field_value``."""
+    op = proposals.clear_field_value_op(contact_id, field_id, value)
+    return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="clear field value"))
+
+
 def _item_member_ids(home, item) -> list:
     """The canonical member contact-ids an item will merge — for batch collision detection. A proposal's
     members come from its stored changeset; a candidate carries them directly."""
