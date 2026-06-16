@@ -38,6 +38,7 @@ class PathResult:
     confidence: str
     contacts: list[CanonicalContact] = field(default_factory=list)
     skipped_reason: str | None = None
+    notes: list[str] = field(default_factory=list)   # per-file heads-up (e.g. Takeout label folders skipped)
 
 
 def infer_source(path: Path, fmt: SourceFormat) -> tuple[str, str]:
@@ -100,19 +101,24 @@ def _expand(paths) -> list[Path]:
     return out
 
 
-def parse_one(path: Path, source_override: str | None = None) -> PathResult:
+def parse_one(path: Path, source_override: str | None = None, *, all_folders: bool = False) -> PathResult:
     """Parse a single file into a ``PathResult`` (never raises on an unsupported format — it skips)."""
     fmt = detect_format(path)
     source, confidence = infer_source(path, fmt)
     if source_override:
         source, confidence = source_override, "override"
+    notes: list[str] = []
 
     if fmt is SourceFormat.VCARD:
         records = vcard.parse(path.read_bytes(), source)
     elif fmt is SourceFormat.GOOGLE_TAKEOUT:
-        records = takeout.parse(path)
+        records = takeout.parse(path, all_folders=all_folders)
         if not source_override:
             source = takeout.SOURCE
+        if not all_folders and (skipped := takeout.skipped_label_folders(path)):   # fail loudly about the omission
+            shown = ", ".join(skipped[:4]) + ("…" if len(skipped) > 4 else "")
+            notes.append(f"{len(skipped)} more Google label folder(s) ({shown}) skipped — re-run with "
+                         f"--all-folders to import their (archival) contacts and photos too")
     elif fmt is SourceFormat.VENDOR_CSV:
         try:
             records = csv_parser.parse(_read_csv_bytes(path), source)
@@ -135,11 +141,11 @@ def parse_one(path: Path, source_override: str | None = None) -> PathResult:
     else:
         return PathResult(path, fmt, source, confidence, skipped_reason="unrecognized format")
 
-    return PathResult(path, fmt, source, confidence, contacts=normalize_all(records))
+    return PathResult(path, fmt, source, confidence, contacts=normalize_all(records), notes=notes)
 
 
-def collect(paths, *, source: str | None = None) -> list[PathResult]:
-    return [parse_one(p, source) for p in _expand(paths)]
+def collect(paths, *, source: str | None = None, all_folders: bool = False) -> list[PathResult]:
+    return [parse_one(p, source, all_folders=all_folders) for p in _expand(paths)]
 
 
 def _now_iso() -> str:
@@ -149,12 +155,17 @@ def _now_iso() -> str:
 def _persist(home: PrmHome, contacts, ingested_at: str) -> shared_db.LoadResult:
     """Upsert into shared.db + seed the private 1:1 identity baseline. **Assumes the caller holds the
     file-lock.** Seeding is idempotent and preserves prior merge decisions (re-attach by stable id)."""
+    had_photos = False
     for c in contacts:                                   # write any matched/imported photos to the media store
         if getattr(c, "photo_bytes", None):             # (the jcard already carries the `prm-media:<hash>` ref)
             media.put(home, c.photo_bytes, mime=c.photo_mime)
+            had_photos = True
     result = shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
     srids = [shared_db.source_record_id(c.source, c.stable_key.as_str()) for c in contacts]
     relationships_db.seed_identities(home.relationships_db, srids, created_at=ingested_at)
+    if had_photos:                                       # reclaim any blob a stable-id dedup left unreferenced
+        from core import projection                      # (a collapsed duplicate's losing photo)
+        media.gc(home, projection.referenced_image_hashes(home))
     return result
 
 
@@ -168,9 +179,10 @@ def load_into(home: PrmHome, contacts: list[CanonicalContact], *,
 
 
 def ingest(paths, *, source: str | None = None, home: PrmHome | None = None,
-           dry_run: bool = True) -> ImportReport:
-    """Parse + normalize + report. Persists to shared.db when ``dry_run`` is False and a home given."""
-    results = collect(paths, source=source)
+           dry_run: bool = True, all_folders: bool = False) -> ImportReport:
+    """Parse + normalize + report. Persists to shared.db when ``dry_run`` is False and a home given.
+    ``all_folders`` imports every Google Takeout label folder, not just the All Contacts superset."""
+    results = collect(paths, source=source, all_folders=all_folders)
     contacts = [c for r in results for c in r.contacts]
     notes: list[str] = []
     persisted = False
@@ -252,7 +264,7 @@ def _diff_source(home: PrmHome, source: str, incoming: dict) -> tuple:
 
 
 def reimport(paths, *, source: str | None = None, home: PrmHome | None = None,
-             apply: bool = False) -> ReimportReport:
+             apply: bool = False, all_folders: bool = False) -> ReimportReport:
     """Opt-in, **non-destructive** re-import (INV-6, AC-10, AC-PRM-D): diff a fresh export against the
     store and preview added/updated/unchanged/stale; on ``apply`` snapshot → upsert → audit. Records
     no longer in the export are **kept** (reported as stale), and merge decisions are preserved —
@@ -262,7 +274,7 @@ def reimport(paths, *, source: str | None = None, home: PrmHome | None = None,
     if not home.shared_db.exists():
         return ReimportReport(sources=[], applied=False, dry_run=not apply, notes=["no shared.db — run `prm import` first"])
 
-    contacts = [c for r in collect(paths, source=source) for c in r.contacts]
+    contacts = [c for r in collect(paths, source=source, all_folders=all_folders) for c in r.contacts]
     by_source: dict = {}
     for c in contacts:
         by_source.setdefault(c.source, {})[shared_db.source_record_id(c.source, c.stable_key.as_str())] = c

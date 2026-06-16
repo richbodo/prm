@@ -200,6 +200,15 @@ In an interactive terminal it shows the preview and prompts `Proceed with import
 `--non-interactive` (or `--json`) for unattended runs that never prompt. The same command ends with
 `shared.db now holds N record(s)`.
 
+> **Google Takeout — your full contact history (`--all-folders`).** A Takeout export splits your
+> contacts into label folders (`Family`, `Work`, old `Imported …` / `Device contacts …` / `Restored …`
+> archives) **plus** an `All Contacts` superset. By default PRM imports just `All Contacts` — your
+> current, curated address book — and **tells you** which label folders it skipped. To pull in the
+> *archival* contacts too (and the photos that come with them), add **`--all-folders`**:
+> `prm import takeout.zip --all-folders`. Same-person duplicates collapse automatically by email, and
+> the rest surface in the normal **Duplicates** review — so it's safe, just fuller. (On one real export
+> this took the import from ~1,000 to ~1,800 contacts and recovered ~4× more photos.)
+
 Re-running an import is **safe and idempotent** — each contact gets a stable identity, so importing
 the same file again updates rather than duplicates. You can import several sources into one home
 (e.g. a Google Takeout `.zip` and then an Apple `.vcf`) and they accumulate together. The same path
