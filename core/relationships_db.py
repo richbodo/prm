@@ -9,10 +9,16 @@ is a projection over this store + shared.db (see ``core/projection.py``). Ration
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Relationship-value fields that hold *multiple* distinct values (one row each). Everything else is
+# single-valued (one row per contact+field — a set replaces). `image` is single (the avatar) until
+# multi-image lands (R7). Tags is a multi_select, so it is covered here.
+_MULTI_KINDS = {"multi_select"}
 
 SCHEMA_VERSION = 2
 _MIGRATABLE_FROM = {0, 1}   # 0 = a fresh store; 1 = a v0.1 store (pre relationship-schema) → bring up to v2
@@ -30,6 +36,10 @@ class RelationshipsDbError(RuntimeError):
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def value_id(contact_id: str, field_id: str, value) -> str:
+    return hashlib.sha1(f"{contact_id}\x1f{field_id}\x1f{value}".encode("utf-8")).hexdigest()
 
 
 # --------------------------------------------------------------------------- v0.1 → v0.2 migration
@@ -165,6 +175,27 @@ def apply_operations(db_path, operations) -> list:
                         "VALUES (?, ?, ?, ?, 'needs_review', 'needs_review', ?)",
                         (op["contact_id"], op["field"], default.get("value"), default.get("source"), _now_iso()),
                     )
+                elif kind == "set_field_value":
+                    cid, fid, val = op["contact_id"], op["field_id"], op.get("value")
+                    row = cur.execute("SELECT kind FROM field_definitions WHERE field_id = ?", (fid,)).fetchone()
+                    if not row:
+                        raise RelationshipsDbError(f"set_field_value: no such field {fid!r}")
+                    if row[0] not in _MULTI_KINDS:                  # single-valued → replace
+                        cur.execute("DELETE FROM field_values WHERE contact_id = ? AND field_id = ?", (cid, fid))
+                    cur.execute(
+                        "INSERT OR REPLACE INTO field_values"
+                        "(value_id, contact_id, field_id, value, value_json, written_by, source, written_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (value_id(cid, fid, val), cid, fid, val, op.get("value_json"),
+                         op.get("written_by", "manual:user"), op.get("source"), _now_iso()),
+                    )
+                elif kind == "clear_field_value":
+                    cid, fid, val = op["contact_id"], op["field_id"], op.get("value")
+                    if val is None:
+                        cur.execute("DELETE FROM field_values WHERE contact_id = ? AND field_id = ?", (cid, fid))
+                    else:
+                        cur.execute("DELETE FROM field_values WHERE contact_id = ? AND field_id = ? AND value = ?",
+                                    (cid, fid, val))
                 else:
                     raise RelationshipsDbError(f"unknown changeset op: {kind!r}")
                 applied.append(op)
@@ -211,6 +242,46 @@ def field_resolutions(db_path) -> dict:
         return {(c, f): (v, s) for c, f, v, s in rows}
     finally:
         con.close()
+
+
+_FV_SELECT = ("SELECT v.contact_id, v.field_id, d.label, d.kind, d.disclosure_tier, v.value, v.value_json "
+              "FROM field_values v JOIN field_definitions d USING (field_id)")
+
+
+def _fv_row(r) -> dict:
+    cid, fid, label, kind, tier, value, vjson = r
+    return {"contact_id": cid, "field_id": fid, "label": label, "kind": kind,
+            "disclosure_tier": tier, "value": value, "value_json": vjson}
+
+
+def all_field_values(db_path) -> dict:
+    """{contact_id: [relationship-value dicts]} joined to their field definitions (label/kind/tier),
+    ordered by the definition's position then write time. The projection's relationship-field source."""
+    if not Path(db_path).exists():
+        return {}
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(_FV_SELECT + " ORDER BY d.position, v.written_at").fetchall()
+    finally:
+        con.close()
+    out: dict[str, list] = {}
+    for r in rows:
+        fv = _fv_row(r)
+        out.setdefault(fv["contact_id"], []).append(fv)
+    return out
+
+
+def field_values_for(db_path, contact_id: str) -> list:
+    """One contact's relationship values (joined to their definitions), ordered by position."""
+    if not Path(db_path).exists():
+        return []
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(_FV_SELECT + " WHERE v.contact_id = ? ORDER BY d.position, v.written_at",
+                           (contact_id,)).fetchall()
+    finally:
+        con.close()
+    return [_fv_row(r) for r in rows]
 
 
 def rejected_pairs(db_path) -> set:

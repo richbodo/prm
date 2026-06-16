@@ -61,8 +61,26 @@ def _records_by_contact(home) -> dict:
     return groups
 
 
-def _merge(cid: str, members: list, rank: dict, resolutions: dict) -> dict:
-    """Merge a contact's source records into one canonical contact."""
+def _relationship_fields(rel_values: list) -> list:
+    """Build the relationship-overlay fields (custom schema + built-in tags/notes/photo) for a contact
+    from its ``field_values`` rows. Multi-valued kinds gather all values; each field carries its
+    ``disclosure_tier`` (the read-side data-floor key) and ``custom: True`` so the UI groups them apart
+    and the MCP seal (``strip_sealed``) can drop the sealed ones."""
+    by_field: dict[str, dict] = {}
+    for v in rel_values:
+        f = by_field.get(v["field_id"])
+        if f is None:
+            f = {"name": v["field_id"], "label": v["label"], "kind": v["kind"], "custom": True,
+                 "disclosure_tier": v["disclosure_tier"], "values": []}
+            by_field[v["field_id"]] = f
+        if v["value"] not in (None, ""):
+            f["values"].append({"value": v["value"]})
+    return list(by_field.values())
+
+
+def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: list | None = None) -> dict:
+    """Merge a contact's source records into one canonical contact, then append its relationship-overlay
+    fields (``rel_values`` — the field_values rows; empty/None pre-R2 or when none are set)."""
     by_name: dict[str, list] = {}
     sources: list[str] = []
     for rec in members:
@@ -98,6 +116,8 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict) -> dict:
         f = next((x for x in fields if x["name"] == field_name), None)
         return f["values"][0]["value"] if f and f["values"] else ""
 
+    fields.extend(_relationship_fields(rel_values or []))   # custom schema + tags/notes/photo
+
     return {
         "id": cid,
         "fn": pick("fn"),
@@ -110,12 +130,24 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict) -> dict:
     }
 
 
+def strip_sealed(contact: dict | None) -> dict | None:
+    """The read-side data-floor (PR-7 / AC-MCP-C): drop every ``private-sealed`` relationship field from
+    a projected contact. Source (shared-tier) fields carry no ``disclosure_tier`` and always pass.
+    Returns a shallow copy; ``None`` passes through. The MCP read surface applies this; the daemon
+    (the local workspace) does not."""
+    if not contact:
+        return contact
+    kept = [f for f in contact.get("fields", []) if f.get("disclosure_tier") != "private-sealed"]
+    return {**contact, "fields": kept}
+
+
 def _all(home) -> list:
     groups = _records_by_contact(home)
     rank = {s: i for i, s in enumerate(relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists()
                                        else relationships_db.DEFAULT_SOURCE_PRIORITY)}
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
-    return [_merge(cid, members, rank, resolutions) for cid, members in groups.items()]
+    rel = relationships_db.all_field_values(home.relationships_db) if home.relationships_db.exists() else {}
+    return [_merge(cid, members, rank, resolutions, rel.get(cid, [])) for cid, members in groups.items()]
 
 
 def _sort_key(c):
@@ -306,7 +338,9 @@ def export_jcards(home) -> list:
 
 
 def get_contact(home, contact_id: str) -> dict | None:
-    """One merged canonical contact (or ``None``). Computes only that contact's group."""
+    """One merged canonical contact (or ``None``). Computes only that contact's group, with its
+    relationship-overlay fields. NOT sealed — the daemon (local workspace) sees everything; the MCP
+    surface applies ``strip_sealed``."""
     groups = _records_by_contact(home)
     members = groups.get(contact_id)
     if not members:
@@ -314,4 +348,5 @@ def get_contact(home, contact_id: str) -> dict | None:
     rank = {s: i for i, s in enumerate(relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists()
                                        else relationships_db.DEFAULT_SOURCE_PRIORITY)}
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
-    return _merge(contact_id, members, rank, resolutions)
+    rel = relationships_db.field_values_for(home.relationships_db, contact_id) if home.relationships_db.exists() else []
+    return _merge(contact_id, members, rank, resolutions, rel)
