@@ -278,10 +278,11 @@ optional description; create one inline while tagging, or hit *Manage tags…* t
 contacts are **searchable by tag** from the same search box. A contact's **photo** is its avatar: if your
 import already carried one it shows automatically — including **Google Takeout**, which ships each
 contact's photo as a *separate image file* that PRM matches back to the right person by name on import
-(only some contacts in a Takeout export carry a photo, so don't expect every avatar to fill in). In Edit
-mode you can **Upload…** your own (it overrides the import) or **Remove** it — your images stay on the
-device and never reach a connected AI (uploads are shrunk to a thumbnail in your browser before they're
-saved, so even a big photo stays small). Imported photos ride along in a `--raw` backup, so it stays a
+(only some contacts in a Takeout export carry a photo, so don't expect every avatar to fill in). To set
+or change a photo, just **click the avatar** on a contact and pick an image — or use **Upload…** /
+**Remove** in Edit mode (an upload overrides the import). Your images stay on the device and never reach a
+connected AI (uploads are shrunk to a thumbnail in your browser before they're saved, so even a big photo
+stays small). Imported photos ride along in a `--raw` backup, so it stays a
 lossless round-trip; an uploaded photo, like your tags and notes, is private-store data (a full
 private-store backup is a separate, later feature).
 

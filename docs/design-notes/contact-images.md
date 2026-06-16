@@ -151,8 +151,9 @@ uploaded avatars *and* imported ones travel with it (planned; not yet built). Tw
    otherwise the cleaned name is `fold`/`name_tokens`-matched (camelCase split, nicknames, accents, `(N)`)
    against every contact, ranked, reusing the dedup normalizers in `core/candidates.py`. The user confirms
    / searches / skips; the filename is only a *hint* (no `photo-manifest` CSV). Replaced the earlier
-   filename-matching CLI sketch. *Tier-0 polish still open:* make the avatar placeholder itself the click
-   target. *Also still planned:* a "Download all (.zip)".
+   filename-matching CLI sketch. **Tier-0 polish *(done)*:** the contact-detail avatar is itself a click
+   target — click it (in read view or Edit) to set/change the photo, no Edit mode required. *Still planned:*
+   a "Download all (.zip)".
 
 ## Out of scope here (deferred)
 
