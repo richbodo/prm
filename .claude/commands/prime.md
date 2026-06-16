@@ -1,10 +1,12 @@
 # Prime
-> Execute the following sections to understand the codebase then summarize your understanding.
+> Read-only orientation: understand the codebase and where you are, then
+> summarize. Do NOT switch branches, pull, or create a worktree while priming —
+> just orient. (See CLAUDE.md § Conventions for when to branch / worktrees.)
 
 ## Run
 git ls-files
-git checkout main
-git pull
+git status -sb          # current branch + ahead/behind + dirty state
+git worktree list       # sibling worktrees other agents may be using
 
 ## Read
 CLAUDE.md

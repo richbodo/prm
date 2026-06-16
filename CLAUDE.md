@@ -14,6 +14,15 @@ PRM is a **reference design** for the [Personal Network Toolkit](https://github.
 [`plans/v0.1-implementation-plan.md`](plans/v0.1-implementation-plan.md) (how v0.1 is built).
 Install with `pip install -e ".[dev]"` and run `pytest` before pushing.
 
+## Sibling repositories (cross-repo work)
+
+The PNA Toolkit spec repo and the other reference design are separate Git repos checked out as **siblings of this one**, one directory above the repo root:
+
+- `../personal_network_toolkit` — the PNA Toolkit (PNT): the universal spec, contracts, and lints this design attests conformance to. Its `origin/main` is the source of truth for upstream work.
+- `../fellows_local_db` — the first reference design (Directory Archive), for cross-design comparison.
+
+A change here can have cross-repo implications for PNT (a conformance or contract change); when in doubt, read PNT's `spec/`. This sibling layout is a stable convention of the working environment (it could change, but holds for now). It lives in CLAUDE.md — not in agent memory — because memory is keyed to the working directory, so a worktree at a different path starts with a fresh memory dir; a committed file is the only channel that reaches every worktree and every concurrent agent.
+
 ## Keep the docs current
 
 [`docs/users-guide.md`](docs/users-guide.md) is the user-facing source of truth, and it carefully
@@ -63,6 +72,11 @@ When you add a fact, put it in the doc that owns its category and link from the 
 - **The ingestor is the only writer of the raw Shared DB (INV-2).** Read/search paths read it; they don't
   mutate it.
 - **Tests pin behavior** — run `pytest` after changes; put manual test/QA steps in the **PR description**.
+- **Default posture: orient without moving; branch only to work.** Reading or priming never needs a
+  branch change — don't `git checkout main` / `git pull` just to get oriented (in a multi-worktree
+  setup `main` is often checked out elsewhere, so the checkout fails or strands uncommitted work).
+  Create a worktree (next bullet) when you start *actual work*, and run `git worktree list` first to
+  spot a sibling already on a related branch.
 - **Multiple agents on one host → one git worktree each.** Give every concurrent Claude Code / agent its
   own worktree so a `git checkout` in one can't yank the branch (or uncommitted work) out from under
   another: `git worktree add ../prm-wt-<branch> -b <branch>`, then `just setup` in it (fresh `.venv`), or
