@@ -32,12 +32,17 @@ def list_contacts(home, limit: int = 50, offset: int = 0) -> dict:
     return projection.list_contacts(home, limit=limit, offset=offset)
 
 
+# The MCP read surface applies `projection.strip_sealed`: `private-sealed` relationship fields (the
+# default for every custom/built-in field, PR-7) are structurally dropped before anything is returned,
+# so new relationship data cannot cross to an MCP client. First increment of the data-floor / AC-MCP-C;
+# the daemon (local workspace) reads the unsealed projection directly.
 def get_contact(home, contact_id: str) -> dict:
-    return projection.get_contact(home, contact_id) or {"error": "no such contact", "id": contact_id}
+    c = projection.get_contact(home, contact_id)
+    return projection.strip_sealed(c) if c else {"error": "no such contact", "id": contact_id}
 
 
 def get_provenance(home, contact_id: str) -> dict:
-    c = projection.get_contact(home, contact_id)
+    c = projection.strip_sealed(projection.get_contact(home, contact_id))
     if not c:
         return {"error": "no such contact", "id": contact_id}
     return {"id": contact_id, "sources": c["sources"], "member_count": c["member_count"],
