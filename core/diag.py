@@ -18,7 +18,7 @@ import re
 import sys
 from datetime import datetime, timezone
 
-from core import build_label, relationships_db, shared_db
+from core import build_label, media, projection, relationships_db, shared_db
 from core.lock import LockError, file_lock
 
 _MAX_ERRORS = 20
@@ -100,4 +100,9 @@ def state_dump(home) -> dict:
             out["stores"][name] = stats(db)
         except Exception as exc:  # noqa: BLE001  (a corrupt/mismatched store is exactly what diag must report)
             out["stores"][name] = {"error": _redact(str(exc))}
+    # Media store health: stored blob count + orphan/missing/corrupt hashes (no PII — hashes only).
+    try:
+        out["media"] = media.verify(home, projection.referenced_image_hashes(home))
+    except Exception as exc:  # noqa: BLE001
+        out["media"] = {"error": _redact(str(exc))}
     return out

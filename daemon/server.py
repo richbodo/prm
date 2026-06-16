@@ -12,13 +12,16 @@ content_type, body)`` — no sockets — so the whole API is unit-testable witho
 
 from __future__ import annotations
 
+import base64
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, build_label, candidates, diag, relationships_db, projection, proposals, schema, shared_db
+from core import apply, build_label, candidates, diag, media, relationships_db, projection, proposals, schema, shared_db
+
+_MAX_IMAGE_BYTES = 16 * 1024 * 1024   # a soft cap so an accidental huge upload can't bloat the home
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
@@ -113,7 +116,14 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
         return _json(200, {"fields": schema.list_fields(home.relationships_db)})
 
     if path.startswith(_CONTACT_PREFIX):
-        contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
+        rest = path[len(_CONTACT_PREFIX):]
+        if rest.endswith("/photo"):                          # serve the avatar BYTES (never JSON) — local only
+            got = projection.contact_photo(home, rest[: -len("/photo")])
+            if got is None:
+                return _json(404, {"error": "no photo"})
+            data, mime = got
+            return 200, mime, data
+        contact = projection.get_contact(home, rest)
         if contact is None:
             return _json(404, {"error": "no such contact"})
         return _json(200, contact)
@@ -193,6 +203,25 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             apply.set_field_value(home, cid, fid, body.get("value"), value_json=body.get("value_json"),
                                   written_by="manual:workspace", source=body.get("source") or "manual")
             return _json(200, {"ok": True})
+
+        if path == "/api/set-photo":                             # upload/replace a contact's avatar (single image)
+            cid = body.get("contact_id")
+            data_b64 = body.get("data_base64") or body.get("data")
+            if not cid or not data_b64:
+                return _json(400, {"error": "set-photo needs contact_id + data_base64"})
+            try:
+                raw = base64.b64decode(data_b64, validate=False)
+            except (ValueError, TypeError):
+                return _json(400, {"error": "invalid base64 image data"})
+            if not raw:
+                return _json(400, {"error": "empty image"})
+            if len(raw) > _MAX_IMAGE_BYTES:
+                return _json(413, {"error": f"image too large (> {_MAX_IMAGE_BYTES // (1024 * 1024)} MB)"})
+            mime = body.get("mime") or media.sniff_mime(raw) or "application/octet-stream"
+            h = media.put(home, raw, mime=mime)              # content-addressed; idempotent
+            apply.set_field_value(home, cid, "photo", h, value_json=json.dumps({"mime": mime, "byte_size": len(raw)}),
+                                  written_by="manual:workspace", source="manual")   # audited + Undo-able
+            return _json(200, {"ok": True, "hash": h})
 
         if path == "/api/clear-value":                           # clear a value (whole field, or one entry)
             cid, fid = body.get("contact_id"), body.get("field_id")
@@ -282,6 +311,10 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
+        if ctype.startswith("image/"):
+            # The avatar URL is content-stable (/api/contact/<id>/photo), so a replaced photo would show
+            # stale until reload; revalidate so an upload/remove is reflected everywhere immediately.
+            self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(body)
 
