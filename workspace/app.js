@@ -140,6 +140,7 @@ function renderContactRead(c) {
     (relRows ? `<div class="seg">Your notes &amp; fields</div><table class="kv">${relRows}</table>` : "");
   const eb = $("#edit-contact");
   if (eb) eb.addEventListener("click", () => enterEditMode(c.id));
+  wireAvatarClick(c.id, false);                              // click the avatar to set/change the photo
 }
 
 async function enterEditMode(id) {
@@ -208,6 +209,7 @@ function renderContactEdit(c, schemaFields) {
   if (prm) prm.addEventListener("click", () => removePhoto(c.id));
   $("#edit-cancel").addEventListener("click", () => selectContact(c.id));
   $("#edit-save").addEventListener("click", () => saveContactEdit(c, byId));
+  wireAvatarClick(c.id, true);
 }
 
 // Image field (the `photo` avatar) in edit mode: preview + upload/replace + remove. The bytes go
@@ -237,6 +239,36 @@ async function removePhoto(id) {
   try { await postJSON("/api/clear-value", { contact_id: id, field_id: "photo" }); }
   catch (e) { alert("Remove failed: " + e.message); return; }
   await enterEditMode(id); browse();
+}
+
+// The contact-detail avatar is a click target for setting/changing the photo — so you don't have to
+// open Edit mode just to add one. In read view it re-renders the detail; in Edit mode it behaves like
+// the Upload… button (re-renders the form). The list-row avatars are NOT wired (a row click opens it).
+function wireAvatarClick(contactId, inEdit) {
+  const av = els.detail.querySelector(".dhead .avatar");
+  if (!av) return;
+  av.classList.add("editable");
+  av.title = "Click to change photo";
+  av.addEventListener("click", () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.addEventListener("change", () => {
+      const f = input.files[0];
+      if (f) (inEdit ? uploadPhoto : changeAvatar)(contactId, f);
+    });
+    input.click();                                           // inside the click handler → a user gesture
+  });
+}
+
+async function changeAvatar(contactId, file) {               // upload from read view, then re-render it
+  if (file.size > 16 * 1024 * 1024) { alert("Image too large (max 16 MB)."); return; }
+  let img;
+  try { img = await imageForUpload(file); } catch { alert("Couldn't read that file."); return; }
+  try { await postJSON("/api/set-photo", { contact_id: contactId, ...img }); }
+  catch (e) { alert("Change failed: " + e.message); return; }
+  renderContactRead(await api(`/api/contact/${encodeURIComponent(contactId)}`));
+  browse();
 }
 
 function fileToBase64(file) {
