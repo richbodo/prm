@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import apply, build_label, candidates, diag, relationships_db, projection, proposals, shared_db
+from core import apply, build_label, candidates, diag, relationships_db, projection, proposals, schema, shared_db
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
@@ -98,6 +98,9 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
             mids = p.get("member_ids") or []                 # against its detected candidate (same hash)
             p["cluster_key"] = candidates.cluster_key(mids) if mids else None
         return _json(200, {"proposals": props})
+
+    if path == "/api/schema":                                # the field definitions (for the edit form + R6 builder)
+        return _json(200, {"fields": schema.list_fields(home.relationships_db)})
 
     if path.startswith(_CONTACT_PREFIX):
         contact = projection.get_contact(home, path[len(_CONTACT_PREFIX):])
@@ -186,6 +189,21 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             if not cid or not fid:
                 return _json(400, {"error": "clear-value needs contact_id + field_id"})
             apply.clear_field_value(home, cid, fid, body.get("value"), written_by="manual:workspace")
+            return _json(200, {"ok": True})
+
+        if path == "/api/resolve-field":                         # edit a single-valued source field (override)
+            cid, field = body.get("contact_id"), body.get("field")
+            if not cid or not field:
+                return _json(400, {"error": "resolve-field needs contact_id + field"})
+            apply.resolve_field(home, cid, field, body.get("value"), written_by="manual:workspace")
+            return _json(200, {"ok": True})
+
+        if path == "/api/edit-contact":                          # all of a contact's edits → one atomic changeset
+            cid = body.get("contact_id")
+            if not cid:
+                return _json(400, {"error": "edit-contact needs contact_id"})
+            apply.edit_contact(home, cid, resolutions=body.get("resolutions"), values=body.get("values"),
+                               clears=body.get("clears"), written_by="manual:workspace")
             return _json(200, {"ok": True})
     except (KeyError, ValueError) as exc:
         return _json(400, {"error": str(exc)})

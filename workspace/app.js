@@ -76,33 +76,118 @@ async function search(q) {
   els.listhead.textContent = `${data.results.length} result(s) for “${q}”`;
 }
 
-// ---- contact detail (canonical projection: union/single fields, per-value source) ----
+// ---- contact detail: read + edit. Edits write the PRIVATE store (overrides for source fields, values
+// for the custom schema), never shared.db (INV-2) — the override model, reversible via Undo. ----
+const EDITABLE_KINDS = new Set(["text", "long_text", "number", "date", "url", "boolean", "single_select"]);
+const valFirst = (f) => { const v = ((f && f.values) || []).find((x) => x.value !== "" && x.value != null); return v ? v.value : ""; };
+
 async function selectContact(id, li) {
   document.querySelectorAll(".row.active").forEach((r) => r.classList.remove("active"));
   if (li) li.classList.add("active");
-  const c = await api(`/api/contact/${encodeURIComponent(id)}`);
+  renderContactRead(await api(`/api/contact/${encodeURIComponent(id)}`));
+}
 
-  const rows = (c.fields || [])
-    .filter((f) => !NOISE.has(f.name))
-    .map((f) => {
-      const vals = (f.values || []).filter((v) => v.value !== "" && v.value != null);
-      if (!vals.length) return "";
-      const valHtml = vals.map((v) =>
-        `<div class="fval">${esc(v.value)}${v.source ? ` <span class="vsrc mono">${esc(srcLabel(v.source))}</span>` : ""}</div>`).join("");
-      const tag = (f.kind === "union" && vals.length > 1) ? ` <span class="kindtag">both kept</span>` : "";
-      return `<tr><th>${esc(f.name)}${tag}</th><td>${valHtml}</td></tr>`;
-    })
-    .join("");
-
+function dHead(c, editing) {
   const srcChips = (c.sources || []).map((s) => `<span class="chip dot">${esc(srcLabel(s))}</span>`).join("");
   const n = c.member_count || (c.sources || []).length || 1;
-  els.detail.innerHTML =
-    `<div class="dhead"><span class="avatar">${esc(initial(c.fn))}</span><div>` +
+  const btn = editing ? "" : `<button class="btn ghost" id="edit-contact" title="Edit this contact">✎ Edit</button>`;
+  return `<div class="dhead"><span class="avatar">${esc(initial(c.fn))}</span><div class="dhbody">` +
     `<h2 class="serif">${esc(c.fn || "(no name)")}</h2>` +
     `<div class="dmeta">${srcChips}<span>·</span><span>merged from ${n} record${n > 1 ? "s" : ""}</span></div>` +
-    `</div></div>` +
-    `<div class="seg">Fields · with provenance</div>` +
-    `<table class="kv">${rows}</table>`;
+    `</div>${btn}</div>`;
+}
+
+function renderContactRead(c) {
+  const srcRows = (c.fields || []).filter((f) => !NOISE.has(f.name) && !f.custom).map((f) => {
+    const vals = (f.values || []).filter((v) => v.value !== "" && v.value != null);
+    if (!vals.length) return "";
+    const valHtml = vals.map((v) =>
+      `<div class="fval">${esc(v.value)}${v.source ? ` <span class="vsrc mono">${esc(srcLabel(v.source))}</span>` : ""}</div>`).join("");
+    const tag = (f.kind === "union" && vals.length > 1) ? ` <span class="kindtag">both kept</span>` : "";
+    return `<tr><th>${esc(f.name)}${tag}</th><td>${valHtml}</td></tr>`;
+  }).join("");
+
+  const rel = (c.fields || []).filter((f) => f.custom && (f.values || []).some((v) => v.value));
+  const relRows = rel.map((f) => {
+    const vals = (f.values || []).filter((v) => v.value !== "" && v.value != null);
+    const body = f.kind === "multi_select"
+      ? `<div class="tagchips">${vals.map((v) => `<span class="tagchip">${esc(v.value)}</span>`).join("")}</div>`
+      : vals.map((v) => `<div class="fval">${esc(v.value)}</div>`).join("");
+    return `<tr><th>${esc(f.label || f.name)}</th><td>${body}</td></tr>`;
+  }).join("");
+
+  els.detail.innerHTML =
+    dHead(c, false) +
+    `<div class="seg">Fields · with provenance</div><table class="kv">${srcRows}</table>` +
+    (relRows ? `<div class="seg">Your notes &amp; fields</div><table class="kv">${relRows}</table>` : "");
+  const eb = $("#edit-contact");
+  if (eb) eb.addEventListener("click", () => enterEditMode(c.id));
+}
+
+async function enterEditMode(id) {
+  const [c, sch] = await Promise.all([api(`/api/contact/${encodeURIComponent(id)}`), api("/api/schema")]);
+  renderContactEdit(c, sch.fields || []);
+}
+
+function editInput(tag, kind, value, opts) {
+  const a = `data-field="${esc(tag)}"`;
+  if (kind === "long_text") return `<textarea rows="3" ${a}>${esc(value)}</textarea>`;
+  if (kind === "boolean") return `<input type="checkbox" ${a}${value ? " checked" : ""}>`;
+  if (kind === "single_select") {
+    const o = (opts || []).map((op) =>
+      `<option value="${esc(op.value)}"${op.value === value ? " selected" : ""}>${esc(op.label || op.value)}</option>`).join("");
+    return `<select ${a}><option value="">—</option>${o}</select>`;
+  }
+  const type = kind === "number" ? "number" : kind === "date" ? "date" : kind === "url" ? "url" : "text";
+  return `<input type="${type}" ${a} value="${esc(value)}">`;
+}
+
+function renderContactEdit(c, schemaFields) {
+  const fields = c.fields || [];
+  const srcRows = fields.filter((f) => !NOISE.has(f.name) && !f.custom && f.kind === "single").map((f) =>
+    `<tr><th>${esc(f.name)}</th><td>${editInput("src:" + f.name, "text", valFirst(f))}</td></tr>`).join("");
+  const byId = Object.fromEntries(fields.map((f) => [f.name, f]));
+  const customRows = schemaFields.map((sf) => {
+    if (!EDITABLE_KINDS.has(sf.kind)) {
+      const note = sf.kind === "multi_select" ? "managed in Tags (soon)" : sf.kind === "image" ? "images (soon)" : sf.kind;
+      return `<tr><th>${esc(sf.label)}</th><td><span class="hint">${esc(note)}</span></td></tr>`;
+    }
+    return `<tr><th>${esc(sf.label)}</th><td>${editInput("cf:" + sf.field_id, sf.kind, valFirst(byId[sf.field_id]), (sf.config || {}).options)}</td></tr>`;
+  }).join("");
+  const unionRows = fields.filter((f) => !NOISE.has(f.name) && !f.custom && f.kind === "union").map((f) =>
+    `<tr><th>${esc(f.name)}</th><td>${(f.values || []).map((v) => `<div class="fval muted">${esc(v.value)}</div>`).join("")}<div class="hint">multi-value editing — soon</div></td></tr>`).join("");
+
+  els.detail.innerHTML =
+    dHead(c, true) +
+    `<div class="seg">Edit fields</div><table class="kv editkv">${srcRows}${customRows}${unionRows}</table>` +
+    `<div class="editbar"><span class="reassure">↺ Reversible — saved to your private store, never the source</span>` +
+    `<span class="spacer"></span><button class="btn" id="edit-cancel">Cancel</button>` +
+    `<button class="btn primary" id="edit-save">Save changes</button></div>`;
+  $("#edit-cancel").addEventListener("click", () => selectContact(c.id));
+  $("#edit-save").addEventListener("click", () => saveContactEdit(c, byId));
+}
+
+async function saveContactEdit(c, byId) {
+  // Collect every change, then apply as ONE atomic changeset (one Undo) — never N concurrent writes,
+  // which would collide on the single-holder file-lock.
+  const resolutions = [], values = [], clears = [];
+  els.detail.querySelectorAll("[data-field]").forEach((el) => {
+    const tag = el.dataset.field;
+    const newVal = el.type === "checkbox" ? (el.checked ? "true" : "") : el.value.trim();
+    if (tag.startsWith("src:")) {
+      const field = tag.slice(4);
+      if (newVal !== valFirst(byId[field])) resolutions.push({ field, value: newVal });
+    } else if (tag.startsWith("cf:")) {
+      const fid = tag.slice(3);
+      if (newVal === valFirst(byId[fid])) return;
+      if (newVal === "") clears.push(fid); else values.push({ field_id: fid, value: newVal });
+    }
+  });
+  if (!resolutions.length && !values.length && !clears.length) { selectContact(c.id); return; }
+  try { await postJSON("/api/edit-contact", { contact_id: c.id, resolutions, values, clears }); }
+  catch (e) { alert("Save failed: " + e.message); return; }
+  await selectContact(c.id);
+  refreshStats(); browse();
 }
 
 // ---- duplicates review: AI proposals + deterministic candidates ----

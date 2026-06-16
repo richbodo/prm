@@ -73,6 +73,34 @@ def clear_field_value(home, contact_id, field_id, value=None, *, written_by="man
     return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="clear field value"))
 
 
+def resolve_field(home, contact_id, field, value, *, chosen_source=None, written_by="manual:user") -> dict:
+    """Override a single-valued (reconcile) *source* field on one contact — a manual edit (``rule="user"``,
+    so it beats survivorship and survives re-import). Writes ``field_resolutions``; the projection layers
+    it over the immutable source value (the override model — INV-2 stays intact). Audited + reversible."""
+    op = proposals.resolve_field_op(contact_id, field, value, chosen_source=chosen_source, rule="user")
+    return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="edit field"))
+
+
+def edit_contact(home, contact_id, *, resolutions=None, values=None, clears=None,
+                 written_by="manual:user") -> dict:
+    """Apply ALL of a contact's edits as **one** changeset — one lock, one snapshot, one audit entry, one
+    Undo. This is what the workspace edit-mode save calls: it is atomic (the whole edit reverts together)
+    and avoids the concurrent-write lock contention that firing each edit as its own request would cause.
+
+    - ``resolutions``: ``[{field, value}]``  → single-valued source-field overrides (``rule="user"``)
+    - ``values``: ``[{field_id, value}]``     → relationship/custom field values (set)
+    - ``clears``: ``[field_id]``              → relationship/custom fields to clear
+    """
+    ops = [proposals.resolve_field_op(contact_id, r["field"], r.get("value"), rule="user")
+           for r in (resolutions or [])]
+    ops += [proposals.set_field_value_op(contact_id, v["field_id"], v.get("value"),
+                                         written_by=written_by, source="manual") for v in (values or [])]
+    ops += [proposals.clear_field_value_op(contact_id, fid) for fid in (clears or [])]
+    if not ops:
+        return {"ok": True, "applied": []}
+    return apply_changeset(home, proposals.build(ops, created_by=written_by, rationale="edit contact"))
+
+
 def _item_member_ids(home, item) -> list:
     """The canonical member contact-ids an item will merge — for batch collision detection. A proposal's
     members come from its stored changeset; a candidate carries them directly."""
