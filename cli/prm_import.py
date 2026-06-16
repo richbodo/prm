@@ -200,10 +200,10 @@ def cmd_export(args) -> int:
         print("no shared.db yet — run `prm import` first", file=sys.stderr)
         return 1
 
-    if args.raw:                                # lossless JSON backup of the raw source records
+    if args.raw:                                # lossless JSON backup of the raw source records (+ media)
         from . import backup
         records = shared_db.all_records(home.shared_db)
-        text, count, noun = backup.dump(records), len(records), "record(s)"
+        text, count, noun = backup.dump(records, home=home), len(records), "record(s)"
     else:                                       # merged contacts → portable vCard
         from core import projection             # imported lazily so the ingest path never pays for it
         from .vcard_writer import write_vcards

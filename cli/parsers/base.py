@@ -44,6 +44,8 @@ class ParsedRecord:
     source: str                     # source identifier, e.g. "google_takeout"
     fields: list[RawField]
     raw_text: str = ""              # the original serialized record (for shared.db / debugging)
+    photo: bytes | None = None      # decoded image bytes matched from a sidecar file (e.g. Google Takeout)
+    photo_mime: str | None = None   # its mime, if known from the file extension
 
     def get(self, name: str) -> RawField | None:
         name = name.upper()

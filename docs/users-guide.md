@@ -33,7 +33,7 @@ data never leaves your device.
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
 | **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
 | **Define your own fields** — a typed custom schema (text, date, select, …) in the workspace; they appear on every contact | ✅ works |
-| **Contact photos** — the photo from your import shows as the avatar; upload/replace your own in Edit mode — private, reversible | ✅ works |
+| **Contact photos** — imported photos (incl. **Google Takeout**'s separate photo files) show as the avatar; upload/replace your own in Edit mode — private, reversible | ✅ works |
 | Inspect an export without saving anything (`--dry-run`) | ✅ works |
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
@@ -276,11 +276,14 @@ records** — the import itself is never modified — so a re-import can't clobb
 overrode the source. **Tags** come from a small **vocabulary you manage** (each tag has a name and an
 optional description; create one inline while tagging, or hit *Manage tags…* to curate them); tagged
 contacts are **searchable by tag** from the same search box. A contact's **photo** is its avatar: if your
-import already carried one it shows automatically, and in Edit mode you can **Upload…** your own (it
-overrides the import) or **Remove** it — your images stay on the device and never reach a connected AI.
-*(Photos from a `--raw` backup ride along inside the export's records; an uploaded photo, like your tags
-and notes, is private-store data — a full private-store backup is a separate, later feature.)* Editing
-multi-value fields (emails, phones) is coming in the next increments.
+import already carried one it shows automatically — including **Google Takeout**, which ships each
+contact's photo as a *separate image file* that PRM matches back to the right person by name on import
+(only some contacts in a Takeout export carry a photo, so don't expect every avatar to fill in). In Edit
+mode you can **Upload…** your own (it overrides the import) or **Remove** it — your images stay on the
+device and never reach a connected AI. Imported photos ride along in a `--raw` backup, so it stays a
+lossless round-trip; an uploaded photo, like your tags and notes, is private-store data (a full
+private-store backup is a separate, later feature). Editing multi-value fields (emails, phones) is coming
+in the next increments.
 
 **Schema** is where you **design your own relationship fields**. The built-in `photo`/`tags`/`notes` are
 always there; hit **+ New field** to add your own — pick a **kind** (text, long text, number, date,

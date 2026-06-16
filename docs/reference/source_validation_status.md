@@ -76,8 +76,22 @@ Quirks the export revealed that the **small** fixtures did **not** model (now re
 > Follow-up (R7, 2026-06-16): **embedded `PHOTO;ENCODING=b`** is now stored as clean **base64** (the
 > parser previously kept the lexer's decoded `bytes` as a `str(bytes)` repr — lossy junk). The
 > `takeout-photos` fixture's embedded photo is decoded for the avatar and pinned to survive an
-> `export --raw` round-trip. External (`.jpg` sidecar) photos remain referenced-not-embedded and are not
-> shown (no inline bytes; a URL/file ref is never fetched — INV-1).
+> `export --raw` round-trip.
+
+> **Follow-up (R7b, 2026-06-16) — Takeout sidecar photos, validated against the real 1,101-photo export.**
+> How Takeout actually ships contact photos (measured, not assumed):
+> - **External `.jpg` files named verbatim by the card's `FN`**, in the *label* folders
+>   (`Contacts/<label>/<FN>.jpg`) — `mean 6.1 KB / median 3.2 KB`, plain thumbnails. Google adds a `(N)`
+>   suffix for duplicate names and bakes a job title into the filename where it's in `FN`. Some cards also
+>   carry a hosted `PHOTO:https://lh3.googleusercontent.com/…` URL (never fetched — INV-1).
+> - **The match: a contact's photo is the image whose normalized `FN` maps to exactly one distinct image**
+>   (unambiguous-only; ambiguous names are skipped, never auto-guessed). The bytes go to the media store;
+>   `shared.db` keeps a tiny `prm-media:<hash>` ref (not base64) so the read path stays lean.
+> - **Coverage is export-dependent and can be low.** In this export only **~6% (61/1000)** of the *current*
+>   `All Contacts` people had a photo *anywhere* in the bundle — the other ~360 photo'd people live in
+>   **archival label folders** (`Imported 3-21-12`, `Copied from iOS`, `Restored from Pixel …`) that the
+>   `All Contacts`-only ingest path doesn't import. Importing those archival contacts (and their photos) is
+>   a separate, larger decision (a fuller-Takeout-import feature), tracked as a follow-up.
 
 ### Apple iCloud — validated 2026-06-03 (57-contact export)
 

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from core import media
+
 from .identity import StableKey, stable_key
 from .jcard import JCard
 from .parsers.base import ParsedRecord, RawField
@@ -37,6 +39,8 @@ class CanonicalContact:
     provenance: list[FieldProvenance]
     stable_key: StableKey
     raw_text: str = ""
+    photo_bytes: bytes | None = None   # image bytes to write to the media store at persist (the jcard
+    photo_mime: str | None = None      # carries a `prm-media:<hash>` ref; bytes never enter the DB)
 
     @property
     def display_name(self) -> str | None:
@@ -78,6 +82,15 @@ def to_canonical(record: ParsedRecord) -> CanonicalContact:
             FieldProvenance(field=name, value=value_to_text(f.value), source=record.source, observed_at=observed_at)
         )
 
+    # A sidecar photo (e.g. matched from a Google Takeout image) becomes a `prm-media:<hash>` reference in
+    # the jCard (lean — the bytes go to the media store at persist), superseding any source PHOTO above.
+    if record.photo:
+        h = media.content_hash(record.photo)
+        subtype = (record.photo_mime or "image/jpeg").split("/")[-1]
+        jc.add("photo", {"type": subtype}, "uri", media.make_ref(h))   # stable_key ignores photo (identity.py)
+        provenance.append(FieldProvenance(field="photo", value=media.make_ref(h),
+                                          source=record.source, observed_at=observed_at))
+
     return CanonicalContact(
         source=record.source,
         source_uid=source_uid,
@@ -85,6 +98,8 @@ def to_canonical(record: ParsedRecord) -> CanonicalContact:
         provenance=provenance,
         stable_key=stable_key(jc, record.source),
         raw_text=record.raw_text,
+        photo_bytes=record.photo,
+        photo_mime=record.photo_mime,
     )
 
 

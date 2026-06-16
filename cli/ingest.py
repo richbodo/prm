@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core import audit, relationships_db, shared_db, snapshots
+from core import audit, media, relationships_db, shared_db, snapshots
 from core.lock import file_lock
 
 from . import backup
@@ -149,6 +149,9 @@ def _now_iso() -> str:
 def _persist(home: PrmHome, contacts, ingested_at: str) -> shared_db.LoadResult:
     """Upsert into shared.db + seed the private 1:1 identity baseline. **Assumes the caller holds the
     file-lock.** Seeding is idempotent and preserves prior merge decisions (re-attach by stable id)."""
+    for c in contacts:                                   # write any matched/imported photos to the media store
+        if getattr(c, "photo_bytes", None):             # (the jcard already carries the `prm-media:<hash>` ref)
+            media.put(home, c.photo_bytes, mime=c.photo_mime)
     result = shared_db.load(home.shared_db, contacts, ingested_at=ingested_at)
     srids = [shared_db.source_record_id(c.source, c.stable_key.as_str()) for c in contacts]
     relationships_db.seed_identities(home.relationships_db, srids, created_at=ingested_at)
