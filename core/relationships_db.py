@@ -14,7 +14,8 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+_MIGRATABLE_FROM = {0, 1}   # 0 = a fresh store; 1 = a v0.1 store (pre relationship-schema) → bring up to v2
 _SCHEMA_SQL = (Path(__file__).resolve().parent / "schema" / "relationships.sql").read_text(encoding="utf-8")
 
 # Default reconcile order: user-curated address books (Apple/Google) outrank scraped professional /
@@ -70,7 +71,11 @@ def connect(db_path, *, read_only: bool = False) -> sqlite3.Connection:
 
 def _ensure_schema(con: sqlite3.Connection) -> None:
     version = con.execute("PRAGMA user_version").fetchone()[0]
-    if version == 0:
+    if version in _MIGRATABLE_FROM:
+        # Idempotent: every CREATE is IF NOT EXISTS and every built-in seed is INSERT OR IGNORE, so a
+        # fresh store (v0) is built whole and a v0.1 store (v1) gets only the v2 delta — the new
+        # field_definitions / field_values tables + built-in fields — leaving its v1 data untouched.
+        # That is the v1→v2 migration; no destructive ALTERs.
         con.executescript(_SCHEMA_SQL)
         con.execute(
             "INSERT OR IGNORE INTO settings(key, value) VALUES ('source_priority', ?)",
