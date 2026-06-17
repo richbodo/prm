@@ -93,7 +93,10 @@ def _platform_dirs(env, *, plat: str | None = None, osname: str | None = None) -
     branches stay testable on any host."""
     plat = sys.platform if plat is None else plat
     osname = os.name if osname is None else osname
-    home = Path(env.get("HOME") or env.get("USERPROFILE") or os.path.expanduser("~"))
+    home_str = env.get("HOME") or env.get("USERPROFILE")
+    if not home_str and env is os.environ:     # real-home fallback for production only — an explicit env
+        home_str = os.path.expanduser("~")     # (e.g. {} in tests) stays hermetic, never touching $HOME
+    home = Path(home_str or ".")
     if plat == "darwin":
         base = home / "Library" / "Application Support" / _APP_DIRNAME
         return base, base / "config.json"

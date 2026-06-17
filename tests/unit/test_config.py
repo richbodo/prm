@@ -74,6 +74,14 @@ def test_resolve_precedence():
         assert config.resolve_home(tmp / "explicit", env=env_h).root == tmp / "explicit"  # …--data-dir wins
 
 
+def test_explicit_env_is_hermetic():
+    # An explicit env (not os.environ) must NOT leak the real $HOME into the config path — otherwise a
+    # user config on the host would make resolution non-reproducible in tests (regression: it did).
+    _, cfg = config._platform_dirs({})                               # no HOME/USERPROFILE given
+    assert not str(cfg).startswith(str(Path.home()))                 # didn't reach into the real home
+    assert config.resolve_home(None, env={}, cwd="/work").root == Path("/work/prm-data")
+
+
 def test_user_config_round_trip():
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)

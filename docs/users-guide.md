@@ -118,7 +118,8 @@ It (1) suggests a **per-user data directory** outside the repo — on macOS
 `~/Library/Application Support/PRM`, on Linux `~/.local/share/prm` — and lets you change it; (2) offers
 to **move** any existing `./prm-data/` there; (3) installs `prm` with
 [pipx](https://pipx.pypa.io) as an **editable** install (so it runs straight from your source checkout,
-with the desktop window included); and (4) records the data location so `prm` finds it automatically.
+with the desktop window included) — **offering to install pipx itself if you don't have it** (and falling
+back to `./.venv` only if you decline); and (4) records the data location so `prm` finds it automatically.
 
 Then launch the workspace as a **native desktop window** (no browser tab):
 

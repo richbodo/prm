@@ -71,8 +71,11 @@ order:
 
 **Phase 3 — `just install`** (`justfile`): an interactive, re-runnable wizard — platform-default data dir
 (overridable) → offer to **move** an existing `./prm-data` (never overwriting a populated target) →
-`pipx install --editable ".[app]"` (or a `./.venv` fallback) → `prm config --set-data-dir` → a summary
-(launch / update / verify). Every destructive step is gated by a prompt.
+`pipx install --editable ".[app]"` → `prm config --set-data-dir` → a summary (launch / update / verify).
+Every destructive step is gated by a prompt. **When pipx is missing it asks before falling back** — and on
+yes installs pipx via Homebrew (or `pip install --user`, with a `--break-system-packages` retry for
+PEP-668), accepting `python3 -m pipx` if the script dir is off PATH; only on *decline* (or a failed pipx
+install) does it use the `./.venv` fallback. (The first cut silently fell back to `./.venv` — fixed.)
 
 ## Testing
 

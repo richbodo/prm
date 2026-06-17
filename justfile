@@ -79,15 +79,48 @@ install:
     echo
 
     # 3) Install editable (required so the workspace assets resolve from source) with the desktop app.
+    #    Prefer pipx (an isolated `prm` on your PATH). If it's missing, ASK before falling back — don't
+    #    silently install into ./.venv. (`python3 -m pipx` is accepted too, in case the script dir is
+    #    off PATH after a --user install.)
+    pipx_cmd=""
     if command -v pipx >/dev/null 2>&1; then
+        pipx_cmd="pipx"
+    elif python3 -m pipx --version >/dev/null 2>&1; then
+        pipx_cmd="python3 -m pipx"
+    else
+        echo "pipx is not installed — it gives you an isolated 'prm' command on your PATH (recommended)."
+        read -r -p "Install pipx now? [Y/n] " ans
+        case "${ans:-Y}" in
+            [Nn]*) echo "  okay, skipping pipx — I'll use ./.venv instead." ;;
+            *)
+                if command -v brew >/dev/null 2>&1; then
+                    echo "  installing pipx with Homebrew…"; brew install pipx || true
+                else
+                    echo "  installing pipx with pip (--user)…"
+                    python3 -m pip install --user pipx \
+                        || python3 -m pip install --user --break-system-packages pipx || true
+                fi
+                hash -r 2>/dev/null || true
+                if command -v pipx >/dev/null 2>&1; then pipx_cmd="pipx"
+                elif python3 -m pipx --version >/dev/null 2>&1; then pipx_cmd="python3 -m pipx"; fi
+                if [ -n "$pipx_cmd" ]; then
+                    $pipx_cmd ensurepath >/dev/null 2>&1 || true
+                else
+                    echo "  couldn't install pipx automatically — see https://pipx.pypa.io ; using ./.venv for now."
+                fi
+                ;;
+        esac
+    fi
+
+    if [ -n "$pipx_cmd" ]; then
         echo "Installing with pipx (editable + desktop app)…"
-        pipx install --force --editable ".[app]" || { echo "pipx install failed."; exit 1; }
-        pipx ensurepath >/dev/null 2>&1 || true
-        bindir="$(pipx environment --value PIPX_BIN_DIR 2>/dev/null || true)"
+        $pipx_cmd install --force --editable ".[app]" || { echo "pipx install failed."; exit 1; }
+        $pipx_cmd ensurepath >/dev/null 2>&1 || true
+        bindir="$($pipx_cmd environment --value PIPX_BIN_DIR 2>/dev/null || true)"
         prm_cmd="${bindir:-$HOME/.local/bin}/prm"
         [ -x "$prm_cmd" ] || prm_cmd="$(command -v prm || echo "$prm_cmd")"
     else
-        echo "pipx not found — installing into ./.venv instead (tip: 'brew install pipx' for a 'prm' on your PATH)."
+        echo "Installing into ./.venv instead (run from the repo with 'just app' or './.venv/bin/prm')."
         [ -d {{venv}} ] || python3 -m venv {{venv}}
         {{venv}}/bin/pip install --upgrade pip --quiet
         {{venv}}/bin/pip install -e ".[app]" || { echo "pip install failed."; exit 1; }
@@ -102,7 +135,7 @@ install:
     echo "  launch :  $prm_cmd app          (or:  just app)"
     echo "  update :  git pull              (your data in $target is untouched)"
     echo "  verify :  $prm_cmd config --show   ·   $prm_cmd status"
-    echo "  (if '$prm_cmd' isn't found in new terminals, run  pipx ensurepath  and open a new shell)"
+    [ -n "$pipx_cmd" ] && echo "  (if 'prm' isn't found in new terminals, run  $pipx_cmd ensurepath  and open a new shell)"
 
 # A recipe runs in a child process, so it cannot activate your *current* shell —
 # this execs a new one with the venv active. Type `exit` (or Ctrl-D) to return.
