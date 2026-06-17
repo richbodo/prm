@@ -33,11 +33,13 @@ changesets reviewed serially (apply-time conflict detection), not as branches to
 v0.1's native append-only-log + snapshot-ring substrate (no VCS).
 
 Also in v0.2: a **config file** (records the active `data_dir`) + **platform data dirs** (XDG /
-macOS / Windows) for installed (non-repo) use, and **source discovery** — a `discover_sources()`
-library that scans `~/Downloads` and a configured ingestion dir for likely contact exports
-(signature-matched, opt-in, never a background poll) and offers a pick-list. Surfaced via `prm scan`
-/ `prm import` (no path) and **reused by the MCP ingestion surface**, so CLI and AI share one
-discovery path.
+macOS / Windows) for installed (non-repo) use — **landed** as the `just install` wizard + `prm config`
+(per-user data dir, recorded so updates never touch data) and a native **desktop window** (`prm app` /
+`just app`, pywebview; see [`../plans/desktop-app-and-install.md`](../plans/desktop-app-and-install.md)).
+Still ahead: **source discovery** — a `discover_sources()` library that scans `~/Downloads` and a
+configured ingestion dir for likely contact exports (signature-matched, opt-in, never a background poll)
+and offers a pick-list. Surfaced via `prm scan` / `prm import` (no path) and **reused by the MCP
+ingestion surface**, so CLI and AI share one discovery path.
 
 **Cloud-AI honesty — the `EX-CLOUD-LLM` handler.** The private MCP surface is the canonical trigger for
 PNT's **`EX-CLOUD-LLM`** exception: the moment a cloud client (e.g. Claude Desktop) can read private
