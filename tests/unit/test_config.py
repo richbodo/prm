@@ -103,6 +103,47 @@ def test_describe_resolution_reports_source():
         assert config.describe_resolution(None, env=env_h)["resolved_from"] == "PRM_HOME env"
 
 
+# ------------------------------------------------------------------ safe data relocation (re-install safety)
+def _store(d: Path) -> Path:
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "shared.db").write_text("db")
+    return d
+
+
+def test_relocate_moves_to_absent_or_empty_dst():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        src = _store(tmp / "src")
+        assert config.relocate_data(src, tmp / "dst1") == "moved"     # dst absent → clean rename
+        assert (tmp / "dst1" / "shared.db").exists() and not src.exists()
+        src2 = _store(tmp / "src2")
+        (tmp / "dst2").mkdir()                                        # dst is an empty dir…
+        assert config.relocate_data(src2, tmp / "dst2") == "moved"
+        assert (tmp / "dst2" / "shared.db").exists()                  # …moved AT dst…
+        assert not (tmp / "dst2" / "src2").exists()                   # …NOT nested inside it
+
+
+def test_relocate_refuses_to_clobber_or_nest():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        src = _store(tmp / "src")
+        dst = _store(tmp / "dst")                                     # dst already a PRM store
+        assert config.relocate_data(src, dst) == "skipped-dst-has-store"
+        assert (src / "shared.db").exists() and (dst / "shared.db").exists()   # both intact
+        nonempty = tmp / "ne"
+        nonempty.mkdir()
+        (nonempty / "junk").write_text("x")                          # dst non-empty, no store
+        assert config.relocate_data(src, nonempty) == "skipped-dst-nonempty"
+        assert (src / "shared.db").exists() and not (nonempty / "src").exists()   # src kept, no nesting
+
+
+def test_relocate_no_source():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        (tmp / "empty").mkdir()
+        assert config.relocate_data(tmp / "empty", tmp / "dst") == "no-source"
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

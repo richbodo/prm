@@ -222,6 +222,15 @@ def cmd_app(args) -> int:
 def cmd_config(args) -> int:
     from . import config as config_mod
     if args.set_data_dir:
+        if args.move_from:
+            action = config_mod.relocate_data(args.move_from, args.set_data_dir)
+            note = {
+                "moved": f"Moved {args.move_from} → {args.set_data_dir}",
+                "skipped-dst-has-store": f"{args.set_data_dir} already holds a PRM store — left both in place (not merged)",
+                "skipped-dst-nonempty": f"{args.set_data_dir} exists and isn't empty — left {args.move_from} where it is",
+            }.get(action)
+            if note:
+                print(note)
         path = config_mod.write_user_config(args.set_data_dir)
         info = config_mod.describe_resolution()
         print(f"Data location set to {info['home']}")
@@ -326,6 +335,8 @@ def build_parser() -> argparse.ArgumentParser:
     pc = sub.add_parser("config", help="show or set where PRM stores your data (installed-mode data dir)")
     pc.add_argument("--set-data-dir", metavar="DIR",
                     help="record DIR as your data location (writes the per-user config file)")
+    pc.add_argument("--move-from", metavar="DIR",
+                    help="with --set-data-dir: safely move an existing PRM home there first (never overwrites)")
     pc.add_argument("--show", action="store_true", help="show the resolved data location (the default)")
     pc.add_argument("--json", action="store_true", help="machine-readable output")
     pc.set_defaults(func=cmd_config)

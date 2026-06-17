@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -142,6 +143,29 @@ def write_user_config(data_dir, env=None) -> Path:
     config["data_dir"] = str(Path(data_dir).expanduser())
     path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def relocate_data(src, dst) -> str:
+    """Safely move a PRM home from ``src`` to ``dst`` (used by ``just install`` before recording it).
+    Never overwrites, merges, nests, or deletes ``src``'s data. Returns an action string:
+
+    - ``"moved"``                 — ``src`` moved to ``dst`` (dst was absent or an empty dir).
+    - ``"skipped-dst-has-store"`` — ``dst`` already holds a PRM store (``shared.db``); both left in place.
+    - ``"skipped-dst-nonempty"``  — ``dst`` exists, is non-empty, has no store; refused (no nesting).
+    - ``"no-source"``             — ``src`` has no ``shared.db``; nothing to move.
+    """
+    src, dst = Path(src).expanduser(), Path(dst).expanduser()
+    if not (src / "shared.db").exists():
+        return "no-source"
+    if (dst / "shared.db").exists():
+        return "skipped-dst-has-store"
+    if dst.exists() and any(dst.iterdir()):
+        return "skipped-dst-nonempty"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():                      # an empty dir — remove it so the move lands AT dst, not inside it
+        dst.rmdir()
+    shutil.move(str(src), str(dst))       # shutil (not rename) so a cross-filesystem move still works
+    return "moved"
 
 
 def resolve_home(data_dir: str | os.PathLike | None = None, *, env=None, cwd=None) -> PrmHome:

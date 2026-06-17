@@ -63,19 +63,16 @@ install:
     echo "  → data dir: $target"
     echo
 
-    # 2) Offer to move existing repo-local data (./prm-data) into place — never overwrite a populated target.
+    # 2) Offer to move existing repo-local data (./prm-data) into the new location. We only *decide* here;
+    #    the move itself is done by `prm config --move-from` (Python) so it can never overwrite/merge/nest.
+    move_from=""
     if [ -e "prm-data/shared.db" ] && [ "$target" != "$PWD/prm-data" ]; then
-        if [ -e "$target/shared.db" ]; then
-            echo "NOTE: $target already holds a PRM store — leaving both in place (not merging)."
-        else
-            read -r -p "Move your existing ./prm-data there? [Y/n] " ans
-            case "${ans:-Y}" in
-                [Nn]*) echo "  keeping ./prm-data where it is." ;;
-                *) mkdir -p "$(dirname "$target")"; mv "prm-data" "$target"; echo "  moved ./prm-data → $target" ;;
-            esac
-        fi
+        read -r -p "Move your existing ./prm-data into $target? [Y/n] " ans
+        case "${ans:-Y}" in
+            [Nn]*) echo "  okay, keeping ./prm-data where it is." ;;
+            *) move_from="prm-data" ;;
+        esac
     fi
-    mkdir -p "$target"
     echo
 
     # 3) Install editable (required so the workspace assets resolve from source) with the desktop app.
@@ -128,8 +125,12 @@ install:
     fi
     echo
 
-    # 4) Record the data location so an installed `prm` finds it with no env var.
-    "$prm_cmd" config --set-data-dir "$target"
+    # 4) Record the data location (and safely move existing data, if chosen) so `prm` finds it.
+    if [ -n "$move_from" ]; then
+        "$prm_cmd" config --set-data-dir "$target" --move-from "$move_from"
+    else
+        "$prm_cmd" config --set-data-dir "$target"
+    fi
     echo
     echo "Done — PRM is installed."
     echo "  launch :  $prm_cmd app          (or:  just app)"
