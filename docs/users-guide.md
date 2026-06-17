@@ -40,6 +40,8 @@ data never leaves your device.
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 | **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 | **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
+| **Run as a native desktop app** (`prm app` / `just app`) — a window, no browser tab | ✅ works |
+| **Install for daily use** (`just install`) — per-user data dir, safe across `git pull` updates | ✅ works |
 
 ---
 
@@ -102,6 +104,39 @@ pytest                             # confirm the build (or: python3 tests/unit/t
 After this, `prm …` and `python3 -m cli …` are interchangeable. `just --list` shows the recipe behind
 every command in this guide, so you can always run the underlying command by hand instead.
 </details>
+
+### Install for daily use (the desktop app)
+
+`just setup` above is the **developer** path — it runs everything from the repo with data in
+`./prm-data/`. When you're ready to **use PRM every day**, run the install wizard instead:
+
+```bash
+just install          # interactive: pick a data location, install `prm`, record where your data lives
+```
+
+It (1) suggests a **per-user data directory** outside the repo — on macOS
+`~/Library/Application Support/PRM`, on Linux `~/.local/share/prm` — and lets you change it; (2) offers
+to **move** any existing `./prm-data/` there; (3) installs `prm` with
+[pipx](https://pipx.pypa.io) as an **editable** install (so it runs straight from your source checkout,
+with the desktop window included); and (4) records the data location so `prm` finds it automatically.
+
+Then launch the workspace as a **native desktop window** (no browser tab):
+
+```bash
+prm app               # or:  just app
+```
+
+Because your data lives **outside** the source tree, **updating never touches it** — pull the latest
+code and relaunch:
+
+```bash
+git pull              # update the app; your contacts in the data dir are untouched
+prm config --show     # confirm where your data lives and how it was resolved
+```
+
+Your data directory is resolved in this order: `--data-dir` → `PRM_HOME` → the user config `just install`
+wrote → `./prm-data/`. With nothing configured it stays repo-local, so `just demo` and dev runs never
+write outside the repo.
 
 ## 3. Try the demo (no personal data)
 
@@ -262,6 +297,7 @@ just serve                     # serves http://127.0.0.1:8770 (Ctrl-C to stop)
 just open                      # opens that URL in your browser — run in a second terminal
 just serve 9000                # pick a different port → http://127.0.0.1:9000
 just stop                      # stop a server running in another terminal (just stop 9000 for that port)
+just app                       # …or skip the browser: open it as a native desktop window (see “Install for daily use”)
 ```
 
 If the port is already taken, `just serve` doesn't crash — it tells you **the port is already in use**

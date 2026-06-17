@@ -15,6 +15,7 @@ from __future__ import annotations
 import base64
 import errno
 import json
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -385,3 +386,16 @@ def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> None:
         print("\nstopping…")
     finally:
         httpd.server_close()
+
+
+def start_background(home: PrmHome, *, host: str = "127.0.0.1",
+                     port: int = 0) -> tuple[ThreadingHTTPServer, threading.Thread, str]:
+    """Start the daemon on a background thread and return ``(httpd, thread, url)``. ``port=0`` binds a
+    free ephemeral port (so the desktop window never collides with a running ``just serve``). The caller
+    owns shutdown: ``httpd.shutdown(); httpd.server_close(); thread.join()``. Used by ``prm app``, where
+    the GUI must own the main thread."""
+    httpd = make_server(home, host=host, port=port)
+    bound_host, bound_port = httpd.server_address[:2]
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    return httpd, thread, f"http://{bound_host}:{bound_port}"

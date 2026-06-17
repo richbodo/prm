@@ -147,6 +147,23 @@ def test_make_server_rejects_busy_port():
             first.server_close()
 
 
+def test_start_background_serves_then_shuts_down():
+    # `prm app` uses this: a free ephemeral port (no collision with a running `just serve`), served on a
+    # background thread, cleanly stopped by the caller when the window closes.
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _seeded_home(tmp)
+        httpd, thread, url = server.start_background(home, port=0)
+        try:
+            assert url.startswith("http://127.0.0.1:")
+            with urllib.request.urlopen(f"{url}/api/contacts", timeout=5) as r:
+                assert r.status == 200 and json.loads(r.read())["total"] == 4
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join(timeout=5)
+        assert not thread.is_alive()
+
+
 def test_list_records_orders_named_first():
     # Real exports carry many name-less rows; the browse list must lead with named contacts.
     with tempfile.TemporaryDirectory() as tmp:

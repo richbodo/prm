@@ -198,6 +198,45 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_app(args) -> int:
+    home = resolve_home(args.data_dir)
+    try:
+        import webview  # the optional [app] extra — an OS-native webview window (no bundled Chromium)
+    except ImportError:
+        print("the desktop window needs the 'app' extra — run `just install`, "
+              "or `pip install 'prm[app]'`", file=sys.stderr)
+        return 1
+    from daemon.server import start_background  # lazy — keeps the ingest path light
+    httpd, thread, url = start_background(home, host=args.host, port=args.port)
+    print(f"PRM desktop app → {url}   (serving {home.root})")
+    try:
+        webview.create_window("PRM", url)
+        webview.start()                          # blocks on the GUI main thread until the window closes
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        thread.join(timeout=5)
+    return 0
+
+
+def cmd_config(args) -> int:
+    from . import config as config_mod
+    if args.set_data_dir:
+        path = config_mod.write_user_config(args.set_data_dir)
+        info = config_mod.describe_resolution()
+        print(f"Data location set to {info['home']}")
+        print(f"  recorded in {path}")
+        return 0
+    info = config_mod.describe_resolution()
+    if args.json:
+        print(json.dumps(info, indent=2))
+        return 0
+    print(f"data location : {info['home']} ({'exists' if info['exists'] else 'not created yet'})")
+    print(f"resolved from : {info['resolved_from']}")
+    print(f"user config   : {info['config_file']} ({'present' if info['config_exists'] else 'none'})")
+    return 0
+
+
 def cmd_export(args) -> int:
     home = resolve_home(args.data_dir)
     if not home.shared_db.exists():
@@ -278,6 +317,18 @@ def build_parser() -> argparse.ArgumentParser:
     pv.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")
     pv.add_argument("--port", type=int, default=8770, help="port (default 8770)")
     pv.set_defaults(func=cmd_serve)
+
+    pa = sub.add_parser("app", help="open the workspace in a native desktop window (needs the 'app' extra)")
+    pa.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")
+    pa.add_argument("--port", type=int, default=0, help="port (default 0 = pick a free port)")
+    pa.set_defaults(func=cmd_app)
+
+    pc = sub.add_parser("config", help="show or set where PRM stores your data (installed-mode data dir)")
+    pc.add_argument("--set-data-dir", metavar="DIR",
+                    help="record DIR as your data location (writes the per-user config file)")
+    pc.add_argument("--show", action="store_true", help="show the resolved data location (the default)")
+    pc.add_argument("--json", action="store_true", help="machine-readable output")
+    pc.set_defaults(func=cmd_config)
 
     pe = sub.add_parser("export", help="export your contacts — merged vCard, or a lossless raw backup")
     pe.add_argument("--out", help="write to this file (default: stdout)")
