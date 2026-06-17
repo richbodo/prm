@@ -261,7 +261,12 @@ For a point-and-click view, start the local workspace (seed or import data first
 just serve                     # serves http://127.0.0.1:8770 (Ctrl-C to stop)
 just open                      # opens that URL in your browser — run in a second terminal
 just serve 9000                # pick a different port → http://127.0.0.1:9000
+just stop                      # stop a server running in another terminal (just stop 9000 for that port)
 ```
+
+If the port is already taken, `just serve` doesn't crash — it tells you **the port is already in use**
+and exits, suggesting `just stop` (or a different port). `just stop` shuts the workspace server down
+cleanly from another terminal (it asks the server to stop, and only force-kills if it won't).
 
 It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
 contact** to see its fields and **per-field provenance** (which source each value came from). It reads
@@ -304,7 +309,8 @@ in. You can edit or remove your own fields (removing one drops its values, but i
 AI can never invent or change your fields (INV-3). *(Per-field AI-write controls and a shareable-data
 review surface are columns on each field today; their full enforcement lands in a later increment.)*
 
-(If a previous run left the port busy, `just port` frees it.)
+(To stop the server, use `just stop` — or `Ctrl-C` in the terminal running it. If a *crashed* run left
+the port stuck, `just port` force-frees it.)
 
 **Duplicates** finds contacts that look like the same person and helps you merge them. It offers two
 modes (toggle at the top):

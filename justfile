@@ -134,6 +134,24 @@ demo:
 serve port=port:
     {{prm}} serve --port {{port}}
 
+# Stop the workspace server running on the port (default 8770; pass another: `just stop 9000`). Graceful — asks it to shut down, escalates only if it won't.
+[group('dev')]
+stop port=port:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    pids=$(lsof -ti:{{port}} 2>/dev/null || true)
+    if [ -z "$pids" ]; then
+        echo "No server running on port {{port}}."
+        exit 0
+    fi
+    kill $pids 2>/dev/null || true                                  # ask it to stop (SIGTERM)
+    for _ in 1 2 3 4 5; do
+        sleep 0.2
+        lsof -ti:{{port}} >/dev/null 2>&1 || { echo "Stopped the server on port {{port}}."; exit 0; }
+    done
+    kill -9 $(lsof -ti:{{port}} 2>/dev/null) 2>/dev/null || true    # still up? force it
+    echo "Stopped the server on port {{port}} (forced)."
+
 # Open the workspace in your browser (start `just serve` in another terminal first).
 [group('dev')]
 open:
