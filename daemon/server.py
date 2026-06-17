@@ -13,6 +13,7 @@ content_type, body)`` — no sockets — so the whole API is unit-testable witho
 from __future__ import annotations
 
 import base64
+import errno
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -349,11 +350,26 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
+class PortInUseError(RuntimeError):
+    """The requested port is already bound — another PRM server (or some other process) holds it.
+    Raised in place of a raw ``OSError`` so the caller can fail with a clean, actionable message."""
+
+
 def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> ThreadingHTTPServer:
     """Build (but don't run) the daemon bound to ``host:port``. Localhost only (INV-1). Split from
-    ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly."""
+    ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly. Raises
+    ``PortInUseError`` (not a raw traceback) when ``port`` is already taken, so ``prm serve`` /
+    ``just serve`` can report it and exit gracefully."""
     relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename
-    httpd = ThreadingHTTPServer((host, port), _Handler)
+    try:
+        httpd = ThreadingHTTPServer((host, port), _Handler)
+    except OSError as exc:
+        if exc.errno == errno.EADDRINUSE:
+            raise PortInUseError(
+                f"port {port} is already in use — stop the running server (`just stop`) "
+                f"or serve on a different port (`just serve <port>`)"
+            ) from exc
+        raise
     httpd.home = home
     return httpd
 

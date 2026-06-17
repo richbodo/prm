@@ -129,6 +129,24 @@ def test_make_server_serves_over_socket():
             t.join(timeout=5)
 
 
+def test_make_server_rejects_busy_port():
+    # A second bind on a held port fails as a clean PortInUseError (named with the port), not a raw
+    # OSError traceback — this is what lets `prm serve` / `just serve` exit gracefully.
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _seeded_home(tmp)
+        first = server.make_server(home, port=0)            # binds + holds an ephemeral port
+        _, port = first.server_address
+        try:
+            try:
+                server.make_server(home, port=port)
+            except server.PortInUseError as exc:
+                assert str(port) in str(exc)
+            else:
+                raise AssertionError("expected PortInUseError when the port is already bound")
+        finally:
+            first.server_close()
+
+
 def test_list_records_orders_named_first():
     # Real exports carry many name-less rows; the browse list must lead with named contacts.
     with tempfile.TemporaryDirectory() as tmp:

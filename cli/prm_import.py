@@ -189,8 +189,12 @@ def cmd_serve(args) -> int:
     if not home.shared_db.exists():
         print("no shared.db yet — run `prm import` first", file=sys.stderr)
         return 1
-    from daemon.server import serve  # imported lazily so the ingest path never pays for it
-    serve(home, host=args.host, port=args.port)
+    from daemon.server import PortInUseError, serve  # imported lazily so the ingest path never pays for it
+    try:
+        serve(home, host=args.host, port=args.port)
+    except PortInUseError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
