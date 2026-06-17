@@ -42,6 +42,101 @@ setup:
     echo
     echo "Setup complete. Next:  just demo   (seed synthetic data)  then  just serve"
 
+# Install PRM for daily use — a per-user data dir + editable pipx install with the desktop app (interactive, re-runnable).
+[group('setup')]
+install:
+    #!/usr/bin/env bash
+    set -uo pipefail
+
+    echo "PRM install — set PRM up for daily use (your data kept safe from code updates)."
+    echo
+
+    # 1) Suggest a per-user data location by platform; let the user override.
+    case "$(uname -s)" in
+        Darwin) default_dir="$HOME/Library/Application Support/PRM" ;;
+        Linux)  default_dir="${XDG_DATA_HOME:-$HOME/.local/share}/prm" ;;
+        *)      default_dir="$HOME/.prm" ;;
+    esac
+    read -r -p "Where should PRM keep your data? [$default_dir] " target
+    target="${target:-$default_dir}"
+    target="${target/#\~/$HOME}"                              # expand a leading ~
+    echo "  → data dir: $target"
+    echo
+
+    # 2) Offer to move existing repo-local data (./prm-data) into place — never overwrite a populated target.
+    if [ -e "prm-data/shared.db" ] && [ "$target" != "$PWD/prm-data" ]; then
+        if [ -e "$target/shared.db" ]; then
+            echo "NOTE: $target already holds a PRM store — leaving both in place (not merging)."
+        else
+            read -r -p "Move your existing ./prm-data there? [Y/n] " ans
+            case "${ans:-Y}" in
+                [Nn]*) echo "  keeping ./prm-data where it is." ;;
+                *) mkdir -p "$(dirname "$target")"; mv "prm-data" "$target"; echo "  moved ./prm-data → $target" ;;
+            esac
+        fi
+    fi
+    mkdir -p "$target"
+    echo
+
+    # 3) Install editable (required so the workspace assets resolve from source) with the desktop app.
+    #    Prefer pipx (an isolated `prm` on your PATH). If it's missing, ASK before falling back — don't
+    #    silently install into ./.venv. (`python3 -m pipx` is accepted too, in case the script dir is
+    #    off PATH after a --user install.)
+    pipx_cmd=""
+    if command -v pipx >/dev/null 2>&1; then
+        pipx_cmd="pipx"
+    elif python3 -m pipx --version >/dev/null 2>&1; then
+        pipx_cmd="python3 -m pipx"
+    else
+        echo "pipx is not installed — it gives you an isolated 'prm' command on your PATH (recommended)."
+        read -r -p "Install pipx now? [Y/n] " ans
+        case "${ans:-Y}" in
+            [Nn]*) echo "  okay, skipping pipx — I'll use ./.venv instead." ;;
+            *)
+                if command -v brew >/dev/null 2>&1; then
+                    echo "  installing pipx with Homebrew…"; brew install pipx || true
+                else
+                    echo "  installing pipx with pip (--user)…"
+                    python3 -m pip install --user pipx \
+                        || python3 -m pip install --user --break-system-packages pipx || true
+                fi
+                hash -r 2>/dev/null || true
+                if command -v pipx >/dev/null 2>&1; then pipx_cmd="pipx"
+                elif python3 -m pipx --version >/dev/null 2>&1; then pipx_cmd="python3 -m pipx"; fi
+                if [ -n "$pipx_cmd" ]; then
+                    $pipx_cmd ensurepath >/dev/null 2>&1 || true
+                else
+                    echo "  couldn't install pipx automatically — see https://pipx.pypa.io ; using ./.venv for now."
+                fi
+                ;;
+        esac
+    fi
+
+    if [ -n "$pipx_cmd" ]; then
+        echo "Installing with pipx (editable + desktop app)…"
+        $pipx_cmd install --force --editable ".[app]" || { echo "pipx install failed."; exit 1; }
+        $pipx_cmd ensurepath >/dev/null 2>&1 || true
+        bindir="$($pipx_cmd environment --value PIPX_BIN_DIR 2>/dev/null || true)"
+        prm_cmd="${bindir:-$HOME/.local/bin}/prm"
+        [ -x "$prm_cmd" ] || prm_cmd="$(command -v prm || echo "$prm_cmd")"
+    else
+        echo "Installing into ./.venv instead (run from the repo with 'just app' or './.venv/bin/prm')."
+        [ -d {{venv}} ] || python3 -m venv {{venv}}
+        {{venv}}/bin/pip install --upgrade pip --quiet
+        {{venv}}/bin/pip install -e ".[app]" || { echo "pip install failed."; exit 1; }
+        prm_cmd="{{venv}}/bin/prm"
+    fi
+    echo
+
+    # 4) Record the data location so an installed `prm` finds it with no env var.
+    "$prm_cmd" config --set-data-dir "$target"
+    echo
+    echo "Done — PRM is installed."
+    echo "  launch :  $prm_cmd app          (or:  just app)"
+    echo "  update :  git pull              (your data in $target is untouched)"
+    echo "  verify :  $prm_cmd config --show   ·   $prm_cmd status"
+    [ -n "$pipx_cmd" ] && echo "  (if 'prm' isn't found in new terminals, run  $pipx_cmd ensurepath  and open a new shell)"
+
 # A recipe runs in a child process, so it cannot activate your *current* shell —
 # this execs a new one with the venv active. Type `exit` (or Ctrl-D) to return.
 # Drop into a sub-shell with the venv activated (prm/pytest/python on PATH).
@@ -124,10 +219,10 @@ conformance:
 
 # ---- dev -----------------------------------------------------------------
 
-# Seed a realistic ~1000-contact demo home from synthetic fixtures (no personal data).
+# Seed a realistic ~1000-contact demo home from synthetic fixtures — pinned to the ./prm-data sandbox (never your real data).
 [group('dev')]
 demo:
-    {{prm}} init --demo
+    PRM_HOME=prm-data {{prm}} init --demo
 
 # Serve the read-only workspace at http://127.0.0.1:8770 (default). Pass a port: `just serve 9000`. Needs data first (`just demo`); Ctrl-C to stop.
 [group('dev')]
@@ -151,6 +246,11 @@ stop port=port:
     done
     kill -9 $(lsof -ti:{{port}} 2>/dev/null) 2>/dev/null || true    # still up? force it
     echo "Stopped the server on port {{port}} (forced)."
+
+# Open the workspace as a native desktop window (needs `just install`, or the `[app]` extra). Picks a free port; close the window to stop. Needs data first (`just demo` / `just ingest`).
+[group('dev')]
+app:
+    {{prm}} app
 
 # Open the workspace in your browser (start `just serve` in another terminal first).
 [group('dev')]

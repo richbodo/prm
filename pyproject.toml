@@ -17,6 +17,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+# Optional desktop shell for `prm app` (and `just install`/`just app`). Kept out of the core runtime
+# deps so the package still installs tiny-deps; pywebview uses the OS-native webview (WKWebView /
+# WebView2 / WebKitGTK) — no bundled Chromium. See plans/desktop-app-and-install.md.
+app = ["pywebview>=5"]
 
 [project.scripts]
 prm = "cli.prm_import:main"
