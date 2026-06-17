@@ -64,6 +64,22 @@ def migrate_legacy(new_path, legacy_path=None) -> bool:
     return True
 
 
+def migrate(new_path, legacy_path=None) -> None:
+    """Bring a store to the current schema at **process startup**: the one-time v0.1→v0.2 *rename*, then —
+    for a store that already exists — apply any pending *schema* migration (e.g. v1→v2, which adds the
+    relationship-schema tables). Idempotent, and a no-op when no store exists yet (so an empty home is
+    never created prematurely; ``connect``'s lazy create still owns first-time creation).
+
+    Why a startup chokepoint: read paths open the store **read-only** and so *cannot* self-migrate (DDL
+    needs a writable connection). A store created at v1 and then opened only for reads by a v0.2 build
+    would query a v2 table that doesn't exist (``no such table: field_values``). Every writable entry
+    point — the CLI, the daemon, the MCP servers — calls this first so reads can assume the current
+    schema."""
+    migrate_legacy(new_path, legacy_path)
+    if Path(new_path).exists():
+        ensure(new_path)                             # apply the v1→v2 (or later) schema delta; idempotent
+
+
 # --------------------------------------------------------------------------- connections / schema
 def connect(db_path, *, read_only: bool = False) -> sqlite3.Connection:
     db_path = Path(db_path)

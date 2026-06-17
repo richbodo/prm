@@ -12,6 +12,7 @@ ephemeral port so it is hermetic. Runs as a plain script or under pytest.
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 import tempfile
 import threading
@@ -107,6 +108,25 @@ def test_route_errors():
     with tempfile.TemporaryDirectory() as tmp:
         empty = resolve_home(Path(tmp) / "h")          # no shared.db
         assert server.route("GET", "/api/contacts", {}, empty)[0] == 409
+
+
+def test_make_server_migrates_v1_store_so_contacts_load():
+    """Regression: a v0.1 (schema v1) private store opened by the v0.2 daemon must not 500 on
+    /api/contacts. make_server runs the startup migration, so the projection's v2 read succeeds."""
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _seeded_home(tmp)
+        con = sqlite3.connect(home.relationships_db)   # downgrade the store to v1 (drop v2 tables)
+        try:
+            con.executescript("DROP TABLE IF EXISTS field_values; DROP TABLE IF EXISTS field_definitions;")
+            con.execute("PRAGMA user_version = 1")
+            con.commit()
+        finally:
+            con.close()
+        httpd = server.make_server(home, port=0)       # binds (ephemeral) — and migrates on startup
+        try:
+            assert _body(server.route("GET", "/api/contacts", {"limit": ["50"]}, home))["total"] == 4
+        finally:
+            httpd.server_close()
 
 
 # ------------------------------------------------------------------ real socket smoke test

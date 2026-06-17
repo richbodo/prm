@@ -359,9 +359,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
-    # One-time v0.1→v0.2 store rename, before any command reads/writes the private store.
+    # One-time v0.1→v0.2 store rename + any pending schema upgrade, before any command reads/writes the
+    # private store (read paths open it read-only and cannot self-migrate).
     home = resolve_home(args.data_dir)
-    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)
+    relationships_db.migrate(home.relationships_db, home.legacy_private_db)
     try:
         return args.func(args)
     except FileNotFoundError as exc:

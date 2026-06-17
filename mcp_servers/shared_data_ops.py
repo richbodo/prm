@@ -61,7 +61,7 @@ def main() -> None:
                     help="print the Claude Desktop JSON for this server and exit (don't run it)")
     args = ap.parse_args()
     home = resolve_home(args.data_dir)
-    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename
+    relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename + schema upgrade
     if args.print_config:
         from mcp_servers import claude_config
         print(claude_config.block(claude_config.server_entry("prm-shared-data", "shared_data_ops.py", home.root)))

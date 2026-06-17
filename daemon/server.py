@@ -361,7 +361,7 @@ def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> 
     ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly. Raises
     ``PortInUseError`` (not a raw traceback) when ``port`` is already taken, so ``prm serve`` /
     ``just serve`` can report it and exit gracefully."""
-    relationships_db.migrate_legacy(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename
+    relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename + schema upgrade
     try:
         httpd = ThreadingHTTPServer((host, port), _Handler)
     except OSError as exc:
