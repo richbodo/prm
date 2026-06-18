@@ -34,6 +34,10 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="8" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>
         Schema
       </div>
+      <div class="navitem" data-view="data">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+        Data
+      </div>
       <div class="navlabel">Coming soon</div>
       <div class="navitem soon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="9" r="2.6"/><circle cx="16" cy="9" r="2.6"/><path d="M3 19c0-2.5 1.8-4 4-4m6 4c0-2.5 1.8-4 4-4"/></svg> Groups <span class="tag">v0.3</span></div>
     </nav>
@@ -177,6 +181,100 @@
           (<b>photo</b>, <b>tags</b>, <b>notes</b>) are always here; add your own below. Authored only here — never by an AI.
           Every field is <b>private</b> and sealed by default.</p>
         <div id="schema-body"></div>
+      </div>
+    </section>
+
+    <!-- ---- DATA (import & export) ---- -->
+    <section class="view" id="data">
+      <div class="topbar">
+        <h1 class="serif">Data <span class="sub">import &amp; export</span></h1>
+      </div>
+      <div class="datawrap">
+
+        <!-- IMPORT -->
+        <section class="datacard" id="import-card">
+          <h2 class="serif dh">Import contacts</h2>
+          <p class="lede-sub">Bring in a file or a whole folder — <b>vCard</b>, <b>Google Takeout</b> <code>.zip</code>,
+            <b>LinkedIn</b>, <b>Google CSV</b>, <b>Facebook</b>, or a PRM <code>--raw</code> backup. You'll see exactly
+            what would be imported <b>before</b> anything is saved. Files are read by this local app only —
+            nothing leaves your device.</p>
+
+          <!-- step 1: choose -->
+          <div id="imp-choose">
+            <div class="dropzone" id="dropzone">
+              <svg class="dzicon" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"/></svg>
+              <p class="dzmain">Drag a file or folder here</p>
+              <p class="dzsub">or</p>
+              <div class="dzbtns">
+                <button class="btn" id="imp-file">Choose file…</button>
+                <button class="btn" id="imp-folder">Choose folder…</button>
+              </div>
+              <input type="file" id="imp-file-input" accept=".vcf,.zip,.csv,.json" multiple hidden>
+              <input type="file" id="imp-folder-input" webkitdirectory hidden>
+            </div>
+          </div>
+
+          <!-- step 2: reading/staging -->
+          <div id="imp-staging" hidden>
+            <p class="lede-sub">Reading <b id="imp-staged">0</b> / <span id="imp-staged-total">0</span> file(s)…</p>
+            <div class="progressbar"><span id="imp-bar"></span></div>
+          </div>
+
+          <!-- step 3: preview (the dry-run report) -->
+          <div id="imp-preview" hidden>
+            <div class="prevhead">
+              <span class="prevsummary" id="imp-prev-summary"></span>
+              <label class="srcoverride">source label
+                <select id="imp-source">
+                  <option value="">(detected)</option>
+                  <option value="apple_icloud">apple_icloud</option>
+                  <option value="google_takeout">google_takeout</option>
+                  <option value="google_csv">google_csv</option>
+                  <option value="linkedin">linkedin</option>
+                  <option value="facebook">facebook</option>
+                  <option value="vcard">vcard</option>
+                  <option value="prm_backup">prm_backup</option>
+                </select>
+              </label>
+            </div>
+            <table class="prevtable"><tbody id="imp-prev-rows"></tbody></table>
+            <div class="prevstats" id="imp-prev-stats"></div>
+            <div class="prevfoot">
+              <button class="btn" id="imp-cancel">Cancel</button>
+              <button class="btn primary big" id="imp-commit">Import</button>
+            </div>
+          </div>
+
+          <!-- step 4: result -->
+          <div id="imp-result" hidden>
+            <div class="impdone">
+              <div class="seal"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+              <h3 class="serif" id="imp-result-h">Imported</h3>
+              <p id="imp-result-p"></p>
+              <button class="btn primary" id="imp-again">Import more</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- EXPORT -->
+        <section class="datacard">
+          <h2 class="serif dh">Export contacts</h2>
+          <p class="lede-sub">Take your contacts with you, or keep a backup — this never changes your data.</p>
+          <div class="exprow">
+            <div class="expcol">
+              <b>Portable vCard</b>
+              <p class="lede-sub">Your merged contacts as a <code>.vcf</code> — to import into Google, Apple, or Outlook.</p>
+              <button class="btn" id="exp-vcard">Download vCard</button>
+            </div>
+            <div class="expcol">
+              <b>Lossless backup</b>
+              <p class="lede-sub">Every raw record as JSON you can re-import into PRM — a true round-trip backup.</p>
+              <button class="btn" id="exp-raw">Download backup (.json)</button>
+            </div>
+          </div>
+          <p class="exphint" id="exp-hint"></p>
+        </section>
+
       </div>
     </section>
 

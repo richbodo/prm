@@ -36,7 +36,14 @@ Also in v0.2: a **config file** (records the active `data_dir`) + **platform dat
 macOS / Windows) for installed (non-repo) use — **landed** as the `just install` wizard + `prm config`
 (per-user data dir, recorded so updates never touch data) and a native **desktop window** (`prm app` /
 `just app`, pywebview; see [`../plans/desktop-app-and-install.md`](../plans/desktop-app-and-install.md)).
-Still ahead: **source discovery** — a `discover_sources()` library that scans `~/Downloads` and a
+Next: a **workspace import/export surface** (a "Data" view) — get contacts **in** (drag-drop / file /
+folder upload → guided preview → confirm, mirroring `prm import`) and **out** (download the portable
+vCard + the lossless `--raw` backup, mirroring `prm export`) without dropping to a terminal, closing the
+last terminal-only gap in the desktop app. Upload bytes reach only the localhost daemon, which ingests
+them through the same pure `cli.ingest` library the CLI uses, under the file-lock (INV-1/INV-2 intact);
+re-import in the workspace is deferred (the CLI `just reimport` remains the path). See
+[`../plans/workspace-import-export.md`](../plans/workspace-import-export.md). Still ahead: **source
+discovery** — a `discover_sources()` library that scans `~/Downloads` and a
 configured ingestion dir for likely contact exports (signature-matched, opt-in, never a background poll)
 and offers a pick-list. Surfaced via `prm scan` / `prm import` (no path) and **reused by the MCP
 ingestion surface**, so CLI and AI share one discovery path.

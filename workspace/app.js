@@ -978,6 +978,160 @@ document.addEventListener("keydown", (e) => {              // ← → flip throu
   if (e.key === "ArrowRight" && bulkIdx < bulkQueue.length - 1) showBulkCard(bulkIdx + 1, "next");
 });
 
+// ---- Data view: import (upload -> preview -> commit) + export (download). Uploaded bytes reach only
+// the local daemon, which ingests them through the same `cli.ingest` the CLI uses; export is read-only.
+// Mirrors the CLI's preview->confirm flow and its dry-run report. ----
+let _impToken = null;
+
+// Like postJSON, but surfaces the server's {"error": …} text (e.g. the lock-contention 409).
+async function apiPost(path, body) {
+  const res = await fetch(path, { method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
+  let data = null;
+  try { data = await res.json(); } catch { /* non-JSON */ }
+  if (!res.ok) throw new Error((data && data.error) || `${res.status} ${path}`);
+  return data;
+}
+
+function showImpStep(step) {           // "choose" | "staging" | "preview" | "result"
+  ["choose", "staging", "preview", "result"].forEach((s) => {
+    const el = $("#imp-" + s);
+    if (el) el.hidden = s !== step;
+  });
+}
+
+function loadData() {                   // entering the Data view: reset to a clean choose step
+  showImpStep("choose");
+  $("#exp-hint").textContent = "";
+}
+
+const IMPORTABLE = /\.(vcf|zip|csv|json)$/i;
+
+async function stageAndPreview(fileList) {
+  const files = [...fileList].filter((f) => IMPORTABLE.test(f.name));
+  if (!files.length) { alert("No importable files found (.vcf, .zip, .csv, .json)."); return; }
+  _impToken = null;
+  $("#imp-source").value = "";
+  $("#imp-staged-total").textContent = String(files.length);
+  $("#imp-staged").textContent = "0";
+  $("#imp-bar").style.width = "0%";
+  showImpStep("staging");
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    let b64;
+    try { b64 = await fileToBase64(f); } catch { alert(`Couldn't read ${f.name}.`); showImpStep("choose"); return; }
+    try {
+      const res = await apiPost("/api/import/stage",
+        { token: _impToken, relpath: f.webkitRelativePath || f.name, data_base64: b64 });
+      _impToken = res.token;
+    } catch (e) { alert("Upload failed: " + e.message); showImpStep("choose"); return; }
+    $("#imp-staged").textContent = String(i + 1);
+    $("#imp-bar").style.width = `${Math.round(((i + 1) / files.length) * 100)}%`;
+  }
+  await previewImport();
+}
+
+async function previewImport() {
+  const source = $("#imp-source").value || undefined;
+  try {
+    const res = await apiPost("/api/import/preview", { token: _impToken, source });
+    renderImpPreview(res.report);
+    showImpStep("preview");
+  } catch (e) { alert("Preview failed: " + e.message); showImpStep("choose"); }
+}
+
+function renderImpPreview(rep) {
+  const paths = rep.paths || [];
+  $("#imp-prev-rows").innerHTML = paths.map((p) => {
+    const base = esc(String(p.path || "").split("/").pop());
+    if (p.skipped_reason)
+      return `<tr class="skip"><td class="pf">${base}</td><td colspan="3" class="sr">skipped — ${esc(p.skipped_reason)}</td></tr>`;
+    return `<tr><td class="pf">${base}</td><td class="pn">${p.count}</td>` +
+      `<td>${esc(srcLabel(p.source))}</td><td class="pc">${esc(p.format)} · ${esc(p.confidence)}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="sr">No importable files found.</td></tr>`;
+
+  const total = rep.total || 0;
+  $("#imp-prev-summary").innerHTML = `<b>${total.toLocaleString()}</b> contact(s) from ${paths.length} file(s)`;
+
+  const bySrc = Object.entries(rep.by_source || {}).map(([k, v]) => `${srcLabel(k)} ${v}`).join(" · ");
+  const byKind = Object.entries(rep.by_key_kind || {}).map(([k, v]) => `${k} ${v}`).join(" · ");
+  const parts = [];
+  if (bySrc) parts.push(`by source: ${bySrc}`);
+  if (byKind) parts.push(`stable-id: ${byKind} (${rep.nameless || 0} name-less)`);
+  $("#imp-prev-stats").textContent = parts.join("     ");
+
+  const btn = $("#imp-commit");
+  btn.textContent = total ? `Import ${total.toLocaleString()} contact${total > 1 ? "s" : ""}` : "Nothing to import";
+  btn.disabled = !total;
+}
+
+async function commitImport() {
+  const source = $("#imp-source").value || undefined;
+  const btn = $("#imp-commit");
+  btn.disabled = true;
+  try {
+    const res = await apiPost("/api/import/commit", { token: _impToken, source });
+    _impToken = null;
+    renderImpResult(res.report);
+    showImpStep("result");
+    await refreshStats(); browse(); loadDuplicates();
+  } catch (e) {
+    alert("Import failed: " + e.message);     // e.g. lock contention — let them retry
+    btn.disabled = false;
+  }
+}
+
+function renderImpResult(rep) {
+  const n = rep.total || 0;
+  $("#imp-result-h").textContent = n ? `Imported ${n.toLocaleString()} contact${n > 1 ? "s" : ""}` : "Nothing imported";
+  const stored = rep.stored != null ? `Your store now holds ${rep.stored.toLocaleString()} record(s).` : "";
+  const skipped = (rep.paths || []).filter((p) => p.skipped_reason).length;
+  $("#imp-result-p").textContent = `${stored}${skipped ? ` ${skipped} file(s) skipped.` : ""}`.trim();
+}
+
+async function cancelImport() {
+  if (_impToken) { try { await apiPost("/api/import/cancel", { token: _impToken }); } catch { /* best effort */ } }
+  _impToken = null;
+  showImpStep("choose");
+}
+
+async function downloadExport(url, filename) {
+  try {
+    const res = await fetch(url, { headers: { Accept: "*/*" } });
+    if (!res.ok) { alert(`Export failed (${res.status}).`); return; }
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    $("#exp-hint").textContent = `Downloaded ${filename}.`;
+  } catch (e) { alert("Export failed: " + (e && e.message ? e.message : e)); }
+}
+
+function initDataView() {
+  const fileInput = $("#imp-file-input"), folderInput = $("#imp-folder-input"), dz = $("#dropzone");
+  if (!dz) return;
+  $("#imp-file").addEventListener("click", () => fileInput.click());
+  $("#imp-folder").addEventListener("click", () => folderInput.click());
+  fileInput.addEventListener("change", () => { if (fileInput.files.length) stageAndPreview(fileInput.files); fileInput.value = ""; });
+  folderInput.addEventListener("change", () => { if (folderInput.files.length) stageAndPreview(folderInput.files); folderInput.value = ""; });
+  ["dragenter", "dragover"].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("drag"); }));
+  dz.addEventListener("dragleave", (e) => { if (e.target === dz) dz.classList.remove("drag"); });
+  dz.addEventListener("drop", (e) => {
+    e.preventDefault(); dz.classList.remove("drag");
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files.length) stageAndPreview(files);   // dropped files (a dropped folder: use Choose folder…)
+  });
+  $("#imp-source").addEventListener("change", () => { if (_impToken) previewImport(); });
+  $("#imp-commit").addEventListener("click", commitImport);
+  $("#imp-cancel").addEventListener("click", cancelImport);
+  $("#imp-again").addEventListener("click", () => showImpStep("choose"));
+  const date = new Date().toISOString().slice(0, 10);
+  $("#exp-vcard").addEventListener("click", () => downloadExport("/api/export?format=vcard", `prm-contacts-${date}.vcf`));
+  $("#exp-raw").addEventListener("click", () => downloadExport("/api/export?raw=1", `prm-backup-${date}.json`));
+}
+
 // ---- nav / reset ----
 function show(view) {
   document.querySelectorAll(".navitem[data-view]").forEach((n) => n.classList.toggle("active", n.dataset.view === view));
@@ -988,6 +1142,7 @@ document.querySelectorAll(".navitem[data-view]").forEach((n) =>
     show(n.dataset.view);
     if (n.dataset.view === "duplicates") loadDuplicates();   // re-enter at the fresh home, not a stale step
     if (n.dataset.view === "schema") loadSchema();
+    if (n.dataset.view === "data") loadData();
   }));
 const schemaNew = $("#schema-new");
 if (schemaNew) schemaNew.addEventListener("click", () => openFieldModal(null, loadSchema));
@@ -1025,8 +1180,10 @@ function emptyState(msg) {
   els.rows.innerHTML = "";
   els.detail.innerHTML =
     `<div class="empty"><h2 class="serif">No contacts yet</h2><p>${msg}</p>` +
-    `<span class="next">import some contacts</span></div>`;
+    `<button class="btn primary" id="go-import">Import some contacts</button></div>`;
   els.listhead.textContent = "All contacts";
+  const b = $("#go-import");
+  if (b) b.addEventListener("click", () => { show("data"); loadData(); });
 }
 
 async function refreshStats() {
@@ -1105,12 +1262,13 @@ const bootWatchdog = setTimeout(() => {
 
 (async function init() {
   if (/[?&]diag\b/.test(location.search)) showDiag();        // always reachable, even if boot fails
+  initDataView();                                            // wire the Data view once (its DOM is always present)
   try {
     const ready = await refreshStats();
     booted = true; clearTimeout(bootWatchdog);               // the API answered — boot succeeded
     if (!ready) {
       els.statContacts.textContent = "0";
-      emptyState('Run <code>prm import &lt;file&gt;</code>, or seed the demo with <code>prm init --demo</code>, then reload.');
+      emptyState('Import a file or folder to get started — or seed the demo with <code>prm init --demo</code>.');
       return;
     }
     await browse();

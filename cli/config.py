@@ -56,6 +56,14 @@ class PrmHome:
         return self.root / "media"
 
     @property
+    def imports_dir(self) -> Path:
+        """Ephemeral staging area for workspace uploads awaiting preview/commit (one subdir per
+        upload session, keyed by a server-minted token). Swept on daemon startup; removed on
+        commit/cancel. Distinct from the durable stores so a half-finished upload is never mistaken
+        for data."""
+        return self.root / "imports"
+
+    @property
     def proposals_dir(self) -> Path:
         return self.root / "proposals"
 
@@ -84,6 +92,7 @@ class PrmHome:
         self.proposals_dir.mkdir(exist_ok=True)
         self.snapshots_dir.mkdir(exist_ok=True)
         self.media_dir.mkdir(exist_ok=True)
+        self.imports_dir.mkdir(exist_ok=True)
         return self
 
 
