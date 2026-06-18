@@ -1,13 +1,14 @@
 """The local daemon: serves the workspace SPA + the JSON API over the two stores.
 
 Reads go through ``core.projection`` (the canonical, merged contact a user sees); duplicate review goes
-through ``core.candidates`` (detect) and ``core.apply`` (apply / dismiss / undo). The daemon is the
-**only writer of canonical private data** — every write takes the AC-PRM-C file-lock and snapshots
-first (handled in ``core.apply``). It binds **127.0.0.1 only**: a local tool, never a network service
-(INV-1).
+through ``core.candidates`` (detect) and ``core.apply`` (apply / dismiss / undo). The daemon writes
+canonical **private** data (merge decisions, relationship values) and — via the workspace import surface
+— drives the raw **Shared DB** write by invoking the pure ``cli.ingest`` library (the same code the CLI
+uses), so INV-2's "one ingest path" holds and the AC-PRM-C file-lock serializes every writer. Export is
+a read-only download. It binds **127.0.0.1 only**: a local tool, never a network service (INV-1).
 
 The router (``route``) is a pure function of ``(method, path, query, home, body)`` → ``(status,
-content_type, body)`` — no sockets — so the whole API is unit-testable without binding a port.
+content_type, body[, headers])`` — no sockets — so the whole API is unit-testable without binding a port.
 """
 
 from __future__ import annotations
@@ -15,7 +16,12 @@ from __future__ import annotations
 import base64
 import errno
 import json
+import re
+import secrets
+import shutil
 import threading
+import time
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -23,12 +29,17 @@ from urllib.parse import parse_qs, urlparse
 from cli.config import PrmHome
 from core import (apply, build_label, candidates, diag, media, relationships_db, projection, proposals,
                   schema, shared_db, suggest)
+from core.lock import LockError
 
-_MAX_IMAGE_BYTES = 16 * 1024 * 1024   # a soft cap so an accidental huge upload can't bloat the home
+_MAX_IMAGE_BYTES = 16 * 1024 * 1024          # a soft cap so an accidental huge upload can't bloat the home
+_MAX_IMPORT_BYTES = 256 * 1024 * 1024        # per import session (all staged files) — exports are bigger than photos
+_STAGING_MAX_AGE_S = 24 * 3600               # an abandoned upload session is swept after this long
+_TOKEN_RE = re.compile(r"^[0-9a-f]{16,}$")   # a server-minted staging token; validated before any path join
 
 WORKSPACE_DIR = Path(__file__).resolve().parents[1] / "workspace"
 
 _API_PREFIX = "/api/"
+_IMPORT_PREFIX = "/api/import/"
 _CONTACT_PREFIX = "/api/contact/"
 _STATIC = {"/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/styles.css": "styles.css"}
 _CTYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -93,6 +104,9 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
         return _json(200, projection.list_contacts(home, limit=_int(query.get("limit"), 50),
                                                     offset=_int(query.get("offset"), 0)))
 
+    if path == "/api/export":                                # download: merged vCard, or the lossless raw backup
+        return _export(home, query)
+
     if path == "/api/candidates":
         clusters = candidates.find_duplicate_candidates(home)
         meta = {m["key"]: m for m in projection.clusters_meta(home, clusters)}
@@ -142,6 +156,10 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
 
 # --------------------------------------------------------------------------- POST (write — review)
 def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
+    # Import is dispatched FIRST — it is the one write you do when there is *no* shared.db yet (the
+    # empty-state case), so it must run before the "no shared.db" guard the review endpoints rely on.
+    if path.startswith(_IMPORT_PREFIX):
+        return _import(path[len(_IMPORT_PREFIX):], home, body)
     if not home.shared_db.exists():
         return _json(409, {"error": "no shared.db yet"})
     try:
@@ -284,6 +302,125 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
     return _json(404, {"error": "not found", "path": path})
 
 
+# --------------------------------------------------------------------------- export (download)
+def _export(home: PrmHome, query: dict) -> tuple[int, str, bytes, dict]:
+    """Download the contacts: the merged portable **vCard** (default), or the lossless **raw** JSON
+    backup (``?raw=1``). Read-only — reuses the exact ``prm export`` code. The filename rides in
+    ``Content-Disposition`` so a direct hit downloads sensibly; the SPA also names it client-side."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if (query.get("raw") or ["0"])[0] in ("1", "true", "yes"):
+        from cli import backup                                # lazy — keeps the read hot-path light
+        text = backup.dump(shared_db.all_records(home.shared_db), home=home)
+        ctype, fname = "application/json; charset=utf-8", f"prm-backup-{today}.json"
+    else:
+        from cli.vcard_writer import write_vcards
+        text = write_vcards(projection.export_jcards(home))
+        ctype, fname = "text/vcard; charset=utf-8", f"prm-contacts-{today}.vcf"
+    return 200, ctype, text.encode("utf-8"), {"Content-Disposition": f'attachment; filename="{fname}"'}
+
+
+# --------------------------------------------------------------------------- import (upload → stage → ingest)
+def _staging_dir(home: PrmHome, token: str) -> Path:
+    return home.imports_dir / token
+
+
+def _safe_relpath(relpath) -> Path | None:
+    """A client-supplied upload path → a safe relative path under the staging dir, or ``None`` if it
+    escapes it. Rejects absolute paths, ``..`` segments, and NULs; preserves folder structure (a
+    ``webkitdirectory`` upload keeps its ``Takeout/Contacts/…`` tree so the ingester walks it as a dir)."""
+    rp = str(relpath or "").strip().replace("\\", "/")
+    if not rp:
+        return None
+    parts = []
+    for seg in rp.split("/"):
+        if seg in ("", "."):
+            continue
+        if seg == ".." or "\x00" in seg:
+            return None
+        parts.append(seg)
+    return Path(*parts) if parts else None
+
+
+def _dir_size(d: Path) -> int:
+    return sum(p.stat().st_size for p in d.rglob("*") if p.is_file()) if d.is_dir() else 0
+
+
+def _import(action: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
+    """The workspace import surface: stage uploaded bytes, preview (dry-run report), commit (persist via
+    the pure ``cli.ingest`` under the file-lock), or cancel. Mirrors the CLI's preview→confirm flow."""
+    try:
+        if action == "stage":
+            return _import_stage(home, body)
+        if action in ("preview", "commit"):
+            return _import_run(home, body, commit=(action == "commit"))
+        if action == "cancel":
+            token = body.get("token") or ""
+            if _TOKEN_RE.match(token):
+                shutil.rmtree(_staging_dir(home, token), ignore_errors=True)
+            return _json(200, {"ok": True})
+    except (KeyError, ValueError) as exc:
+        return _json(400, {"error": str(exc)})
+    return _json(404, {"error": "not found", "path": _IMPORT_PREFIX + action})
+
+
+def _import_stage(home: PrmHome, body: dict) -> tuple[int, str, bytes]:
+    """Append one uploaded file to a staging session (client uploads sequentially, showing progress).
+    Mints a token on the first call; later calls pass it back to add to the same session."""
+    token = body.get("token")
+    if token is None:
+        token = secrets.token_hex(16)
+    elif not _TOKEN_RE.match(token):
+        return _json(400, {"error": "bad staging token"})
+    rel = _safe_relpath(body.get("relpath"))
+    if rel is None:
+        return _json(400, {"error": "bad or missing relpath"})
+    try:
+        raw = base64.b64decode(body.get("data_base64") or "", validate=False)
+    except (ValueError, TypeError):
+        return _json(400, {"error": "invalid base64 data"})
+    sdir = _staging_dir(home, token)
+    if _dir_size(sdir) + len(raw) > _MAX_IMPORT_BYTES:
+        return _json(413, {"error": f"import too large (> {_MAX_IMPORT_BYTES // (1024 * 1024)} MB per session)"})
+    dest = sdir / rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(raw)
+    staged = sum(1 for p in sdir.rglob("*") if p.is_file())
+    return _json(200, {"token": token, "staged": staged})
+
+
+def _import_run(home: PrmHome, body: dict, *, commit: bool) -> tuple[int, str, bytes]:
+    """Preview (dry-run report, nothing written) or commit (persist + seed identities under the
+    file-lock) the staged files. Both run the pure path-based ``cli.ingest`` over the staging dir, so a
+    single file and a whole folder are handled identically to the CLI. Commit removes the staging dir."""
+    token = body.get("token") or ""
+    if not _TOKEN_RE.match(token):
+        return _json(400, {"error": "bad staging token"})
+    sdir = _staging_dir(home, token)
+    if not sdir.is_dir() or not any(p.is_file() for p in sdir.rglob("*")):
+        return _json(404, {"error": "no staged files for this token (stage files first)"})
+    source = body.get("source") or None
+    from cli import ingest as ingest_mod                      # lazy — the ingest deps stay off the read path
+    report = ingest_mod.ingest([sdir], source=source, home=(home if commit else None), dry_run=not commit)
+    if commit:
+        shutil.rmtree(sdir, ignore_errors=True)              # only on success — a failed commit keeps the upload
+    return _json(200, {"report": report.to_dict()})
+
+
+def _sweep_staging(home: PrmHome, *, max_age_s: int = _STAGING_MAX_AGE_S) -> None:
+    """Remove abandoned staging sessions on daemon startup (a preview that was never committed/cancelled),
+    so uploads can't accumulate. Best-effort; never raises."""
+    d = home.imports_dir
+    if not d.is_dir():
+        return
+    cutoff = time.time() - max_age_s
+    for child in d.iterdir():
+        try:
+            if child.is_dir() and child.stat().st_mtime < cutoff:
+                shutil.rmtree(child, ignore_errors=True)
+        except OSError:
+            pass
+
+
 def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None = None) -> tuple[int, str, bytes]:
     """Pure API router. ``query`` is the ``parse_qs`` dict; ``body`` is the parsed JSON for POST.
 
@@ -296,6 +433,9 @@ def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None 
         if method == "POST":
             return _post(path, home, body or {})
         return _json(405, {"error": "method not allowed", "method": method})
+    except LockError as exc:                                  # a concurrent writer (import / merge / CLI) holds the lock
+        diag.capture_error(home, exc, context=f"{method} {path}")
+        return _json(409, {"error": "another operation is writing — try again in a moment"})
     except (shared_db.SharedDbError, relationships_db.RelationshipsDbError) as exc:
         diag.capture_error(home, exc, context=f"{method} {path}")
         return _json(409, {"error": f"store schema/availability error — mutations refused, reads continue: {exc}"})
@@ -316,7 +456,10 @@ def _static(path: str) -> tuple[int, str, bytes]:
 
 # --------------------------------------------------------------------------- socket glue
 class _Handler(BaseHTTPRequestHandler):
-    def _send(self, status: int, ctype: str, body: bytes) -> None:
+    def _send(self, status: int, ctype: str, body: bytes, extra_headers: dict | None = None) -> None:
+        # ``route()`` may return a 3-tuple (most endpoints) or a 4-tuple ``(…, headers)`` (export, which
+        # adds Content-Disposition); ``self._send(*route(...))`` splats either, so existing returns are
+        # untouched.
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
@@ -324,6 +467,8 @@ class _Handler(BaseHTTPRequestHandler):
             # The avatar URL is content-stable (/api/contact/<id>/photo), so a replaced photo would show
             # stale until reload; revalidate so an upload/remove is reflected everywhere immediately.
             self.send_header("Cache-Control", "no-cache")
+        for key, val in (extra_headers or {}).items():
+            self.send_header(key, val)
         self.end_headers()
         self.wfile.write(body)
 
@@ -362,6 +507,7 @@ def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> 
     ``PortInUseError`` (not a raw traceback) when ``port`` is already taken, so ``prm serve`` /
     ``just serve`` can report it and exit gracefully."""
     relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename + schema upgrade
+    _sweep_staging(home)                                                      # drop abandoned uploads
     try:
         httpd = ThreadingHTTPServer((host, port), _Handler)
     except OSError as exc:

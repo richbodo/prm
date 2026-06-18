@@ -16,7 +16,9 @@ data never leaves your device.
 > another app, or a lossless `--raw` backup you can re-import (`just export`). Building on that, you can now
 > **edit contacts, add private notes, set a contact photo, tag them from a vocabulary you manage**, and
 > **define your own custom relationship fields** — all private, reversible, and layered over your imports
-> (never changing them). What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
+> (never changing them). You can also **import and export right in the workspace** now — drag in a file or
+> folder and preview before anything is saved, or download a vCard or backup — no terminal needed.
+> What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
 > data-floor that keeps your most sensitive fields off the wire (see [Roadmap](roadmap.md)). This guide
 > marks clearly what runs now vs. what's coming.
 
@@ -29,6 +31,7 @@ data never leaves your device.
 | Import **vCard** / **Google Takeout** / **LinkedIn** / **Google CSV** / **Facebook** | ✅ works |
 | **Search** your imported contacts from the terminal | ✅ works |
 | Browse + search your contacts in a local **web workspace** (`just serve`) | ✅ works |
+| **Import contacts in the workspace** — drag-drop or pick a file/folder, preview, then import (no terminal) | ✅ works |
 | **Find & merge duplicate contacts** in the workspace — one at a time **or in bulk by group**, reversible | ✅ works |
 | **Edit a contact** in the workspace — fix a name/org, add private **notes** — reversible, never touches your imported records | ✅ works |
 | **Tag** contacts from a managed vocabulary (name + description), search by tag — private, never leaves the device | ✅ works |
@@ -40,6 +43,8 @@ data never leaves your device.
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 | **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 | **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
+| **Export contacts in the workspace** — download a portable vCard or a raw backup (no terminal) | ✅ works |
+| **Re-import** an updated export *in the workspace* (change preview) | ⏳ next — use `just reimport` |
 | **Run as a native desktop app** (`prm app` / `just app`) — a window, no browser tab | ✅ works |
 | **Install for daily use** (`just install`) — per-user data dir, safe across `git pull` updates | ✅ works |
 
@@ -307,9 +312,23 @@ cleanly from another terminal (it asks the server to stop, and only force-kills 
 
 It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
 contact** to see its fields and **per-field provenance** (which source each value came from). It reads
-the same home, so import (or `just demo`) first; if there's no database yet it says so. The sidebar
-footer also has an **About** card (next to Diagnostics) describing what PRM is and linking to the
+the same home, so import (or `just demo`) first; if there's no database yet it says so (with a button
+that takes you straight to importing). The sidebar footer also has an **About** card (next to
+Diagnostics) describing what PRM is and linking to the
 upstream [Personal Network Toolkit](https://github.com/richbodo/personal_network_toolkit).
+
+### Data — import & export, no terminal
+
+The **Data** tab is the point-and-click counterpart to `prm import` / `prm export`. **To import,** drag a
+file or folder onto the page — or use **Choose file…** / **Choose folder…** — for any supported export
+(vCard, Google Takeout `.zip`, LinkedIn, Google CSV, Facebook, or a PRM `--raw` backup). PRM reads the
+files **locally** (nothing leaves your device), then shows the same **preview** the terminal does — how
+many contacts per file, the detected source and confidence, and the stable-id breakdown — and saves
+**only after you confirm**. If a source is detected with low confidence you can override its label before
+importing, and any unrecognized file is listed as **skipped** rather than silently dropped. **To export,**
+download your **merged contacts** as a portable **vCard** (to move into another app) or a lossless
+**`--raw` backup** you can re-import. (Re-importing an *updated* export with a change preview is still the
+terminal's `just reimport` for now — coming to the workspace next.)
 
 Open a contact and hit **✎ Edit** to correct a single-valued field (a name, an org), add private
 **notes**, set a **photo**, or apply **tags**. Your changes are saved as a **layer on top of your imported
