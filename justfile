@@ -211,10 +211,16 @@ evaluate-report:
     {{python}} scripts/evaluate_report.py
     {{python}} scripts/conformance_report.py
 
-# Conformance gate: the attestation-evidence shape check + the full suite (every cited test must pass).
+# Lint app-opened surfaces: loopback-bound + authenticated (Surface 1; --strict so L2 gates as PRM's own regression guard).
+[group('conformance')]
+lint:
+    {{python}} scripts/loopback_surface_lint.py --strict
+
+# Conformance gate: the attestation-evidence shape check + the surface lint (--strict) + the full suite.
 [group('conformance')]
 conformance:
     {{python}} scripts/evaluate_report.py --check
+    {{python}} scripts/loopback_surface_lint.py --strict
     {{python}} -m pytest -q
 
 
@@ -253,10 +259,10 @@ stop port=port:
 app:
     {{prm}} app
 
-# Open the workspace in your browser (start `just serve` in another terminal first).
+# Open the running workspace in your browser (start `just serve` in another terminal first). Uses the server's one-time session key.
 [group('dev')]
 open:
-    {{opener}} "http://127.0.0.1:{{port}}/"
+    {{prm}} open
 
 # Import contact file(s)/dir(s) into your PRM home (e.g. `just ingest ~/Downloads/takeout.zip`).
 [group('dev')]

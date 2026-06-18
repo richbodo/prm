@@ -5,7 +5,9 @@ through ``core.candidates`` (detect) and ``core.apply`` (apply / dismiss / undo)
 canonical **private** data (merge decisions, relationship values) and — via the workspace import surface
 — drives the raw **Shared DB** write by invoking the pure ``cli.ingest`` library (the same code the CLI
 uses), so INV-2's "one ingest path" holds and the AC-PRM-C file-lock serializes every writer. Export is
-a read-only download. It binds **127.0.0.1 only**: a local tool, never a network service (INV-1).
+a read-only download. It binds **127.0.0.1 only**: a local tool, never a network service (INV-1). A
+per-process **session token** + a Host/Origin guard keep it the app's *own* transport — not a tap other
+local programs can read (see ``docs/design-notes/local-daemon-trust-surface.md``, "Surface 1").
 
 The router (``route``) is a pure function of ``(method, path, query, home, body)`` → ``(status,
 content_type, body[, headers])`` — no sockets — so the whole API is unit-testable without binding a port.
@@ -15,6 +17,7 @@ from __future__ import annotations
 
 import base64
 import errno
+import hmac
 import json
 import re
 import secrets
@@ -22,6 +25,7 @@ import shutil
 import threading
 import time
 from datetime import datetime, timezone
+from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -44,6 +48,9 @@ _CONTACT_PREFIX = "/api/contact/"
 _STATIC = {"/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/styles.css": "styles.css"}
 _CTYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
            ".css": "text/css; charset=utf-8"}
+
+_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+_SESSION_COOKIE = "prm_session"
 
 
 # --------------------------------------------------------------------------- helpers
@@ -454,6 +461,79 @@ def _static(path: str) -> tuple[int, str, bytes]:
     return 200, _CTYPES.get(asset.suffix, "application/octet-stream"), asset.read_bytes()
 
 
+# --------------------------------------------------------------------------- loopback auth guard
+# The daemon is the app's OWN UI transport, not a data tap for other local software. Three guards keep
+# it that way (docs/design-notes/local-daemon-trust-surface.md, "Surface 1"): a Host allowlist
+# (DNS-rebinding defense), an Origin check on writes, and a per-process **session token** the workspace
+# bootstraps from the URL printed at launch (so another local *process* can't dial the API). None of
+# this stops a same-UID agent that can read the token or the store off disk — that is "Surface 3", the
+# Harden flow's domain, which no app-level control can close.
+def _hostname(netloc: str) -> str:
+    """Hostname out of a ``host[:port]`` / ``[ipv6]:port`` netloc (no scheme)."""
+    netloc = (netloc or "").strip()
+    if netloc.startswith("["):                              # [::1] or [::1]:port
+        end = netloc.find("]")
+        return netloc[1:end] if end != -1 else netloc[1:]
+    return netloc.rsplit(":", 1)[0] if ":" in netloc else netloc
+
+
+def host_is_loopback(host_header: str) -> bool:
+    """The request/bind host is a loopback address — the DNS-rebinding guard (a rebound attack carries
+    the attacker's hostname in ``Host``). Empty ⇒ refused."""
+    h = (host_header or "").strip()
+    return h in _LOOPBACK_HOSTS or _hostname(h) in _LOOPBACK_HOSTS
+
+
+def origin_is_loopback(origin: str) -> bool:
+    """An ``Origin`` (``scheme://host[:port]``) points at loopback — enforced on writes only."""
+    return _hostname(urlparse(origin or "").netloc) in _LOOPBACK_HOSTS
+
+
+def _request_token(headers, query: dict) -> str:
+    """The token a request presents: ``X-PRM-Token`` header, then ``?t=``, then the session cookie."""
+    tok = headers.get("X-PRM-Token")
+    if tok:
+        return tok
+    if query.get("t"):
+        return query["t"][0]
+    raw = headers.get("Cookie")
+    if raw:
+        jar = SimpleCookie()
+        try:
+            jar.load(raw)
+        except CookieError:
+            return ""
+        if _SESSION_COOKIE in jar:
+            return jar[_SESSION_COOKIE].value
+    return ""
+
+
+def token_ok(headers, query: dict, token: str) -> bool:
+    """Constant-time check that the request carries the daemon's per-process session token."""
+    return bool(token) and hmac.compare_digest(_request_token(headers, query), token)
+
+
+def _session_cookie(token: str) -> str:
+    return f"{_SESSION_COOKIE}={token}; Path=/; SameSite=Strict; HttpOnly"
+
+
+def _bootstrap_page() -> tuple[int, str, bytes]:
+    """Shown when the workspace is opened without the session key — tells the user how to open it
+    properly (the printed URL carries the key). No app code, no data, and no cookie is set here."""
+    html = (
+        "<!doctype html><meta charset=utf-8><title>PRM workspace</title>"
+        "<style>body{font:15px/1.55 system-ui,-apple-system,sans-serif;max-width:34rem;"
+        "margin:16vh auto;padding:0 1.5rem;color:#222}code{background:#f3f4f6;padding:.12em .4em;"
+        "border-radius:4px}</style>"
+        "<h1>PRM workspace</h1>"
+        "<p>This workspace is session-protected, so other programs on your computer can't read your "
+        "contacts through it. Open it from the link printed where you started the server "
+        "(<code>just serve</code>) — that link carries a one-time session key — or run "
+        "<code>prm open</code> (<code>just open</code>) in another terminal.</p>"
+    )
+    return 200, "text/html; charset=utf-8", html.encode("utf-8")
+
+
 # --------------------------------------------------------------------------- socket glue
 class _Handler(BaseHTTPRequestHandler):
     def _send(self, status: int, ctype: str, body: bytes, extra_headers: dict | None = None) -> None:
@@ -474,15 +554,48 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
-        if parsed.path.startswith(_API_PREFIX):
-            self._send(*route("GET", parsed.path, parse_qs(parsed.query), self.server.home))
-        else:
-            self._send(*_static(parsed.path))
+        path, query = parsed.path, parse_qs(parsed.query)
+        if not host_is_loopback(self.headers.get("Host", "")):
+            self._send(403, "text/plain; charset=utf-8", b"forbidden: non-loopback Host")
+            return
+        token = self.server.auth_token
+        if path.startswith(_API_PREFIX):
+            if not token_ok(self.headers, query, token):
+                self._send(*_json(401, {"error": "unauthorized — open the workspace from the URL "
+                                                 "printed at launch (or run `prm open`)"}))
+                return
+            self._send(*route("GET", path, query, self.server.home))
+            return
+        if path in ("/app.js", "/styles.css"):                  # code assets load after the shell (cookie set)
+            self._send(*(_static(path) if token_ok(self.headers, query, token)
+                         else (403, "text/plain; charset=utf-8", b"forbidden")))
+            return
+        if path in ("/", "/index.html"):                        # bootstrap the session from the launch token
+            if query.get("t") and hmac.compare_digest(query["t"][0], token):
+                self._send(303, "text/plain; charset=utf-8", b"",
+                           {"Location": "/", "Set-Cookie": _session_cookie(token)})
+            elif token_ok(self.headers, query, token):
+                self._send(*_static("/index.html"))
+            else:
+                self._send(*_bootstrap_page())
+            return
+        self._send(*_static(path))                              # unknown path → 404
 
     def do_POST(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
-        if not parsed.path.startswith(_API_PREFIX):
+        path, query = parsed.path, parse_qs(parsed.query)
+        if not host_is_loopback(self.headers.get("Host", "")):
+            self._send(403, "text/plain; charset=utf-8", b"forbidden: non-loopback Host")
+            return
+        if not path.startswith(_API_PREFIX):
             self._send(404, "text/plain; charset=utf-8", b"not found")
+            return
+        origin = self.headers.get("Origin")
+        if origin and not origin_is_loopback(origin):           # cross-origin write → refuse (CSRF guard)
+            self._send(403, "text/plain; charset=utf-8", b"forbidden: cross-origin")
+            return
+        if not token_ok(self.headers, query, self.server.auth_token):
+            self._send(*_json(401, {"error": "unauthorized"}))
             return
         try:
             length = int(self.headers.get("Content-Length") or 0)
@@ -490,7 +603,7 @@ class _Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError):
             self._send(*_json(400, {"error": "invalid JSON body"}))
             return
-        self._send(*route("POST", parsed.path, parse_qs(parsed.query), self.server.home, body))
+        self._send(*route("POST", path, query, self.server.home, body))
 
     def log_message(self, *args) -> None:  # quiet; a local tool
         pass
@@ -501,11 +614,26 @@ class PortInUseError(RuntimeError):
     Raised in place of a raw ``OSError`` so the caller can fail with a clean, actionable message."""
 
 
-def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> ThreadingHTTPServer:
-    """Build (but don't run) the daemon bound to ``host:port``. Localhost only (INV-1). Split from
-    ``serve()`` so tests can bind an ephemeral port and ``shutdown()`` cleanly. Raises
-    ``PortInUseError`` (not a raw traceback) when ``port`` is already taken, so ``prm serve`` /
-    ``just serve`` can report it and exit gracefully."""
+class NonLoopbackBindError(RuntimeError):
+    """Refused a non-loopback bind address. The workspace is a local tool; binding it to a network
+    interface would expose contact data off-device (INV-1). ``--allow-non-local`` overrides, knowingly."""
+
+    def __init__(self, host):
+        super().__init__(
+            f"refusing to bind the workspace to non-loopback host {host!r} — it serves your contacts "
+            f"and is local-only (INV-1). Pass --allow-non-local only if you understand the exposure.")
+
+
+def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770,
+                allow_non_local: bool = False) -> ThreadingHTTPServer:
+    """Build (but don't run) the daemon bound to ``host:port``. **Loopback only (INV-1)** — a
+    non-loopback ``host`` is refused (``NonLoopbackBindError``) unless ``allow_non_local`` is set, so the
+    workspace can't be exposed off-device by accident. Mints a per-process **session token**
+    (``httpd.auth_token``) the workspace authenticates with. Split from ``serve()`` so tests can bind an
+    ephemeral port and ``shutdown()`` cleanly. Raises ``PortInUseError`` (not a raw traceback) when
+    ``port`` is already taken, so ``prm serve`` / ``just serve`` can report it and exit gracefully."""
+    if not allow_non_local and not host_is_loopback(host):
+        raise NonLoopbackBindError(host)
     relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename + schema upgrade
     _sweep_staging(home)                                                      # drop abandoned uploads
     try:
@@ -518,30 +646,62 @@ def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> 
             ) from exc
         raise
     httpd.home = home
+    httpd.auth_token = secrets.token_urlsafe(24)
     return httpd
 
 
-def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770) -> None:
+def workspace_url(httpd: ThreadingHTTPServer) -> str:
+    """The URL to open — carries the per-process session key as ``?t=`` so the workspace bootstraps its
+    session cookie. Printed at launch and written to ``<home>/workspace.url`` for ``prm open``."""
+    host, port = httpd.server_address[:2]
+    if host in ("0.0.0.0", "::", ""):
+        host = "127.0.0.1"
+    if ":" in host:                                          # ipv6 literal
+        host = f"[{host}]"
+    return f"http://{host}:{port}/?t={httpd.auth_token}"
+
+
+def _write_url_file(home: PrmHome, url: str) -> None:
+    try:
+        home.root.mkdir(parents=True, exist_ok=True)
+        home.workspace_url_file.write_text(url + "\n", encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _clear_url_file(home: PrmHome) -> None:
+    try:
+        home.workspace_url_file.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def serve(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770,
+          allow_non_local: bool = False) -> None:
     """Run the workspace daemon until interrupted."""
-    httpd = make_server(home, host=host, port=port)
-    print(f"PRM workspace → http://{host}:{port}   (serving {home.root})")
-    print("Ctrl-C to stop.")
+    httpd = make_server(home, host=host, port=port, allow_non_local=allow_non_local)
+    url = workspace_url(httpd)
+    _write_url_file(home, url)
+    print(f"PRM workspace → {url}")
+    print("Open that link — it carries a one-time session key. Ctrl-C to stop.")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print("\nstopping…")
     finally:
+        _clear_url_file(home)
         httpd.server_close()
 
 
-def start_background(home: PrmHome, *, host: str = "127.0.0.1",
-                     port: int = 0) -> tuple[ThreadingHTTPServer, threading.Thread, str]:
+def start_background(home: PrmHome, *, host: str = "127.0.0.1", port: int = 0,
+                     allow_non_local: bool = False) -> tuple[ThreadingHTTPServer, threading.Thread, str]:
     """Start the daemon on a background thread and return ``(httpd, thread, url)``. ``port=0`` binds a
-    free ephemeral port (so the desktop window never collides with a running ``just serve``). The caller
-    owns shutdown: ``httpd.shutdown(); httpd.server_close(); thread.join()``. Used by ``prm app``, where
-    the GUI must own the main thread."""
-    httpd = make_server(home, host=host, port=port)
-    bound_host, bound_port = httpd.server_address[:2]
+    free ephemeral port (so the desktop window never collides with a running ``just serve``). ``url``
+    carries the session key (``?t=``) so the desktop window bootstraps its session. The caller owns
+    shutdown: ``httpd.shutdown(); httpd.server_close(); thread.join()``. Used by ``prm app``."""
+    httpd = make_server(home, host=host, port=port, allow_non_local=allow_non_local)
+    url = workspace_url(httpd)
+    _write_url_file(home, url)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    return httpd, thread, f"http://{bound_host}:{bound_port}"
+    return httpd, thread, url

@@ -19,6 +19,18 @@ around cloud AI, what the protocol can and can't enforce, and how PRM stays an h
   — an MCP server can't tell whether a cloud or local model is reading its output, so PRM handles
   cloud AI with a *consented, reversible exception*, not detection or blocking.
 
+## Security & the local boundary
+
+How PRM's shell choice (a loopback daemon + native SQLite, not a browser-only app) reshapes the threat
+model — what the shell costs, which costs are PRM-local vs upstream PNT facts, and why "local = safe" no
+longer holds once OS-level automation agents share the host.
+
+- [**The local-daemon trust surface and the limits of "local = safe"**](local-daemon-trust-surface.md)
+  — the daemon shell trades the browser sandbox for the OS process boundary; the surface decomposes into
+  three (the app's own UI transport, an unconstrainable private-row consumer, and out-of-band reads), each
+  with a different home (intrinsic AC / consented exception / Harden flow). Captures five findings (A–E)
+  and the upstream direction (generalize `AC-2`; scope the not-a-PNA signal to private-row reachability).
+
 ## Dedupe & merge
 
 How PRM finds and merges duplicate contacts — the deterministic + AI flows, the reversible merge model,
