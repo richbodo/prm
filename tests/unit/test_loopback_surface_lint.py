@@ -67,6 +67,25 @@ def test_real_prm_tree_is_clean():
         f"  {f.path}:{f.line} [{f.code}] {f.message}" for f in findings)
 
 
+# ------------------------------------------------------------------ severity split (L1 gates / L2 advisory)
+def test_main_gates_on_l1_bind():
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        Path(td, "s.py").write_text(
+            "from http.server import ThreadingHTTPServer\n"
+            "ThreadingHTTPServer(('0.0.0.0', 80), object)\n")
+        assert lint.main([td]) == 1              # L1 gates regardless of --strict
+        assert lint.main([td, "--strict"]) == 1
+
+
+def test_main_l2_is_advisory_by_default_strict_gates():
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        Path(td, "s.py").write_text(_HANDLER)    # loopback-less handler, no auth → L2 only
+        assert lint.main([td]) == 0              # advisory: reported, does not gate
+        assert lint.main([td, "--strict"]) == 1  # --strict promotes L2 to a gate
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

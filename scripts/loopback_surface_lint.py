@@ -6,24 +6,29 @@ A local-first app that stands up an HTTP surface over its own data must keep tha
 transport, not a tap other local processes can read. This lint flags two concrete, statically-checkable
 ways that breaks:
 
-  L1  **non-loopback bind** — a server constructed (or a host-ish parameter defaulting) to a hardcoded
-      ``0.0.0.0`` / ``""`` / ``::`` / public host. A host passed as a *variable* is not flagged (it may
-      be guarded at runtime, as PRM's ``host_is_loopback`` pin does).
-  L2  **unauthenticated handler** — a module that defines an HTTP request handler
-      (``BaseHTTPRequestHandler`` subclass, or a ``do_GET``/``do_POST``/… method) but shows no auth
-      guard at all (a constant-time token check, a Host allowlist, a session/cookie check). That is an
-      app-opened surface any other same-host process can dial.
+  L1  **non-loopback bind** (error — gates) — a server constructed (or a host-ish parameter defaulting)
+      to a hardcoded ``0.0.0.0`` / ``""`` / ``::`` / public host. A host passed as a *variable* is not
+      flagged (it may be guarded at runtime, as PRM's ``host_is_loopback`` pin does). High confidence.
+  L2  **unauthenticated handler** (advisory — does not gate by default) — a module that defines an HTTP
+      request handler (``BaseHTTPRequestHandler`` subclass, or a ``do_GET``/``do_POST``/… method) but
+      shows no auth guard at all (a constant-time token check, a Host allowlist, a session/cookie check).
+      That is an app-opened surface any other same-host process can dial.
 
-**Bounded claim (honest).** L2 flags the *absence of any* auth guard in a handler module; it does not
-prove every code path enforces one — that is for tests and review. Minimization + data-floor checks for
-the *MCP private* surface are a planned extension, not yet implemented. This is a tripwire, not a proof —
-the same posture as a grep-style egress lint.
+**Bounded claim, and the severity split (honest).** L1 is a high-confidence literal, so it gates. L2 is a
+*heuristic* — it flags the *absence of any* recognized auth guard in a handler module; it can neither
+prove a present guard is sufficient nor prove an unrecognized one is missing — so L2 is **advisory** by
+default (reported, exit 0), to keep a heuristic from rotting into alarm-fatigued noise. A design that
+knows its own auth shape runs ``--strict`` to promote L2 to a gating error as its own regression guard
+(PRM does, in ``just conformance``: its daemon authenticates, so L2 is clean and a future un-guarded
+handler would trip it). Minimization + data-floor checks for the *MCP private* surface are a planned
+extension. A tripwire, not a proof — the same posture as a grep-style egress lint.
 
-Candidate to propose upstream as a PNT ``tools/`` lint (the static companion to the runtime egress probe).
+Now upstream as PNT's ``tools/loopback-surface-lint.py`` (the static companion to the runtime egress
+probe); this script is PRM's local demonstrator copy, kept in lockstep with the L1/L2 split.
 
 Usage:
-    python scripts/loopback_surface_lint.py [path ...]     # default: the package dirs
-Exit status is 1 if there is any finding, else 0.
+    python scripts/loopback_surface_lint.py [--strict] [path ...]   # default: the package dirs
+Exit status is 1 if any L1 (or, with --strict, any L2), else 0.
 """
 
 from __future__ import annotations
@@ -146,14 +151,24 @@ def lint_paths(paths) -> list:
 
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
-    targets = argv or [str(REPO / d) for d in DEFAULT_DIRS]
+    strict = "--strict" in argv
+    targets = [a for a in argv if not a.startswith("-")] or [str(REPO / d) for d in DEFAULT_DIRS]
     findings = lint_paths(targets)
+    errors = [f for f in findings if f.code in ("L1", "L0")]
+    advisories = [f for f in findings if f.code == "L2"]
+    gating = errors + (advisories if strict else [])
     for fnd in findings:
-        print(f"{fnd.path}:{fnd.line}: [{fnd.code}] {fnd.message}")
-    if findings:
-        print(f"\nloopback-surface lint: {len(findings)} finding(s) — see docs/design-notes/"
-              "local-daemon-trust-surface.md (Surface 1).")
+        sev = "error" if (fnd.code in ("L1", "L0") or strict) else "advisory"
+        print(f"{fnd.path}:{fnd.line}: [{fnd.code}] ({sev}) {fnd.message}")
+    if gating:
+        note = " (--strict: L2 gates)" if strict and advisories and not errors else ""
+        print(f"\nloopback-surface lint: {len(gating)} gating finding(s){note} — see "
+              "docs/design-notes/local-daemon-trust-surface.md (Surface 1).")
         return 1
+    if advisories:
+        print(f"\nloopback-surface lint: {len(advisories)} advisory(ies) (L2 — triage; not gating "
+              "without --strict). No gating findings.")
+        return 0
     print("loopback-surface lint: clean — app-opened HTTP surfaces are loopback-bound and authenticated.")
     return 0
 

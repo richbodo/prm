@@ -211,16 +211,16 @@ evaluate-report:
     {{python}} scripts/evaluate_report.py
     {{python}} scripts/conformance_report.py
 
-# Lint app-opened surfaces: loopback-bound + authenticated (Surface 1; the static "checked, not asserted" gate).
+# Lint app-opened surfaces: loopback-bound + authenticated (Surface 1; --strict so L2 gates as PRM's own regression guard).
 [group('conformance')]
 lint:
-    {{python}} scripts/loopback_surface_lint.py
+    {{python}} scripts/loopback_surface_lint.py --strict
 
-# Conformance gate: the attestation-evidence shape check + the surface lint + the full suite.
+# Conformance gate: the attestation-evidence shape check + the surface lint (--strict) + the full suite.
 [group('conformance')]
 conformance:
     {{python}} scripts/evaluate_report.py --check
-    {{python}} scripts/loopback_surface_lint.py
+    {{python}} scripts/loopback_surface_lint.py --strict
     {{python}} -m pytest -q
 
 
