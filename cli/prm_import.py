@@ -189,12 +189,29 @@ def cmd_serve(args) -> int:
     if not home.shared_db.exists():
         print("no shared.db yet — run `prm import` first", file=sys.stderr)
         return 1
-    from daemon.server import PortInUseError, serve  # imported lazily so the ingest path never pays for it
+    from daemon.server import NonLoopbackBindError, PortInUseError, serve  # lazy — ingest path stays light
     try:
-        serve(home, host=args.host, port=args.port)
-    except PortInUseError as exc:
+        serve(home, host=args.host, port=args.port, allow_non_local=args.allow_non_local)
+    except (PortInUseError, NonLoopbackBindError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
+    return 0
+
+
+def cmd_open(args) -> int:
+    import webbrowser
+    home = resolve_home(args.data_dir)
+    url_file = home.workspace_url_file
+    if not url_file.exists():
+        print("no running workspace found — start one first with `just serve` (or `prm serve`)",
+              file=sys.stderr)
+        return 1
+    url = url_file.read_text(encoding="utf-8").strip()
+    if not url:
+        print("the workspace URL file is empty — restart the server", file=sys.stderr)
+        return 1
+    webbrowser.open(url)
+    print(f"Opening {url}")
     return 0
 
 
@@ -216,6 +233,7 @@ def cmd_app(args) -> int:
         httpd.shutdown()
         httpd.server_close()
         thread.join(timeout=5)
+        home.workspace_url_file.unlink(missing_ok=True)
     return 0
 
 
@@ -325,7 +343,12 @@ def build_parser() -> argparse.ArgumentParser:
     pv = sub.add_parser("serve", help="serve the local read-only workspace (search/view)")
     pv.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")
     pv.add_argument("--port", type=int, default=8770, help="port (default 8770)")
+    pv.add_argument("--allow-non-local", action="store_true",
+                    help="allow a non-loopback --host (exposes your contacts off-device — not a PNA posture)")
     pv.set_defaults(func=cmd_serve)
+
+    pn = sub.add_parser("open", help="open the running workspace in your browser (uses its session key)")
+    pn.set_defaults(func=cmd_open)
 
     pa = sub.add_parser("app", help="open the workspace in a native desktop window (needs the 'app' extra)")
     pa.add_argument("--host", default="127.0.0.1", help="bind address (default 127.0.0.1 — local only)")

@@ -299,8 +299,8 @@ The same data is also browsable in the local web workspace — see the next sect
 For a point-and-click view, start the local workspace (seed or import data first — `just demo`):
 
 ```bash
-just serve                     # serves http://127.0.0.1:8770 (Ctrl-C to stop)
-just open                      # opens that URL in your browser — run in a second terminal
+just serve                     # serve the workspace; prints a session-keyed link to open (Ctrl-C to stop)
+just open                      # open that link in your browser — run in a second terminal (uses the server's key)
 just serve 9000                # pick a different port → http://127.0.0.1:9000
 just stop                      # stop a server running in another terminal (just stop 9000 for that port)
 just app                       # …or skip the browser: open it as a native desktop window (see “Install for daily use”)
@@ -309,6 +309,12 @@ just app                       # …or skip the browser: open it as a native des
 If the port is already taken, `just serve` doesn't crash — it tells you **the port is already in use**
 and exits, suggesting `just stop` (or a different port). `just stop` shuts the workspace server down
 cleanly from another terminal (it asks the server to stop, and only force-kills if it won't).
+
+The link `just serve` prints carries a **one-time session key**, so the workspace is session-protected:
+other programs on your computer can't read your contacts through it. Open that link directly, or run
+`just open` in a second terminal (it reads the running server's key). Visiting a bare
+`http://127.0.0.1:8770/` without the key just shows a short "open it from your terminal" page instead of
+your data.
 
 It serves a small single-page app. **Contacts** lets you **search, browse the full list, and open any
 contact** to see its fields and **per-field provenance** (which source each value came from). It reads
@@ -385,8 +391,12 @@ modes (toggle at the top):
 
 Two guarantees worth knowing:
 
-- **Local only.** The daemon binds `127.0.0.1` — it is never reachable from the network. Your contact
-  data does not leave the device (invariant **INV-1**). Stop the daemon with `Ctrl-C`.
+- **Local only.** The daemon binds `127.0.0.1` — never reachable from the network — and **session-protects
+  its API** (a per-process key in the link it prints, plus a Host/Origin guard), so other programs on your
+  computer can't read your contacts through the workspace. Your contact data does not leave the device
+  (invariant **INV-1**). Stop the daemon with `Ctrl-C`. *(One honest limit: your data is stored in ordinary
+  files on disk, so any program running as **your user account** — including an OS-level automation/AI agent
+  you've granted that access — can read them directly. See [Privacy](#privacy).)*
 - **Reversible & non-destructive.** Your imported source records are never changed; a merge is a
   decision layered on top, snapshotted before it's applied, and undoable.
 
@@ -477,6 +487,14 @@ prm-data/
   the repo. The committed test data is entirely synthetic.
 - The mirrored contacts store is **read-only at runtime** — only a deliberate, user-run import
   changes it.
+- **Other programs on your computer.** The workspace API is session-protected, so another local program
+  can't read your contacts by calling it. But your data lives in ordinary files under your PRM home
+  (`shared.db`, `relationships.db`, `media/`), which **any process running as your user account can read
+  directly** — an operating-system boundary PRM can't close from inside the app. This matters more as
+  people run **OS-level automation or AI agents** (which often act with your full access, and may be
+  cloud-backed): treat any such agent as having access to your contacts. To harden, run those agents only
+  if you trust them, keep your disk encrypted, or run PRM under a separate OS user account. (Background:
+  [`design-notes/local-daemon-trust-surface.md`](design-notes/local-daemon-trust-surface.md).)
 
 ## Troubleshooting
 

@@ -80,6 +80,12 @@ class PrmHome:
         return self.root / "config.json"
 
     @property
+    def workspace_url_file(self) -> Path:
+        """Where a running daemon writes its session URL (carrying the one-time key) so ``prm open`` can
+        launch the browser at it. Present only while a server runs (removed on clean shutdown)."""
+        return self.root / "workspace.url"
+
+    @property
     def lock_file(self) -> Path:
         return self.root / ".lock"
 

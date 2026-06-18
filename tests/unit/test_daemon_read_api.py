@@ -16,6 +16,7 @@ import sqlite3
 import sys
 import tempfile
 import threading
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -134,14 +135,23 @@ def test_make_server_serves_over_socket():
     with tempfile.TemporaryDirectory() as tmp:
         home = _seeded_home(tmp)
         httpd = server.make_server(home, port=0)            # ephemeral port
-        host, port = httpd.server_address
+        host, port = httpd.server_address[:2]
         t = threading.Thread(target=httpd.serve_forever, daemon=True)
         t.start()
         try:
             base = f"http://{host}:{port}"
-            with urllib.request.urlopen(f"{base}/api/contacts", timeout=5) as r:
+            # the session token authorizes the API (the workspace normally rides a bootstrapped cookie)
+            req = urllib.request.Request(f"{base}/api/contacts", headers={"X-PRM-Token": httpd.auth_token})
+            with urllib.request.urlopen(req, timeout=5) as r:
                 assert r.status == 200 and json.loads(r.read())["total"] == 4
-            with urllib.request.urlopen(f"{base}/", timeout=5) as r:        # static shell
+            # an unauthenticated API call is refused — other local processes can't read it (Surface 1)
+            try:
+                urllib.request.urlopen(f"{base}/api/contacts", timeout=5)
+            except urllib.error.HTTPError as exc:
+                assert exc.code == 401
+            else:
+                raise AssertionError("expected 401 without the session token")
+            with urllib.request.urlopen(f"{base}/", timeout=5) as r:        # bootstrap shell (no token)
                 assert r.status == 200 and b"PRM" in r.read()
         finally:
             httpd.shutdown()
@@ -174,8 +184,12 @@ def test_start_background_serves_then_shuts_down():
         home = _seeded_home(tmp)
         httpd, thread, url = server.start_background(home, port=0)
         try:
-            assert url.startswith("http://127.0.0.1:")
-            with urllib.request.urlopen(f"{url}/api/contacts", timeout=5) as r:
+            assert url.startswith("http://127.0.0.1:") and "t=" in url   # url carries the session key
+            assert home.workspace_url_file.read_text().strip() == url    # written for `prm open`
+            host, port = httpd.server_address[:2]
+            req = urllib.request.Request(f"http://{host}:{port}/api/contacts",
+                                         headers={"X-PRM-Token": httpd.auth_token})
+            with urllib.request.urlopen(req, timeout=5) as r:
                 assert r.status == 200 and json.loads(r.read())["total"] == 4
         finally:
             httpd.shutdown()

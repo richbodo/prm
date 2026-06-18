@@ -253,10 +253,10 @@ stop port=port:
 app:
     {{prm}} app
 
-# Open the workspace in your browser (start `just serve` in another terminal first).
+# Open the running workspace in your browser (start `just serve` in another terminal first). Uses the server's one-time session key.
 [group('dev')]
 open:
-    {{opener}} "http://127.0.0.1:{{port}}/"
+    {{prm}} open
 
 # Import contact file(s)/dir(s) into your PRM home (e.g. `just ingest ~/Downloads/takeout.zip`).
 [group('dev')]
