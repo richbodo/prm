@@ -211,10 +211,16 @@ evaluate-report:
     {{python}} scripts/evaluate_report.py
     {{python}} scripts/conformance_report.py
 
-# Conformance gate: the attestation-evidence shape check + the full suite (every cited test must pass).
+# Lint app-opened surfaces: loopback-bound + authenticated (Surface 1; the static "checked, not asserted" gate).
+[group('conformance')]
+lint:
+    {{python}} scripts/loopback_surface_lint.py
+
+# Conformance gate: the attestation-evidence shape check + the surface lint + the full suite.
 [group('conformance')]
 conformance:
     {{python}} scripts/evaluate_report.py --check
+    {{python}} scripts/loopback_surface_lint.py
     {{python}} -m pytest -q
 
 
