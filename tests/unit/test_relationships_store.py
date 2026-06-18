@@ -11,6 +11,7 @@ Runs as a plain script or under pytest.
 
 from __future__ import annotations
 
+import sqlite3
 import sys
 import tempfile
 from pathlib import Path
@@ -31,6 +32,50 @@ def _imported_home(tmp: str):
     report = ingest_mod.ingest([APPLE], home=home, dry_run=False)
     assert report.persisted and report.stored == 4
     return home
+
+
+def _downgrade_to_v1(db_path) -> None:
+    """Simulate a pre-relationship-schema (v0.1) store: drop the v2 tables and stamp user_version=1.
+    Reproduces a home created at v1 and never upgraded — the state that 500'd ``/api/contacts``."""
+    con = sqlite3.connect(db_path)
+    try:
+        con.executescript("DROP TABLE IF EXISTS field_values; DROP TABLE IF EXISTS field_definitions;")
+        con.execute("PRAGMA user_version = 1")
+        con.commit()
+    finally:
+        con.close()
+
+
+# ------------------------------------------------------------------ v1 → v2 migration (regression)
+def test_migrate_upgrades_v1_store_so_reads_work():
+    """A v1 store opened by v0.2 read code must not crash on the v2 ``field_values`` table. ``migrate``
+    (the startup chokepoint) upgrades it in place, non-destructively, so the projection reads cleanly."""
+    with tempfile.TemporaryDirectory() as tmp:
+        home = _imported_home(tmp)
+        _downgrade_to_v1(home.relationships_db)
+        assert relationships_db.stats(home.relationships_db)["schema_version"] == 1
+
+        # Reproduce the bug: a v2 read against the v1 store raises "no such table: field_values".
+        try:
+            projection.list_contacts(home, limit=50)
+            raise AssertionError("expected list_contacts to fail on a v1 store")
+        except sqlite3.OperationalError as exc:
+            assert "field_values" in str(exc)
+
+        # The fix: migrate brings it to v2 (idempotent, non-destructive), then reads succeed.
+        relationships_db.migrate(home.relationships_db, home.legacy_private_db)
+        assert relationships_db.stats(home.relationships_db)["schema_version"] == relationships_db.SCHEMA_VERSION
+        out = projection.list_contacts(home, limit=50)
+        assert out["total"] == 4                      # the v1 identity/merge data survived the upgrade
+        relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # idempotent — no error
+
+
+def test_migrate_is_a_noop_when_no_store_exists():
+    """``migrate`` must not create a store where none exists (an empty home stays empty until a write)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        home = resolve_home(Path(tmp) / "h")
+        relationships_db.migrate(home.relationships_db, home.legacy_private_db)
+        assert not home.relationships_db.exists()
 
 
 # ------------------------------------------------------------------ schema + seeding
