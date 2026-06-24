@@ -20,7 +20,9 @@ so a return-to-PNA in the workspace takes effect on the very next tool call. A l
 
 from __future__ import annotations
 
+import hashlib
 import json
+from datetime import datetime, timezone
 
 from core import relationships_db, schema
 
@@ -107,3 +109,68 @@ def scope_grew(home) -> bool:
         return False
     consented = set(st["consented_scope"])
     return any(fid not in consented for fid in shareable_field_ids(home))
+
+
+# --------------------------------------------------------------------------- per-request review (P4)
+# An opt-in policy: while a grant is active, each AI read of a contact's *shareable* fields is staged for
+# the user's approval instead of returned (generalizes AC-MCP-B "MCP stages, the workspace disposes" to
+# reads). Approval is **per-contact, session-scoped** — an approved contact stays readable until the mode
+# changes. The toggle + approvals live in settings (daemon writes under the lock, MCP reads); the staged
+# requests are files the MCP server writes (no DB connection needed — mirrors ``proposals.store``).
+REVIEW_KEY = "disclosure_review"           # "1" when per-request review is on
+APPROVALS_KEY = "disclosure_approvals"     # JSON list of approved contact_ids (cleared on a mode change)
+
+
+def review_required(home) -> bool:
+    """Whether per-request review is on. Only meaningful while a disclosing mode is active."""
+    return home.relationships_db.exists() and relationships_db.get_setting(home.relationships_db, REVIEW_KEY) == "1"
+
+
+def approvals(home) -> list:
+    """Contact ids the user has approved for AI reads this session."""
+    if not home.relationships_db.exists():
+        return []
+    return _loads_list(relationships_db.get_setting(home.relationships_db, APPROVALS_KEY))
+
+
+def is_approved(home, contact_id: str) -> bool:
+    return contact_id in approvals(home)
+
+
+def _request_path(home, contact_id: str):
+    key = hashlib.sha1(contact_id.encode("utf-8")).hexdigest()[:16]
+    return home.disclosure_requests_dir / f"{key}.json"
+
+
+def stage_request(home, contact_id: str, name: str, fields) -> None:
+    """Stage (or refresh) one pending AI-read request for a contact — a **file** write (no DB), so the MCP
+    server records it without a writable store connection. One file per contact, so repeated reads coalesce."""
+    home.disclosure_requests_dir.mkdir(parents=True, exist_ok=True)
+    rec = {"contact_id": contact_id, "name": name, "fields": sorted(fields),
+           "requested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    _request_path(home, contact_id).write_text(json.dumps(rec, ensure_ascii=False), encoding="utf-8")
+
+
+def list_requests(home) -> list:
+    """Pending AI-read requests (oldest first), for the workspace review surface."""
+    d = home.disclosure_requests_dir
+    if not d.is_dir():
+        return []
+    out = []
+    for p in sorted(d.glob("*.json")):
+        try:
+            out.append(json.loads(p.read_text(encoding="utf-8")))
+        except (ValueError, OSError):
+            continue
+    return out
+
+
+def clear_request(home, contact_id: str) -> None:
+    _request_path(home, contact_id).unlink(missing_ok=True)
+
+
+def clear_all_requests(home) -> None:
+    d = home.disclosure_requests_dir
+    if d.is_dir():
+        for p in d.glob("*.json"):
+            p.unlink(missing_ok=True)

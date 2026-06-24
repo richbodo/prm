@@ -10,7 +10,7 @@ is never invoked here.
 
 from __future__ import annotations
 
-from core import apply, candidates, relationships_db, projection, proposals, shared_db
+from core import apply, candidates, disclosure, relationships_db, projection, proposals, shared_db
 
 
 # --------------------------------------------------------------------------- read (shared-data-ops)
@@ -35,17 +35,44 @@ def list_contacts(home, limit: int = 50, offset: int = 0) -> dict:
 # The MCP read surface uses the cloud-facing projection (`audience="mcp"`): the query-layer data-floor
 # (AC-MCP-C / PR-7) — `private-sealed` fields are never even selected, and `private-shareable-on-consent`
 # fields cross ONLY when the workspace-recorded disclosure mode consents (`core.disclosure`; EX-CLOUD-LLM /
-# enforced EX-H7). A `disclosure` marker reports anything withheld so a cooperating client can ask the user
-# to consent. The daemon (local workspace) reads the full `audience="local"` projection directly.
+# enforced EX-H7). When **per-request review** (P4) is on, a contact's shareable fields are withheld until
+# the user approves *that contact* in the workspace — the read STAGES a request and is marked `review:pending`
+# (the "MCP stages, the workspace disposes" rule, generalized to reads). A `disclosure` marker reports what
+# was withheld so a cooperating client can ask the user to act. The daemon reads the full `audience="local"`
+# projection directly.
+def _review_gate(home, contact_id: str, contact: dict) -> dict:
+    """Apply per-request review (P4) to an already-floored MCP contact. No-op when review is off. Otherwise:
+    an approved contact is marked ``review:approved``; an unapproved one has its shareable fields withheld,
+    a request staged for the workspace, and is marked ``review:pending``."""
+    if not disclosure.review_required(home):
+        return contact
+    shareable = [f for f in contact.get("fields", []) if f.get("custom")]
+    if not shareable:
+        return contact
+    marker = dict(contact.get("disclosure") or {})
+    if disclosure.is_approved(home, contact_id):
+        marker["review"] = "approved"
+    else:
+        disclosure.stage_request(home, contact_id, contact.get("fn", ""), [f["name"] for f in shareable])
+        contact["fields"] = [f for f in contact.get("fields", []) if not f.get("custom")]
+        marker["review"] = "pending"
+        marker["review_withheld"] = len(shareable)
+    contact["disclosure"] = marker
+    return contact
+
+
 def get_contact(home, contact_id: str) -> dict:
     c = projection.get_contact(home, contact_id, audience="mcp")
-    return c if c else {"error": "no such contact", "id": contact_id}
+    if not c:
+        return {"error": "no such contact", "id": contact_id}
+    return _review_gate(home, contact_id, c)
 
 
 def get_provenance(home, contact_id: str) -> dict:
     c = projection.get_contact(home, contact_id, audience="mcp")
     if not c:
         return {"error": "no such contact", "id": contact_id}
+    c = _review_gate(home, contact_id, c)
     out = {"id": contact_id, "sources": c["sources"], "member_count": c["member_count"],
            "fields": [{"name": f["name"], "kind": f["kind"], "values": f["values"]} for f in c["fields"]]}
     if c.get("disclosure"):

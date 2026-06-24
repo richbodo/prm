@@ -504,3 +504,11 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .gate-opt .go-s{font-size:12.5px;color:var(--muted);line-height:1.5;}
 .gate-check{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--ink-2);margin:16px 0 4px;line-height:1.5;}
 .gate-check input{width:18px;height:18px;accent-color:var(--danger);margin-top:1px;flex:none;}
+
+/* per-request review (P4) */
+.axreview{display:flex;align-items:center;gap:9px;margin-top:14px;padding-top:13px;border-top:1px solid var(--line-2);font-size:13px;color:var(--ink-2);}
+.axreview input{width:17px;height:17px;accent-color:var(--accent);flex:none;}
+.axpending{font-size:11px;color:var(--clay);background:var(--clay-w);border:1px solid #e7d6c8;border-radius:20px;padding:1px 8px;}
+.axreq{align-items:center;}
+.axreqwho{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.axreqbtns{display:flex;gap:8px;flex:none;}

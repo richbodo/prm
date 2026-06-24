@@ -68,6 +68,13 @@ class PrmHome:
         return self.root / "proposals"
 
     @property
+    def disclosure_requests_dir(self) -> Path:
+        """Staged per-request AI-read approvals (P4): one JSON file per contact the AI wants to read while
+        per-request review is on. Written by the MCP server (a file write, like ``proposals/``), reviewed in
+        the workspace; swept when the disclosure mode changes."""
+        return self.root / "disclosure_requests"
+
+    @property
     def snapshots_dir(self) -> Path:
         return self.root / "snapshots"
 
@@ -96,6 +103,7 @@ class PrmHome:
         """Create the home directory skeleton (the DB files are created by the loader, M1c)."""
         self.root.mkdir(parents=True, exist_ok=True)
         self.proposals_dir.mkdir(exist_ok=True)
+        self.disclosure_requests_dir.mkdir(exist_ok=True)
         self.snapshots_dir.mkdir(exist_ok=True)
         self.media_dir.mkdir(exist_ok=True)
         self.imports_dir.mkdir(exist_ok=True)
