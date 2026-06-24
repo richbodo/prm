@@ -86,6 +86,8 @@ def _get(path: str, query: dict, home: PrmHome, network_exposed: bool = False) -
         return _json(200, _disclosure_state(home, network_exposed))
     if path == "/api/connections":                           # best-effort "what's connected" inventory
         return _json(200, _connections(home, network_exposed))
+    if path == "/api/disclosure/requests":                   # P4: pending per-request AI-read approvals
+        return _json(200, {"requests": disclosure.list_requests(home)})
 
     if not db.exists():
         return _json(409, {"error": "no shared.db yet — run `prm import` first"})
@@ -181,6 +183,15 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
     if path == "/api/disclosure/return-to-pna":              # EX-H5 reversible return-to-PNA-mode
         apply.return_to_pna(home, by="manual:workspace")
         return _json(200, _disclosure_state(home))
+    if path == "/api/disclosure/review":                     # P4: toggle per-request review
+        apply.set_review(home, bool((body or {}).get("enabled")), by="manual:workspace")
+        return _json(200, _disclosure_state(home))
+    if path == "/api/disclosure/requests":                   # P4: approve / deny a staged AI-read request
+        cid, action = (body or {}).get("contact_id"), (body or {}).get("action")
+        if not cid or action not in ("approve", "deny"):
+            return _json(400, {"error": "needs contact_id + action in {approve, deny}"})
+        (apply.approve_read if action == "approve" else apply.deny_read)(home, cid, by="manual:workspace")
+        return _json(200, {"ok": True, "requests": disclosure.list_requests(home)})
     if not home.shared_db.exists():
         return _json(409, {"error": "no shared.db yet"})
     try:
@@ -337,6 +348,9 @@ def _disclosure_state(home: PrmHome, network_exposed: bool = False) -> dict:
         banners.append("local-ai")
     if network_exposed:
         banners.append("network-exposed")
+    pending = disclosure.list_requests(home)
+    if pending:
+        banners.append("review-pending")
     return {
         "mode": st["mode"],
         "consented_at": st["consented_at"],
@@ -346,6 +360,8 @@ def _disclosure_state(home: PrmHome, network_exposed: bool = False) -> dict:
         "history": st["history"],
         "network_exposed": bool(network_exposed),
         "banners": banners,
+        "review": disclosure.review_required(home),
+        "pending_requests": len(pending),
     }
 
 

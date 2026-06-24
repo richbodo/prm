@@ -284,6 +284,8 @@ def set_disclosure_mode(home, mode, *, by="manual:workspace") -> dict:
         relationships_db.set_setting(db, disclosure.AT_KEY, now if disclosing else "")
         relationships_db.set_setting(db, disclosure.SCOPE_KEY, json.dumps(scope))
         relationships_db.set_setting(db, disclosure.HISTORY_KEY, json.dumps(hist))
+        relationships_db.set_setting(db, disclosure.APPROVALS_KEY, json.dumps([]))   # reset the per-request review session
+        disclosure.clear_all_requests(home)
         return audit.append(home, {"kind": "disclosure_mode", "mode": mode, "by": by, "scope": scope})
 
 
@@ -292,3 +294,39 @@ def return_to_pna(home, *, by="manual:workspace") -> dict:
     already sent to a cloud provider."""
     from core import disclosure
     return set_disclosure_mode(home, disclosure.PNA, by=by)
+
+
+def set_review(home, enabled, *, by="manual:workspace") -> dict:
+    """Toggle **per-request review** (P4) — each AI read of shareable data is staged for approval instead
+    of returned. Settings write under the lock + audit. Turning it off doesn't auto-approve anything;
+    turning it on doesn't revoke existing approvals."""
+    from core import disclosure
+    home.create()
+    with file_lock(home.lock_file):
+        relationships_db.ensure(home.relationships_db)
+        relationships_db.set_setting(home.relationships_db, disclosure.REVIEW_KEY, "1" if enabled else "0")
+        return audit.append(home, {"kind": "disclosure_review", "enabled": bool(enabled), "by": by})
+
+
+def approve_read(home, contact_id, *, by="manual:workspace") -> dict:
+    """Approve a contact for AI reads this session (P4): add it to the approvals set + clear its staged
+    request. Lock + audit. The next MCP read of that contact returns its shareable fields."""
+    from core import disclosure
+    home.create()
+    with file_lock(home.lock_file):
+        relationships_db.ensure(home.relationships_db)
+        appr = disclosure.approvals(home)
+        if contact_id not in appr:
+            appr.append(contact_id)
+            relationships_db.set_setting(home.relationships_db, disclosure.APPROVALS_KEY, json.dumps(appr))
+        disclosure.clear_request(home, contact_id)
+        return audit.append(home, {"kind": "disclosure_approve_read", "contact_id": contact_id, "by": by})
+
+
+def deny_read(home, contact_id, *, by="manual:workspace") -> dict:
+    """Deny / clear a staged AI-read request (P4) — the contact's shareable fields stay withheld. Lock + audit."""
+    from core import disclosure
+    home.create()
+    with file_lock(home.lock_file):
+        disclosure.clear_request(home, contact_id)
+        return audit.append(home, {"kind": "disclosure_deny_read", "contact_id": contact_id, "by": by})

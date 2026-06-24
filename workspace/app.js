@@ -1296,6 +1296,8 @@ const BANNER_DEFS = {
     text: "A local model can read the fields you marked shareable. It stays on this device — but a local model could still relay it on; only you can vouch for it." },
   "network-exposed": { cls: "danger", lead: "Your contacts are reachable on your network.",
     text: "The workspace is bound to a non-loopback address, so other devices on your network can reach it." },
+  "review-pending": { cls: "warn", lead: "An AI is waiting on your approval.",
+    text: "A connected AI asked to read private fields — review the request(s) in AI access." },
 };
 
 // EX-CLOUD-LLM per-dimension strength profile (PNT spec/exceptions.md) + the EX-H9 blast-radius row.
@@ -1315,6 +1317,7 @@ const STRENGTH = [
 function bannerToken(b) {
   if (!disclosureState) return "";
   if (b === "network-exposed") return "net";
+  if (b === "review-pending") return `rev:${disclosureState.pending_requests || 0}`;   // a new request re-shows it
   return `${disclosureState.mode}:${disclosureState.consented_at || ""}`;
 }
 function isDismissed(b) { try { return localStorage.getItem(`prm_banner_${b}`) === bannerToken(b); } catch { return false; } }
@@ -1354,14 +1357,15 @@ async function loadDisclosure() {
 async function loadAccessView() {
   const body = $("#access-body");
   if (body) body.innerHTML = `<p class="ph">Loading…</p>`;
-  const [d, conn] = await Promise.all([
+  const [d, conn, reqs] = await Promise.all([
     api("/api/disclosure").catch(() => null),
     api("/api/connections").catch(() => null),
+    api("/api/disclosure/requests").catch(() => ({ requests: [] })),
   ]);
   disclosureState = d;
   syncPnaMarkers();
   renderBanners();
-  renderAccessView(d, conn);
+  renderAccessView(d, conn, (reqs && reqs.requests) || []);
 }
 
 function strengthRows() {
@@ -1369,7 +1373,7 @@ function strengthRows() {
     `<tr><td class="sd">${esc(dim)}</td><td><span class="spill ${cls}">${esc(cls)}</span></td><td class="sw">${esc(why)}</td></tr>`).join("");
 }
 
-function renderAccessView(d, conn) {
+function renderAccessView(d, conn, requests) {
   const body = $("#access-body");
   if (!body) return;
   if (!d) { body.innerHTML = `<div class="datacard"><p class="lede-sub">Couldn’t load AI-access state.</p></div>`; return; }
@@ -1384,6 +1388,11 @@ function renderAccessView(d, conn) {
   const returnBtn = mode !== "pna" ? `<button class="btn" id="ax-return">Return to PNA mode</button>` : "";
   const scopeGrew = d.scope_grew
     ? `<p class="axnote warn">You marked new fields shareable since you consented — review and re-confirm to include them.</p>` : "";
+  const reviewToggle = mode !== "pna"
+    ? `<label class="axreview"><input type="checkbox" id="ax-review"${d.review ? " checked" : ""}> ` +
+      `Require my approval for each AI read of private data` +
+      (d.pending_requests ? ` <span class="axpending">${d.pending_requests} pending</span>` : "") + `</label>`
+    : "";
   const access =
     `<div class="datacard"><h2 class="serif dh">Current access</h2>` +
     `<div class="axmode axmode-${mode}"><span class="axdot"></span><b>${esc(modeLabel)}</b>` +
@@ -1392,7 +1401,7 @@ function renderAccessView(d, conn) {
     (mode === "pna"
       ? `Right now <b>nothing private crosses</b> — sealed fields never do, and shareable fields wait for your consent.`
       : `It can read your <b>${counts.values}</b> shareable value(s) across <b>${counts.contacts}</b> contact(s). Sealed fields never cross.`) +
-    `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div></div>`;
+    `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div>${reviewToggle}</div>`;
 
   const fieldList = fields.length
     ? `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>`
@@ -1419,9 +1428,23 @@ function renderAccessView(d, conn) {
     `<div class="axrow"><span>MCP servers registered in Claude Desktop</span><b>${reg.length ? esc(reg.join(", ")) : "none detected"}</b></div>` +
     `<p class="lede-sub" style="margin-top:10px">PRM can only show what it can see — it can’t detect a client it isn’t told about. Disconnect PRM’s servers with <code>just mcp-uninstall</code>.</p></div>`;
 
-  body.innerHTML = access + floor + ex + connCard;
+  const reqRows = (requests || []).map((rq) =>
+    `<div class="axrow axreq"><span class="axreqwho"><b>${esc(rq.name || "(no name)")}</b>` +
+    `<span class="muted"> · ${esc((rq.fields || []).join(", "))}</span></span>` +
+    `<span class="axreqbtns"><button class="btn ghost tiny" data-deny="${esc(rq.contact_id)}">Deny</button>` +
+    `<button class="btn primary tiny" data-approve="${esc(rq.contact_id)}">Approve</button></span></div>`).join("");
+  const reqCard = (requests && requests.length)
+    ? `<div class="datacard"><h2 class="serif dh">Pending AI-read requests</h2>` +
+      `<p class="lede-sub">A connected AI asked to read these contacts’ shareable fields. Approve to let it read them this session, or deny.</p>` +
+      reqRows + `</div>`
+    : "";
+
+  body.innerHTML = access + reqCard + floor + ex + connCard;
   const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
   const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
+  const rv = $("#ax-review"); if (rv) rv.addEventListener("change", () => setReview(rv.checked));
+  body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.approve, "approve")));
+  body.querySelectorAll("[data-deny]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.deny, "deny")));
 }
 
 function gatePreviewHTML() {
@@ -1486,5 +1509,18 @@ async function grant(mode, done) {
 async function returnToPna() {
   try { await postJSON("/api/disclosure/return-to-pna", {}); }
   catch (e) { alert("Couldn’t return to PNA mode: " + e.message); return; }
+  loadAccessView();
+}
+
+// per-request review (P4): toggle the policy, and approve/deny a staged AI-read request
+async function setReview(enabled) {
+  try { await postJSON("/api/disclosure/review", { enabled }); }
+  catch (e) { alert("Couldn’t update the review setting: " + e.message); return; }
+  loadAccessView();
+}
+
+async function resolveRead(contactId, action) {
+  try { await postJSON("/api/disclosure/requests", { contact_id: contactId, action }); }
+  catch (e) { alert(`Couldn’t ${action}: ` + e.message); return; }
   loadAccessView();
 }
