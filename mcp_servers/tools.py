@@ -32,21 +32,25 @@ def list_contacts(home, limit: int = 50, offset: int = 0) -> dict:
     return projection.list_contacts(home, limit=limit, offset=offset)
 
 
-# The MCP read surface applies `projection.strip_sealed`: `private-sealed` relationship fields (the
-# default for every custom/built-in field, PR-7) are structurally dropped before anything is returned,
-# so new relationship data cannot cross to an MCP client. First increment of the data-floor / AC-MCP-C;
-# the daemon (local workspace) reads the unsealed projection directly.
+# The MCP read surface uses the cloud-facing projection (`audience="mcp"`): the query-layer data-floor
+# (AC-MCP-C / PR-7) — `private-sealed` fields are never even selected, and `private-shareable-on-consent`
+# fields cross ONLY when the workspace-recorded disclosure mode consents (`core.disclosure`; EX-CLOUD-LLM /
+# enforced EX-H7). A `disclosure` marker reports anything withheld so a cooperating client can ask the user
+# to consent. The daemon (local workspace) reads the full `audience="local"` projection directly.
 def get_contact(home, contact_id: str) -> dict:
-    c = projection.get_contact(home, contact_id)
-    return projection.strip_sealed(c) if c else {"error": "no such contact", "id": contact_id}
+    c = projection.get_contact(home, contact_id, audience="mcp")
+    return c if c else {"error": "no such contact", "id": contact_id}
 
 
 def get_provenance(home, contact_id: str) -> dict:
-    c = projection.strip_sealed(projection.get_contact(home, contact_id))
+    c = projection.get_contact(home, contact_id, audience="mcp")
     if not c:
         return {"error": "no such contact", "id": contact_id}
-    return {"id": contact_id, "sources": c["sources"], "member_count": c["member_count"],
-            "fields": [{"name": f["name"], "kind": f["kind"], "values": f["values"]} for f in c["fields"]]}
+    out = {"id": contact_id, "sources": c["sources"], "member_count": c["member_count"],
+           "fields": [{"name": f["name"], "kind": f["kind"], "values": f["values"]} for f in c["fields"]]}
+    if c.get("disclosure"):
+        out["disclosure"] = c["disclosure"]
+    return out
 
 
 def find_duplicate_candidates(home, limit: int = 50) -> dict:

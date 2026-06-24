@@ -9,6 +9,9 @@ recent snapshot. Rationale: docs/design-notes/dedupe-design.md.
 
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
+
 from core import audit, relationships_db, proposals, schema, snapshots
 from core.lock import file_lock
 
@@ -253,3 +256,39 @@ def undo(home) -> str | None:
         snapshots.restore(home, latest)
         audit.append(home, {"kind": "undo", "restored": latest.name})
         return str(latest)
+
+
+def set_disclosure_mode(home, mode, *, by="manual:workspace") -> dict:
+    """Record the cloud-disclosure mode for the ``EX-CLOUD-LLM`` handler / AC-MCP-C floor — the only writer
+    of that state, serialized by the AC-PRM-C file-lock and audited, so the MCP servers (separate processes)
+    read a value the workspace set. Entering a disclosing mode (``local-ai`` / ``cloud-exception``) stamps
+    the consented shareable-field scope (for the scope-grew re-consent check); ``pna`` clears it. A settings
+    change, not a data mutation — no snapshot; reversibility is just another mode write (``return_to_pna``).
+    Rationale: plans/ex-cloud-llm-workspace-handler.md."""
+    from core import disclosure
+    if mode not in disclosure.MODES:
+        raise ValueError(f"unknown disclosure mode: {mode!r}")
+    home.create()
+    with file_lock(home.lock_file):
+        db = home.relationships_db
+        relationships_db.ensure(db)
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        disclosing = disclosure.discloses(mode)
+        scope = disclosure.shareable_field_ids(home) if disclosing else []
+        try:
+            hist = json.loads(relationships_db.get_setting(db, disclosure.HISTORY_KEY) or "[]")
+        except (ValueError, TypeError):
+            hist = []
+        hist = (hist + [{"mode": mode, "at": now}])[-disclosure.HISTORY_MAX:]
+        relationships_db.set_setting(db, disclosure.MODE_KEY, mode)
+        relationships_db.set_setting(db, disclosure.AT_KEY, now if disclosing else "")
+        relationships_db.set_setting(db, disclosure.SCOPE_KEY, json.dumps(scope))
+        relationships_db.set_setting(db, disclosure.HISTORY_KEY, json.dumps(hist))
+        return audit.append(home, {"kind": "disclosure_mode", "mode": mode, "by": by, "scope": scope})
+
+
+def return_to_pna(home, *, by="manual:workspace") -> dict:
+    """EX-H5 reversible return-to-PNA-mode — **mode only**: it stops future sharing but cannot recall data
+    already sent to a cloud provider."""
+    from core import disclosure
+    return set_disclosure_mode(home, disclosure.PNA, by=by)

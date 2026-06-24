@@ -21,7 +21,7 @@ sys.path.insert(0, str(REPO))
 
 from cli import ingest as ingest_mod  # noqa: E402
 from cli.config import resolve_home  # noqa: E402
-from core import apply, projection, relationships_db, schema  # noqa: E402
+from core import apply, disclosure, projection, relationships_db, schema  # noqa: E402
 from daemon import server  # noqa: E402
 from mcp_servers import tools  # noqa: E402
 
@@ -90,7 +90,7 @@ def test_set_value_for_undefined_field_is_refused():
 
 
 # ------------------------------------------------------------------ the MCP seal (data-floor / AC-MCP-C)
-def test_mcp_seal_hides_sealed_fields_until_marked_shareable():
+def test_mcp_seal_hides_sealed_then_shareable_crosses_only_with_consent():
     with tempfile.TemporaryDirectory() as tmp:
         home, cid = _home_with_contact(tmp)
         apply.set_field_value(home, cid, "notes", "private note")
@@ -102,8 +102,12 @@ def test_mcp_seal_hides_sealed_fields_until_marked_shareable():
         assert not any(f["name"] == "notes" for f in mc["fields"])
         assert any(f["name"] in ("fn", "email") for f in mc["fields"])
 
-        # mark the field shareable → it now crosses the MCP surface (enforced at the projection layer)
+        # marking the field shareable is necessary but NOT sufficient — it still needs disclosure consent
         schema.update_field(home.relationships_db, "notes", disclosure_tier="private-shareable-on-consent")
+        assert not any(f["name"] == "notes" for f in tools.get_contact(home, cid)["fields"])   # pna → withheld
+
+        # consent in the workspace → it now crosses (enforced EX-H7 / AC-MCP-C)
+        apply.set_disclosure_mode(home, disclosure.CLOUD_EXCEPTION)
         assert any(f["name"] == "notes" for f in tools.get_contact(home, cid)["fields"])
 
 
