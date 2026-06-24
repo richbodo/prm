@@ -1297,7 +1297,7 @@ const BANNER_DEFS = {
   "network-exposed": { cls: "danger", lead: "Your contacts are reachable on your network.",
     text: "The workspace is bound to a non-loopback address, so other devices on your network can reach it." },
   "review-pending": { cls: "warn", lead: "An AI is waiting on your approval.",
-    text: "A connected AI asked to read private fields — review the request(s) in AI access." },
+    text: "A connected AI asked to read private fields — review the request(s) in External Access." },
 };
 
 // EX-CLOUD-LLM per-dimension strength profile (PNT spec/exceptions.md) + the EX-H9 blast-radius row.
@@ -1341,7 +1341,7 @@ function renderBanners() {
       `<span class="pb-text"><b>${esc(d.lead)}</b> ${esc(d.text)}</span>` +
       `<span class="pb-actions">` +
       `<button class="pb-link" data-access>What this means →</button>` +
-      `<button class="pb-x" data-dismiss="${b}" title="Acknowledge — it stays on; manage it in AI access">Dismiss</button>` +
+      `<button class="pb-x" data-dismiss="${b}" title="Acknowledge — it stays on; manage it in External Access">Dismiss</button>` +
       `</span></div>`;
   }).join("");
   host.querySelectorAll("[data-dismiss]").forEach((x) => x.addEventListener("click", () => setDismissed(x.dataset.dismiss)));
@@ -1376,7 +1376,7 @@ function strengthRows() {
 function renderAccessView(d, conn, requests) {
   const body = $("#access-body");
   if (!body) return;
-  if (!d) { body.innerHTML = `<div class="datacard"><p class="lede-sub">Couldn’t load AI-access state.</p></div>`; return; }
+  if (!d) { body.innerHTML = `<div class="datacard"><p class="lede-sub">Couldn’t load External Access state.</p></div>`; return; }
   const mode = d.mode;
   const counts = d.shareable_counts || { contacts: 0, values: 0 };
   const fields = d.shareable_fields || [];
@@ -1407,16 +1407,20 @@ function renderAccessView(d, conn, requests) {
     ? `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>`
     : `<p class="lede-sub">No fields are marked shareable — everything is sealed. Mark a field shareable in <b>Schema</b> to let an AI read it (with your consent).</p>`;
   const floor =
-    `<div class="datacard"><h2 class="serif dh">The data-floor</h2>` +
-    `<p class="lede-sub">Every relationship field is <b>sealed by default</b> and never reaches an AI. Only fields you mark ` +
-    `<b>shareable-on-consent</b> can cross — and only after you grant access above.</p>${fieldList}</div>`;
+    `<div class="datacard"><h2 class="serif dh">The data-floor — fields from your private <code>relationships.db</code> you can share</h2>` +
+    `<p class="lede-sub">A “data-floor” is the lowest level of what an AI can see. Every relationship field is ` +
+    `<b>sealed by default</b> and never reaches an AI. Only fields you mark <b>shareable-on-consent</b> can cross — ` +
+    `and only after you grant access above.</p>${fieldList}</div>`;
 
   const exActive = mode === "cloud-exception";
   const exHead = exActive
-    ? `<p class="axnote danger"><b>Active now.</b> This app is not a PNA while a cloud AI has access.</p>`
-    : `<p class="lede-sub">Not active. This is what would happen if you grant a cloud AI access.</p>`;
+    ? `<p class="axnote danger"><b>Active now.</b> A cloud AI can read your shareable data, so it has left this device — ` +
+      `PRM is not a local-only app right now.</p>`
+    : `<p class="lede-sub"><b>Not active.</b> “EX-CLOUD-LLM” is what happens if you connect a <b>cloud</b> AI: your ` +
+      `shareable data is sent off this device to a provider, so PRM is no longer local-only until you return to PNA mode. ` +
+      `Here is exactly what that does — and doesn’t — protect:</p>`;
   const ex =
-    `<div class="datacard"><h2 class="serif dh">EX-CLOUD-LLM — what it means</h2>${exHead}` +
+    `<div class="datacard"><h2 class="serif dh">Connecting a cloud AI (EX-CLOUD-LLM)</h2>${exHead}` +
     `<table class="stable"><thead><tr><th>Guarantee</th><th>Strength</th><th></th></tr></thead><tbody>${strengthRows()}</tbody></table>` +
     `<p class="axnote">Reversibility is <b>mode only</b>: returning to PNA mode stops future sharing but cannot recall data already sent.</p></div>`;
 
@@ -1439,7 +1443,35 @@ function renderAccessView(d, conn, requests) {
       reqRows + `</div>`
     : "";
 
-  body.innerHTML = access + reqCard + floor + ex + connCard;
+  const dbCard =
+    `<div class="datacard"><h2 class="serif dh">Your two databases</h2>` +
+    `<p class="lede-sub">PRM keeps your data in two separate stores. They are protected differently, so it’s worth knowing which is which.</p>` +
+    `<div class="dbsplit">` +
+    `<div class="dbcol"><div class="dbname">Shared database <span class="dbfile">shared.db</span></div>` +
+    `<p>Your <b>contacts</b>, mirrored from your sources (Google, Apple, LinkedIn, Facebook, vCard/CSV). PRM only reads these — they’re never changed except by an import you run.</p></div>` +
+    `<div class="dbcol"><div class="dbname">Private database <span class="dbfile">relationships.db</span></div>` +
+    `<p>The private <b>notes, tags, and relationship fields you write</b> about your contacts, plus your merge decisions. Authored only by you, here in the workspace.</p></div>` +
+    `</div></div>`;
+
+  const grows = [
+    ["Who can change it",
+      `<span class="spill enforced">import only</span> <span class="gn">read-only otherwise</span>`,
+      `<span class="spill enforced">workspace only</span> <span class="gn">an AI can’t author fields</span>`],
+    ["What a connected AI can read",
+      `<span class="spill provider-asserted">all contact fields</span> <span class="gn">ungated</span>`,
+      `<span class="spill enforced">shareable fields only</span> <span class="gn">sealed never crosses</span>`],
+    ["Cloud-AI boundary",
+      `<span class="spill best-effort">signaled</span> <span class="gn">“local AI recommended”</span>`,
+      `<span class="spill enforced">enforced</span> <span class="gn">consent gate + sealed floor</span>`],
+  ];
+  const guarantees =
+    `<div class="datacard"><h2 class="serif dh">What’s enforced for each</h2>` +
+    `<p class="lede-sub">Your contacts and your private notes are guarded differently — a connected AI can read your contacts under the “local AI recommended” posture, while your private overlay is consent-gated and sealed by default.</p>` +
+    `<table class="stable gtable"><thead><tr><th>Guarantee</th><th>Shared contacts</th><th>Private overlay</th></tr></thead><tbody>` +
+    grows.map(([g, s, p]) => `<tr><td class="sd">${g}</td><td>${s}</td><td>${p}</td></tr>`).join("") +
+    `</tbody></table></div>`;
+
+  body.innerHTML = dbCard + guarantees + access + reqCard + floor + ex + connCard;
   const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
   const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
   const rv = $("#ax-review"); if (rv) rv.addEventListener("change", () => setReview(rv.checked));

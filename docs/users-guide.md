@@ -20,8 +20,9 @@ data never leaves your device.
 > folder and preview before anything is saved, or download a vCard or backup — no terminal needed.
 > And you can now **grant an AI access under an explicit consent gate** — declare *local* (data stays on
 > this device) or *cloud* (data leaves it, raising a clearly-signalled exception), with a **per-field
-> data-floor** that keeps your sealed fields off the wire no matter what, and a one-click return to
-> local-only mode (the **AI access** tab). This guide marks clearly what runs now vs. what's coming.
+> data-floor** that keeps your sealed fields off the wire no matter what, a one-click return to
+> local-only mode, and an optional **per-read approval** that holds each AI read of private data for your
+> sign-off (the **External Access** tab). This guide marks clearly what runs now vs. what's coming.
 
 ---
 
@@ -42,7 +43,8 @@ data never leaves your device.
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
-| **Grant an AI access** under a consent gate — *local* vs *cloud* (`EX-CLOUD-LLM`), with a per-field **data-floor** (sealed fields never leave) + one-click return to local-only | ✅ works |
+| **Grant an AI access** under a consent gate — *local* vs *cloud* (`EX-CLOUD-LLM`), with a per-field **data-floor** (sealed fields never leave) + one-click return to local-only, in the **External Access** tab | ✅ works |
+| **Approve each AI read** of private data (optional) — hold every shareable-field read for per-contact Approve/Deny | ✅ works |
 | **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 | **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
 | **Export contacts in the workspace** — download a portable vCard or a raw backup (no terminal) | ✅ works |
@@ -417,15 +419,20 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
    — paste its contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
    scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
 
-**A local AI is recommended**, and PRM now makes the choice explicit. Open the **AI access** tab to grant
-access: pick **Local model — data stays on this device** (no exception) or **Cloud model — data leaves
+**A local AI is recommended**, and PRM now makes the choice explicit. Open the **External Access** tab to
+grant access: pick **Local model — data stays on this device** (no exception) or **Cloud model — data leaves
 this device** (which raises the `EX-CLOUD-LLM` exception and shows a persistent "not a PNA right now"
 banner until you return to local-only mode). Before anything is shared you see the **blast radius** — which
 fields, across how many contacts — and a **data-floor** guarantee: fields you keep *sealed* (the default
 for every relationship field) **never** reach an AI, and *shareable* fields cross **only** after you
 consent here. Your private notes, and any field you haven't marked shareable, stay on the device
 regardless. Return to local-only mode anytime with one click (it stops future sharing — it can't recall
-data already sent). Background: [`../mcp_servers/README.md`](../mcp_servers/README.md) and the
+data already sent). For tighter control, turn on **"Require my approval for each AI read of private data"**:
+while it's on, an AI's read of a contact's shareable fields is **held for your approval** — each request
+shows up in **External Access** to **Approve** (readable for this session) or **Deny**, one contact at a
+time. The same tab opens with a plain-language map of your **two databases** — your mirrored **contacts**
+(`shared.db`) versus the **private notes and fields you author** (`relationships.db`) — and exactly what's
+enforced for each. Background: [`../mcp_servers/README.md`](../mcp_servers/README.md) and the
 [Roadmap](roadmap.md).
 
 ---
