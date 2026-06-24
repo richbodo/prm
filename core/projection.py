@@ -268,10 +268,11 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
 
 
 def strip_sealed(contact: dict | None) -> dict | None:
-    """The read-side data-floor (PR-7 / AC-MCP-C): drop every ``private-sealed`` relationship field from
-    a projected contact. Source (shared-tier) fields carry no ``disclosure_tier`` and always pass.
-    Returns a shallow copy; ``None`` passes through. The MCP read surface applies this; the daemon
-    (the local workspace) does not."""
+    """Drop every ``private-sealed`` relationship field from a projected contact. The query-layer floor
+    (``relationships_db.shareable_field_values``) is now the *primary* AC-MCP-C mechanism — the cloud-facing
+    projection never loads a sealed row — so this is re-applied on the MCP path only as a **belt-and-braces
+    assertion** that nothing sealed can slip through. Source (shared-tier) fields carry no ``disclosure_tier``
+    and always pass; ``None`` passes through."""
     if not contact:
         return contact
     kept = [f for f in contact.get("fields", []) if f.get("disclosure_tier") != "private-sealed"]
@@ -491,10 +492,16 @@ def export_jcards(home) -> list:
     return [["vcard", props] for *_, props in rows]
 
 
-def get_contact(home, contact_id: str) -> dict | None:
+def get_contact(home, contact_id: str, *, audience: str = "local") -> dict | None:
     """One merged canonical contact (or ``None``). Computes only that contact's group, with its
-    relationship-overlay fields. NOT sealed — the daemon (local workspace) sees everything; the MCP
-    surface applies ``strip_sealed``."""
+    relationship-overlay fields.
+
+    ``audience="local"`` (the daemon / workspace) sees the **full** overlay — sealed and shareable.
+    ``audience="mcp"`` is the cloud-facing **data-floor**: it composes ONLY ``private-shareable-on-consent``
+    overlay fields (never sealed — those rows are not even selected; the query-layer AC-MCP-C floor), and
+    only when the disclosure **mode** unlocks them (``core.disclosure``; enforced EX-H7); otherwise no overlay
+    crosses. It attaches a ``disclosure`` marker reporting anything withheld, so a cooperating client can ask
+    the user to consent in the workspace."""
     groups = _records_by_contact(home)
     members = groups.get(contact_id)
     if not members:
@@ -502,5 +509,22 @@ def get_contact(home, contact_id: str) -> dict | None:
     rank = {s: i for i, s in enumerate(relationships_db.source_priority(home.relationships_db) if home.relationships_db.exists()
                                        else relationships_db.DEFAULT_SOURCE_PRIORITY)}
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
+    if audience == "mcp":
+        return _contact_for_mcp(home, contact_id, members, rank, resolutions)
     rel = relationships_db.field_values_for(home.relationships_db, contact_id) if home.relationships_db.exists() else []
     return _merge(contact_id, members, rank, resolutions, rel)
+
+
+def _contact_for_mcp(home, contact_id, members, rank, resolutions) -> dict:
+    """The cloud-facing projection of one contact: shareable-tier overlay only, gated on disclosure consent,
+    with a withheld marker. Sealed rows are never loaded (``relationships_db.shareable_field_values_for``);
+    ``strip_sealed`` is re-applied as a belt-and-braces assertion that nothing sealed can slip through."""
+    from core import disclosure
+    has_store = home.relationships_db.exists()
+    md = disclosure.mode(home) if has_store else disclosure.PNA
+    shareable = relationships_db.shareable_field_values_for(home.relationships_db, contact_id) if has_store else []
+    disclosing = disclosure.discloses(md)
+    contact = strip_sealed(_merge(contact_id, members, rank, resolutions, shareable if disclosing else []))
+    withheld = 0 if disclosing else sum(1 for v in shareable if v.get("value") not in (None, ""))
+    contact["disclosure"] = {"mode": md, "shareable_withheld": withheld}
+    return contact

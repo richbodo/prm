@@ -61,11 +61,12 @@ sent" is `none`.
 - **INV-1 becomes precise:** it holds **in PNA mode**; `EX-CLOUD-LLM` is the one sanctioned exit, not
   a leak.
 - The handler splits across two homes. The **server-side** half — EX-H7's `instructions` handshake — is
-  **done in v0.1** (both servers, `mcp_servers/consent.py`), because the v0.1 *read* surface already
-  returns contact PII to a connected cloud client. The **workspace** half (consent gate before connect,
-  persistent "not a PNA" banner, return-to-PNA-mode control — EX-H2–H5) is UI work owed by the time a
-  cloud client can reach the **private** MCP surface — **v0.2**. v0.1's standing stance remains "local AI
-  recommended" (see the implementation plan §6).
+  done (both servers, `mcp_servers/consent.py`). The **workspace** half — the two-path consent gate
+  (EX-H2), the persistent "not a PNA" banner (EX-H3), the runtime active-set explainer + strength profile
+  (EX-H4/H8), and the return-to-PNA-mode control (EX-H5) — is **now shipped (v0.2)**, over a
+  projection-bound, consent-gated cloud surface (the **data-floor** — AC-MCP-C / EX-H9 blast-radius), so a
+  sealed field never crosses and a shareable one crosses only with consent. See the
+  [`Architecture.md`](../Architecture.md) exception attestation.
 - Building it lets PRM **demonstrate `EX-CLOUD-LLM` for PNT**, which today cites only
   `fellows_local_db`.
 

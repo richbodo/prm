@@ -31,8 +31,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from cli.config import PrmHome
-from core import (apply, build_label, candidates, diag, media, relationships_db, projection, proposals,
-                  schema, shared_db, suggest)
+from core import (apply, build_label, candidates, diag, disclosure, media, relationships_db, projection,
+                  proposals, schema, shared_db, suggest)
 from core.lock import LockError
 
 _MAX_IMAGE_BYTES = 16 * 1024 * 1024          # a soft cap so an accidental huge upload can't bloat the home
@@ -66,7 +66,7 @@ def _int(values, default: int) -> int:
 
 
 # --------------------------------------------------------------------------- GET (read)
-def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
+def _get(path: str, query: dict, home: PrmHome, network_exposed: bool = False) -> tuple[int, str, bytes]:
     db = home.shared_db
     if path == "/api/status":
         label = build_label.build_label()                    # AC-15: source revision, served at runtime
@@ -81,6 +81,11 @@ def _get(path: str, query: dict, home: PrmHome) -> tuple[int, str, bytes]:
 
     if path == "/api/diag":                                  # AC-7: sanitized self-diagnosis (no PII), pre-db
         return _json(200, diag.state_dump(home))
+
+    if path == "/api/disclosure":                            # EX-CLOUD-LLM handler state + banner triggers (pre-db)
+        return _json(200, _disclosure_state(home, network_exposed))
+    if path == "/api/connections":                           # best-effort "what's connected" inventory
+        return _json(200, _connections(home, network_exposed))
 
     if not db.exists():
         return _json(409, {"error": "no shared.db yet — run `prm import` first"})
@@ -167,6 +172,15 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
     # empty-state case), so it must run before the "no shared.db" guard the review endpoints rely on.
     if path.startswith(_IMPORT_PREFIX):
         return _import(path[len(_IMPORT_PREFIX):], home, body)
+    if path == "/api/disclosure/consent":                    # EX-H2 consent gate write — pre-db (relationships)
+        mode = (body or {}).get("mode")
+        if mode not in (disclosure.LOCAL_AI, disclosure.CLOUD_EXCEPTION):
+            return _json(400, {"error": "consent needs mode in {local-ai, cloud-exception}"})
+        apply.set_disclosure_mode(home, mode, by="manual:workspace")
+        return _json(200, _disclosure_state(home))
+    if path == "/api/disclosure/return-to-pna":              # EX-H5 reversible return-to-PNA-mode
+        apply.return_to_pna(home, by="manual:workspace")
+        return _json(200, _disclosure_state(home))
     if not home.shared_db.exists():
         return _json(409, {"error": "no shared.db yet"})
     try:
@@ -309,6 +323,54 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
     return _json(404, {"error": "not found", "path": path})
 
 
+# --------------------------------------------------------------------------- disclosure (EX-CLOUD-LLM handler)
+def _disclosure_state(home: PrmHome, network_exposed: bool = False) -> dict:
+    """The cloud-disclosure state + the active banner triggers for the workspace handler. ``network_exposed``
+    (the daemon's own bind host is non-loopback) is a banner PRM knows for certain; it does NOT gate the
+    floor — shared-contact reads keep their existing posture (D4)."""
+    st = disclosure.current(home)
+    scope = disclosure.shareable_scope(home)
+    banners = []
+    if st["mode"] == disclosure.CLOUD_EXCEPTION:
+        banners.append("cloud-exception")
+    elif st["mode"] == disclosure.LOCAL_AI:
+        banners.append("local-ai")
+    if network_exposed:
+        banners.append("network-exposed")
+    return {
+        "mode": st["mode"],
+        "consented_at": st["consented_at"],
+        "shareable_fields": scope["field_ids"],
+        "shareable_counts": {"contacts": scope["contacts"], "values": scope["values"]},
+        "scope_grew": disclosure.scope_grew(home),
+        "history": st["history"],
+        "network_exposed": bool(network_exposed),
+        "banners": banners,
+    }
+
+
+def _connections(home: PrmHome, network_exposed: bool = False) -> dict:
+    """A best-effort inventory of what's connected — honestly bounded: PRM cannot see a client it isn't
+    told about (the MCP "can't identify the consumer" limit)."""
+    return {
+        "network_exposed": bool(network_exposed),
+        "mcp_registered": _mcp_registered(),
+        "mcp_last_access": None,   # deferred: the MCP servers don't stamp a last-access marker yet
+    }
+
+
+def _mcp_registered() -> dict:
+    """Which of PRM's MCP servers are registered in Claude Desktop's config (read-only; ``[]`` if the config
+    is absent / unreadable / some other client). PRM only reports what it can read — not every client."""
+    try:
+        from mcp_servers import install
+        cfg = install.load_config(install.default_config_path())
+        servers = cfg.get("mcpServers") or {}
+        return {"claude_desktop": [k for k in install.PRM_KEYS if k in servers]}
+    except Exception:  # noqa: BLE001 — best-effort; a missing/odd config must never break the workspace
+        return {"claude_desktop": []}
+
+
 # --------------------------------------------------------------------------- export (download)
 def _export(home: PrmHome, query: dict) -> tuple[int, str, bytes, dict]:
     """Download the contacts: the merged portable **vCard** (default), or the lossless **raw** JSON
@@ -428,15 +490,17 @@ def _sweep_staging(home: PrmHome, *, max_age_s: int = _STAGING_MAX_AGE_S) -> Non
             pass
 
 
-def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None = None) -> tuple[int, str, bytes]:
+def route(method: str, path: str, query: dict, home: PrmHome, body: dict | None = None,
+          *, network_exposed: bool = False) -> tuple[int, str, bytes]:
     """Pure API router. ``query`` is the ``parse_qs`` dict; ``body`` is the parsed JSON for POST.
+    ``network_exposed`` (from the daemon's own bind host) drives the network-exposed disclosure banner.
 
     A store schema/availability error refuses **mutations** cleanly with a 409 (reads don't version-check,
     so they continue — AC-4); any other unexpected error is captured to the diag log (AC-7) and returned
     sanitized, never a raw traceback to the client."""
     try:
         if method == "GET":
-            return _get(path, query, home)
+            return _get(path, query, home, network_exposed)
         if method == "POST":
             return _post(path, home, body or {})
         return _json(405, {"error": "method not allowed", "method": method})
@@ -564,7 +628,7 @@ class _Handler(BaseHTTPRequestHandler):
                 self._send(*_json(401, {"error": "unauthorized — open the workspace from the URL "
                                                  "printed at launch (or run `prm open`)"}))
                 return
-            self._send(*route("GET", path, query, self.server.home))
+            self._send(*route("GET", path, query, self.server.home, network_exposed=self.server.network_exposed))
             return
         if path in ("/app.js", "/styles.css"):                  # code assets load after the shell (cookie set)
             self._send(*(_static(path) if token_ok(self.headers, query, token)
@@ -603,7 +667,7 @@ class _Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError):
             self._send(*_json(400, {"error": "invalid JSON body"}))
             return
-        self._send(*route("POST", path, query, self.server.home, body))
+        self._send(*route("POST", path, query, self.server.home, body, network_exposed=self.server.network_exposed))
 
     def log_message(self, *args) -> None:  # quiet; a local tool
         pass
@@ -647,6 +711,7 @@ def make_server(home: PrmHome, *, host: str = "127.0.0.1", port: int = 8770,
         raise
     httpd.home = home
     httpd.auth_token = secrets.token_urlsafe(24)
+    httpd.network_exposed = not host_is_loopback(host)       # shared contacts reachable off-device → D4 banner
     return httpd
 
 

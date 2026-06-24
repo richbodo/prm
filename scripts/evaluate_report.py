@@ -87,9 +87,10 @@ def build_report() -> dict:
     headline = (f"PRM is deterministically attested conformant to PNA Spec {PNA_SPEC_VERSION} for its "
                 f"declared flavor: {n_conf} conformant, {n_na} not-applicable, 0 non-conformant across "
                 f"{len(rows)} evaluated ACs. {len(partials)} AC(s) carry self-attested partial-conformance "
-                f"flagged for human review ({', '.join(partials)}); the EX-CLOUD-LLM exception is handled "
-                f"best-effort server-side (consent + honest signaling — an MCP server cannot identify the "
-                f"consuming LLM).")
+                f"flagged for human review ({', '.join(partials)}); the EX-CLOUD-LLM exception is handled by "
+                f"a workspace consent gate + persistent signal + reversible return-to-PNA over a "
+                f"projection-bound, consent-gated cloud surface (the data-floor) — the residual boundary is "
+                f"consent + honest signaling, since an MCP server cannot identify the consuming LLM).")
     return {
         "report_schema_version": "0.1",
         "generated_by": "scripts/evaluate_report.py (deterministic; derived from docs/Architecture.md)",

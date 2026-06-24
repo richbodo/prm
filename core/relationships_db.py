@@ -300,6 +300,41 @@ def field_values_for(db_path, contact_id: str) -> list:
     return [_fv_row(r) for r in rows]
 
 
+_SHAREABLE_TIER = "private-shareable-on-consent"
+
+
+def shareable_field_values(db_path) -> dict:
+    """{contact_id: [value dicts]} for ONLY ``private-shareable-on-consent`` fields — the query-layer
+    data-floor (AC-MCP-C / PR-7). A ``private-sealed`` row is **never selected**, so a cloud-facing
+    projection built on this is structurally incapable of returning a sealed value. Read-only."""
+    if not Path(db_path).exists():
+        return {}
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(_FV_SELECT + " WHERE d.disclosure_tier = ? ORDER BY d.position, v.written_at",
+                           (_SHAREABLE_TIER,)).fetchall()
+    finally:
+        con.close()
+    out: dict[str, list] = {}
+    for r in rows:
+        fv = _fv_row(r)
+        out.setdefault(fv["contact_id"], []).append(fv)
+    return out
+
+
+def shareable_field_values_for(db_path, contact_id: str) -> list:
+    """One contact's ``private-shareable-on-consent`` values only — the per-contact query-layer floor."""
+    if not Path(db_path).exists():
+        return []
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(_FV_SELECT + " WHERE v.contact_id = ? AND d.disclosure_tier = ? "
+                           "ORDER BY d.position, v.written_at", (contact_id, _SHAREABLE_TIER)).fetchall()
+    finally:
+        con.close()
+    return [_fv_row(r) for r in rows]
+
+
 def _like_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
@@ -348,6 +383,30 @@ def source_priority(db_path) -> list:
         except (ValueError, TypeError):
             pass
     return list(DEFAULT_SOURCE_PRIORITY)
+
+
+def get_setting(db_path, key: str, default=None):
+    """One ``settings`` value (raw string), or ``default`` if absent / no store. Read-only."""
+    if not Path(db_path).exists():
+        return default
+    con = connect(db_path, read_only=True)
+    try:
+        row = con.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    finally:
+        con.close()
+    return row[0] if row and row[0] is not None else default
+
+
+def set_setting(db_path, key: str, value: str) -> None:
+    """Upsert one ``settings`` value. The caller serializes writes via the AC-PRM-C file-lock
+    (see ``core/apply.py``)."""
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        con.execute("INSERT OR REPLACE INTO settings(key, value) VALUES (?, ?)", (key, value))
+        con.commit()
+    finally:
+        con.close()
 
 
 def stats(db_path) -> dict:

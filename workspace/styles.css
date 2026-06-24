@@ -449,3 +449,58 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .expcol b{font-size:14px;color:var(--ink);}
 .expcol .lede-sub{margin:6px 0 12px;font-size:12.5px;}
 .exphint{margin:14px 0 0;color:var(--accent-d);font-size:12.5px;min-height:1em;}
+
+/* ---- AI-access / disclosure: banners + view + gate (EX-CLOUD-LLM handler) ---- */
+.bannerstack{display:flex;flex-direction:column;}
+.pbanner{display:flex;align-items:center;gap:16px;padding:11px 34px;font-size:13px;border-bottom:1px solid;}
+.pbanner.danger{background:var(--danger-w);color:#7a241a;border-bottom-color:#f0d8d3;}
+.pbanner.warn{background:var(--clay-w);color:var(--clay);border-bottom-color:#e7d6c8;}
+.pbanner .pb-text{flex:1;min-width:0;}
+.pbanner .pb-text b{font-weight:700;}
+.pbanner .pb-actions{display:flex;align-items:center;gap:6px;flex:none;}
+.pbanner .pb-link{font:inherit;font-size:12.5px;font-weight:600;background:transparent;border:none;color:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:4px 6px;}
+.pbanner .pb-x{font:inherit;font-size:12px;background:rgba(255,255,255,.55);border:1px solid currentColor;color:inherit;border-radius:7px;padding:4px 11px;cursor:pointer;opacity:.8;}
+.pbanner .pb-x:hover{opacity:1;}
+
+.accesswrap{max-width:760px;padding:24px 34px 60px;}
+.axmode{display:flex;align-items:center;gap:9px;font-size:15px;color:var(--ink);}
+.axmode .axdot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none;}
+.axmode-pna .axdot{background:var(--accent);}
+.axmode-local-ai .axdot{background:var(--clay);}
+.axmode-cloud-exception .axdot{background:var(--danger);}
+.axmode .axwhen{font-size:12px;color:var(--faint);font-weight:400;}
+.axctl{display:flex;gap:10px;margin-top:6px;}
+.axnote{font-size:12.5px;color:var(--muted);margin:12px 0 0;}
+.axnote.warn{color:var(--clay);}
+.axnote.danger{color:var(--danger);font-weight:550;}
+.axchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0;}
+.axrow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:13.5px;color:var(--muted);}
+.axrow:last-child{border-bottom:none;}
+.axrow b{color:var(--ink-2);font-weight:600;}
+.axrow b.ok{color:var(--accent-d);}
+.axrow b.bad{color:var(--danger);}
+
+.stable{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:13px;}
+.stable th{text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);}
+.stable td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--ink-2);}
+.stable tr:last-child td{border-bottom:none;}
+.stable .sd{font-weight:550;color:var(--ink);width:212px;}
+.stable .sw{color:var(--muted);font-size:12.5px;}
+.spill{display:inline-block;font-size:10.5px;letter-spacing:.02em;padding:2px 9px;border-radius:20px;border:1px solid var(--line);white-space:nowrap;}
+.spill.enforced{color:var(--accent-d);background:var(--accent-w);border-color:#d8e7e0;}
+.spill.verifiable{color:#2f6b86;background:#e9f3f7;border-color:#cfe4ec;}
+.spill.best-effort{color:var(--clay);background:var(--clay-w);border-color:#e7d6c8;}
+.spill.provider-asserted{color:var(--muted);background:var(--parch);}
+.spill.none{color:var(--danger);background:var(--danger-w);border-color:#f0d8d3;}
+
+.gatecard{max-width:540px;}
+.gate-prev{font-size:14px;color:var(--ink-2);margin:0 0 12px;line-height:1.65;}
+.gate-sealed{font-size:12.5px;color:var(--muted);margin:10px 0 0;}
+.gate-opts{display:flex;flex-direction:column;gap:12px;margin-top:18px;}
+.gate-opt{display:flex;flex-direction:column;gap:5px;text-align:left;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;font:inherit;transition:border-color .14s,box-shadow .14s;}
+.gate-opt:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-w);}
+.gate-opt.cloud:hover{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-w);}
+.gate-opt .go-h{font-size:14.5px;font-weight:600;color:var(--ink);}
+.gate-opt .go-s{font-size:12.5px;color:var(--muted);line-height:1.5;}
+.gate-check{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--ink-2);margin:16px 0 4px;line-height:1.5;}
+.gate-check input{width:18px;height:18px;accent-color:var(--danger);margin-top:1px;flex:none;}
