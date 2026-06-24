@@ -51,23 +51,24 @@ ingestion surface**, so CLI and AI share one discovery path.
 **Cloud-AI honesty — the `EX-CLOUD-LLM` handler.** The private MCP surface is the canonical trigger for
 PNT's **`EX-CLOUD-LLM`** exception: the moment a cloud client (e.g. Claude Desktop) can read private
 rows, data leaves the device. PRM **cannot detect or block a cloud LLM** at the MCP layer (`clientInfo`
-is self-reported; MCP auth runs client→server), so v0.2 holds the boundary with a *handler*, not a
-filter — a consent gate before first connect, a persistent "not a PNA right now" signal in the
-workspace, a runtime active-set explainer, and a reversible return-to-PNA-mode control (mode only; it
-cannot recall data already sent). Full rationale:
+is self-reported; MCP auth runs client→server), so the boundary is held by a *handler*, not a filter —
+**shipped:** a two-path consent gate (local vs cloud) before sharing, a persistent "not a PNA right now"
+signal in the workspace, a runtime active-set explainer + strength profile, and a reversible
+return-to-PNA-mode control (mode only; it cannot recall data already sent). Full rationale:
 [`design-notes/mcp-cannot-identify-the-consuming-llm.md`](design-notes/mcp-cannot-identify-the-consuming-llm.md).
 *(The v0.1 **read** surface already returns contact PII to a connected cloud client — same posture,
 "local AI recommended"; see plan §6.)*
 
 **Data-floor — bound *what* the cloud can read (PNT `AC-MCP-C` demonstrator).** The consent handler
-governs *whether* a cloud client reads private rows; it does not bound *which* rows. v0.2 adds the
-read-side mirror of its AI-write tiers (INV-10): every Private-DB / custom field carries a **disclosure
-tier**, default **sealed** (changeable only in the workspace), and the cloud-facing MCP surface is
-**projection-bound** — structurally unable to return a sealed field, even with consent. So the most
-sensitive notes are never reachable by a cloud client like Claude Desktop, and a defeated consent gate
-leaks only the user-curated shareable projection, not the whole store. This realizes PNT's proposed
-**`AC-MCP-C` / `PR-7` / `EX-H9`** data-floor ([PNT PR #34](https://github.com/richbodo/personal_network_toolkit/pull/34)),
-which lands *with* this design — candidate **AC-PRM-G**.
+governs *whether* a cloud client reads private rows; the data-floor bounds *which* rows. **Shipped:** every
+Private-DB / custom field carries a **disclosure tier**, default **sealed** (changeable only in the
+workspace), and the cloud-facing MCP surface is **projection-bound** — structurally unable to return a
+sealed field at the query layer, even with consent — and **consent-gated** (a shareable field crosses only
+after explicit workspace consent; fail-closed by default). So the most sensitive notes are never reachable
+by a cloud client like Claude Desktop, and a defeated consent gate leaks only the user-curated shareable
+projection, not the whole store. This realizes PNT's proposed **`AC-MCP-C` / `PR-7` / `EX-H9`** data-floor
+([PNT PR #34](https://github.com/richbodo/personal_network_toolkit/pull/34)), which lands *with* this
+design — candidate **AC-PRM-G**.
 
 ## v0.3 — Delegated gathering: public data (easiest first)
 
@@ -118,14 +119,15 @@ This reference design is expected to feed the toolkit. As each lands with its de
 - **AC-PRM-B** (multi-source dedup) — graduate from draft via v0.1's dedup + identity store.
 - **AC-PRM-E / AC-PRM-F (proposed)** — the tiered safe-AI-write model and the "MCP stages, workspace
   applies" rule for data writes; the toolkit's MCP private surface is read-only today.
-- **`EX-CLOUD-LLM`** — building the v0.2 consent-gate + "not a PNA" signal + return-to-PNA-mode
-  handler gives PNT a **second** reference demonstration of the exception (the spec currently cites
-  only `fellows_local_db`). See [`design-notes/mcp-cannot-identify-the-consuming-llm.md`](design-notes/mcp-cannot-identify-the-consuming-llm.md).
+- **`EX-CLOUD-LLM`** — the **shipped** consent-gate + "not a PNA" signal + active-set explainer +
+  return-to-PNA-mode handler gives PNT a **second** reference demonstration of the exception (the spec
+  currently cites only `fellows_local_db`). See [`design-notes/mcp-cannot-identify-the-consuming-llm.md`](design-notes/mcp-cannot-identify-the-consuming-llm.md)
+  and the [`Architecture.md`](Architecture.md) exception attestation.
 - **`AC-MCP-C` / `PR-7` / `EX-H9` data-floor (candidate `AC-PRM-G`)** — the per-field disclosure tier
-  + projection-bound cloud surface that bounds *what* a cloud LLM can read (the read-side mirror of the
-  v0.2 AI-write tiers). PRM v0.2 is the proposed demonstrator for PNT's data-floor proposal
-  ([PNT PR #34](https://github.com/richbodo/personal_network_toolkit/pull/34)); it complements the
-  `EX-CLOUD-LLM` handler above.
+  + projection-bound, consent-gated cloud surface that bounds *what* a cloud LLM can read. **Shipped and
+  demonstrated** (`core/disclosure.py`, the query-layer floor, the workspace handler); PRM is the proposed
+  demonstrator for PNT's data-floor proposal ([PNT PR #34](https://github.com/richbodo/personal_network_toolkit/pull/34)),
+  ready to graduate from stub to spec.
 - **AC-PRM-C** (single-instance file-lock) — exercised by the native-SQLite storage pick.
 - Privacy-reclassification mechanics and per-field provenance findings as they surface.
 - **Distribution semantics (open finding).** PNT's `never-distributed-single-user` flavor is too

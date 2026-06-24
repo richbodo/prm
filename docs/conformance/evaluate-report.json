@@ -4,7 +4,7 @@
   "candidate": {
     "name": "prm",
     "repo_url": "https://github.com/richbodo/prm",
-    "commit": "36f7dff85442b0ad9af942e0eee318d6dcd9ab65",
+    "commit": "ed4502dffea9bc92f7ef5618fa48521ee0870b96",
     "pna_spec_version": "0.1",
     "picks_source": "declared",
     "axis_picks": {
@@ -18,10 +18,9 @@
   },
   "summary": {
     "posture": "conformant",
-    "headline": "PRM is deterministically attested conformant to PNA Spec 0.1 for its declared flavor: 12 conformant, 4 not-applicable, 0 non-conformant across 18 evaluated ACs. 2 AC(s) carry self-attested partial-conformance flagged for human review (AC-PRM-A, AC-MCP-A); the EX-CLOUD-LLM exception is handled best-effort server-side (consent + honest signaling — an MCP server cannot identify the consuming LLM).",
+    "headline": "PRM is deterministically attested conformant to PNA Spec 0.1 for its declared flavor: 13 conformant, 4 not-applicable, 0 non-conformant across 18 evaluated ACs. 1 AC(s) carry self-attested partial-conformance flagged for human review (AC-PRM-A); the EX-CLOUD-LLM exception is handled by a workspace consent gate + persistent signal + reversible return-to-PNA over a projection-bound, consent-gated cloud surface (the data-floor) — the residual boundary is consent + honest signaling, since an MCP server cannot identify the consuming LLM).",
     "leading_concerns": [
-      "AC-PRM-A",
-      "AC-MCP-A"
+      "AC-PRM-A"
     ]
   },
   "findings": [
@@ -66,6 +65,10 @@
           "note": "cited test: test_private_mismatch_refuses_seed"
         },
         {
+          "path": "tests/db/test_relationships_db_version.py",
+          "note": "cited test: test_private_mismatch_refuses_apply"
+        },
+        {
           "path": "tests/unit/test_daemon_diag.py",
           "note": "cited test: test_schema_mismatch_refuses_write_reads_continue"
         }
@@ -74,7 +77,7 @@
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/db/test_shared_db.py::test_incompatible_schema_version_is_rejected, tests/db/test_relationships_db_version.py::test_private_mismatch_refuses_seed, tests/unit/test_daemon_diag.py::test_schema_mismatch_refuses_write_reads_continue."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/db/test_shared_db.py::test_incompatible_schema_version_is_rejected, tests/db/test_relationships_db_version.py::test_private_mismatch_refuses_seed, tests/db/test_relationships_db_version.py::test_private_mismatch_refuses_apply, tests/unit/test_daemon_diag.py::test_schema_mismatch_refuses_write_reads_continue."
         }
       ]
     },
@@ -86,13 +89,17 @@
         {
           "path": "tests/unit/test_doctor.py",
           "note": "cited test: test_unlock_clears_stale_lock"
+        },
+        {
+          "path": "tests/unit/test_doctor.py",
+          "note": "cited test: test_unlock_refuses_when_held_live"
         }
       ],
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_doctor.py::test_unlock_clears_stale_lock."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_doctor.py::test_unlock_clears_stale_lock, tests/unit/test_doctor.py::test_unlock_refuses_when_held_live."
         }
       ]
     },
@@ -104,6 +111,10 @@
         {
           "path": "tests/unit/test_diag.py",
           "note": "cited test: test_state_dump_is_sanitized_metadata"
+        },
+        {
+          "path": "tests/unit/test_diag.py",
+          "note": "cited test: test_error_log_redacts_and_tails"
         },
         {
           "path": "tests/unit/test_daemon_diag.py",
@@ -118,7 +129,7 @@
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_diag.py::test_state_dump_is_sanitized_metadata, tests/unit/test_daemon_diag.py::test_diag_route_sanitized, tests/unit/test_doctor.py::test_doctor_dump_runs."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_diag.py::test_state_dump_is_sanitized_metadata, tests/unit/test_diag.py::test_error_log_redacts_and_tails, tests/unit/test_daemon_diag.py::test_diag_route_sanitized, tests/unit/test_doctor.py::test_doctor_dump_runs."
         }
       ]
     },
@@ -133,13 +144,17 @@
         {
           "path": "tests/unit/test_apply.py",
           "note": "cited test: test_snapshot_and_restore"
+        },
+        {
+          "path": "tests/unit/test_apply.py",
+          "note": "cited test: test_apply_merge_then_undo"
         }
       ],
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_apply.py::test_snapshot_and_restore."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_apply.py::test_snapshot_and_restore, tests/unit/test_apply.py::test_apply_merge_then_undo."
         }
       ]
     },
@@ -155,13 +170,21 @@
         {
           "path": "tests/unit/test_reimport.py",
           "note": "cited test: test_reimport_added_updated_stale"
+        },
+        {
+          "path": "tests/unit/test_reimport.py",
+          "note": "cited test: test_reimport_apply_keeps_stale_and_snapshots"
+        },
+        {
+          "path": "tests/unit/test_reimport.py",
+          "note": "cited test: test_reimport_flags_merges_with_stale"
         }
       ],
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_reimport.py::test_reimport_added_updated_stale."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_reimport.py::test_reimport_added_updated_stale, tests/unit/test_reimport.py::test_reimport_apply_keeps_stale_and_snapshots, tests/unit/test_reimport.py::test_reimport_flags_merges_with_stale."
         }
       ]
     },
@@ -194,13 +217,21 @@
         {
           "path": "tests/unit/test_build_label.py",
           "note": "cited test: test_running_label_is_git_date_sha"
+        },
+        {
+          "path": "tests/unit/test_build_label.py",
+          "note": "cited test: test_archived_source_uses_stamp_file"
+        },
+        {
+          "path": "tests/unit/test_build_label.py",
+          "note": "cited test: test_no_git_no_stamp_is_non_empty_fallback"
         }
       ],
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_build_label.py::test_running_label_is_git_date_sha."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_build_label.py::test_running_label_is_git_date_sha, tests/unit/test_build_label.py::test_archived_source_uses_stamp_file, tests/unit/test_build_label.py::test_no_git_no_stamp_is_non_empty_fallback."
         }
       ]
     },
@@ -299,23 +330,31 @@
       "status": "conformant",
       "citations": [
         {
-          "path": "tests/unit/test_mcp_tools.py",
-          "note": "cited test: test_submit_is_propose_only"
+          "path": "tests/unit/test_mcp_data_floor.py",
+          "note": "cited test: test_sealed_never_crosses_and_shareable_needs_consent"
         },
         {
-          "path": "tests/unit/test_mcp_consent.py"
+          "path": "tests/unit/test_mcp_data_floor.py",
+          "note": "cited test: test_sealed_absent_from_mcp_projection_in_every_mode"
+        },
+        {
+          "path": "tests/unit/test_daemon_disclosure.py",
+          "note": "cited test: test_default_state_then_consent_cycle"
+        },
+        {
+          "path": "tests/e2e/test_disclosure_flow.py",
+          "note": "cited test: test_consent_gate_governs_the_mcp_floor_end_to_end"
+        },
+        {
+          "path": "tests/unit/test_mcp_tools.py",
+          "note": "cited test: test_submit_is_propose_only"
         }
       ],
-      "needs_human_review": true,
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_mcp_tools.py::test_submit_is_propose_only, tests/unit/test_mcp_consent.py."
-        },
-        {
-          "source": "human",
-          "detail": "Self-attested partial-conformance (consent + signaling; not per-call server-side gating)"
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_mcp_data_floor.py::test_sealed_never_crosses_and_shareable_needs_consent, tests/unit/test_mcp_data_floor.py::test_sealed_absent_from_mcp_projection_in_every_mode, tests/unit/test_daemon_disclosure.py::test_default_state_then_consent_cycle, tests/e2e/test_disclosure_flow.py::test_consent_gate_governs_the_mcp_floor_end_to_end, tests/unit/test_mcp_tools.py::test_submit_is_propose_only."
         }
       ]
     },
@@ -338,6 +377,10 @@
           "note": "cited test: test_detect_clusters_and_tiers"
         },
         {
+          "path": "tests/unit/test_candidates.py",
+          "note": "cited test: test_transitive_overmerge_guard"
+        },
+        {
           "path": "tests/unit/test_relationships_store.py",
           "note": "cited test: test_preview_merge_marks_conflicts"
         },
@@ -354,7 +397,7 @@
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_candidates.py::test_detect_clusters_and_tiers, tests/unit/test_relationships_store.py::test_preview_merge_marks_conflicts, tests/unit/test_reimport.py::test_reimport_preserves_merges, tests/e2e/test_dedup_flow.py::test_bulk_flow_scenario."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_candidates.py::test_detect_clusters_and_tiers, tests/unit/test_candidates.py::test_transitive_overmerge_guard, tests/unit/test_relationships_store.py::test_preview_merge_marks_conflicts, tests/unit/test_reimport.py::test_reimport_preserves_merges, tests/e2e/test_dedup_flow.py::test_bulk_flow_scenario."
         }
       ]
     },
@@ -369,13 +412,17 @@
         {
           "path": "tests/unit/test_lock.py",
           "note": "cited test: test_second_holder_refused_with_message"
+        },
+        {
+          "path": "tests/unit/test_lock.py",
+          "note": "cited test: test_release_allows_reacquire"
         }
       ],
       "evidence": [
         {
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
-          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_lock.py::test_second_holder_refused_with_message."
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_lock.py::test_second_holder_refused_with_message, tests/unit/test_lock.py::test_release_allows_reacquire."
         }
       ]
     }

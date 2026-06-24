@@ -93,6 +93,9 @@ so this boundary is held by your consent and honest signaling — never by tryin
 Both servers carry that signal at the protocol level: each is built with an MCP `instructions` handshake
 ([`consent.py`](consent.py), the EX-H7 best-effort clause) telling a *cooperating* cloud client to get
 your explicit consent before reading and to prefer a local model. It's honest signaling, not a gate — a
-non-cooperating client can ignore it. The **full** cloud-AI consent handler (a workspace consent gate,
-a persistent "not a PNA" banner, a return-to-PNA-mode control) is a v0.2 milestone (see
-[`../docs/roadmap.md`](../docs/roadmap.md)).
+non-cooperating client can ignore it. The **full** cloud-AI consent handler is now **shipped**: the
+workspace **AI access** tab gates whether the private overlay crosses at all (declare *local* or *cloud*),
+bounds *which* fields can (the per-field **data-floor** — sealed fields never cross, even with consent),
+shows a persistent "not a PNA" banner while a cloud grant is active, and offers one-click return to
+local-only mode. See [`../docs/users-guide.md`](../docs/users-guide.md) ("Let an AI propose the merges")
+and the [`../docs/Architecture.md`](../docs/Architecture.md) exception attestation.

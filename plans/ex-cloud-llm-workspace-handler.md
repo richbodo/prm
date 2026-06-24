@@ -1,6 +1,8 @@
 # Plan — EX-CLOUD-LLM workspace handler + projection-bound data-floor (v0.2)
 
-*Status: **draft for review** (2026-06-24). Companion to
+*Status: **P1–P3 implemented** (2026-06-24) — the enforced floor (P1), the workspace handler + AI-access
+view (P2), and docs + `Architecture.md` attestation (P3) are landed and green; **P4** (per-request
+disclosure review, §6f) remains the planned fast-follow. Companion to
 [`../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md`](../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md),
 [`mcp-ex-h7-consent-handshake.md`](mcp-ex-h7-consent-handshake.md) (the v0.1 server-side down-payment this
 builds on), [`../docs/roadmap.md`](../docs/roadmap.md) (v0.2 `EX-CLOUD-LLM` + data-floor), and the

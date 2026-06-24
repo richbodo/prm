@@ -18,9 +18,10 @@ data never leaves your device.
 > **define your own custom relationship fields** — all private, reversible, and layered over your imports
 > (never changing them). You can also **import and export right in the workspace** now — drag in a file or
 > folder and preview before anything is saved, or download a vCard or backup — no terminal needed.
-> What's coming next: connecting a cloud AI under an explicit consent gate, with a per-field
-> data-floor that keeps your most sensitive fields off the wire (see [Roadmap](roadmap.md)). This guide
-> marks clearly what runs now vs. what's coming.
+> And you can now **grant an AI access under an explicit consent gate** — declare *local* (data stays on
+> this device) or *cloud* (data leaves it, raising a clearly-signalled exception), with a **per-field
+> data-floor** that keeps your sealed fields off the wire no matter what, and a one-click return to
+> local-only mode (the **AI access** tab). This guide marks clearly what runs now vs. what's coming.
 
 ---
 
@@ -41,6 +42,7 @@ data never leaves your device.
 | **Re-import** an updated export — preview changes, merges preserved (`just reimport`) | ✅ works |
 | Try a realistic demo with synthetic data (no personal data needed) | ✅ works |
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
+| **Grant an AI access** under a consent gate — *local* vs *cloud* (`EX-CLOUD-LLM`), with a per-field **data-floor** (sealed fields never leave) + one-click return to local-only | ✅ works |
 | **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 | **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
 | **Export contacts in the workspace** — download a portable vCard or a raw backup (no terminal) | ✅ works |
@@ -415,9 +417,16 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
    — paste its contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
    scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
 
-**A local AI is recommended**: once a cloud client can read your contacts, that data leaves the device
-— so the read tools warn, and the consent gate for cloud AI is a later milestone (see
-[Roadmap](roadmap.md)).
+**A local AI is recommended**, and PRM now makes the choice explicit. Open the **AI access** tab to grant
+access: pick **Local model — data stays on this device** (no exception) or **Cloud model — data leaves
+this device** (which raises the `EX-CLOUD-LLM` exception and shows a persistent "not a PNA right now"
+banner until you return to local-only mode). Before anything is shared you see the **blast radius** — which
+fields, across how many contacts — and a **data-floor** guarantee: fields you keep *sealed* (the default
+for every relationship field) **never** reach an AI, and *shareable* fields cross **only** after you
+consent here. Your private notes, and any field you haven't marked shareable, stay on the device
+regardless. Return to local-only mode anytime with one click (it stops future sharing — it can't recall
+data already sent). Background: [`../mcp_servers/README.md`](../mcp_servers/README.md) and the
+[Roadmap](roadmap.md).
 
 ---
 
