@@ -295,6 +295,12 @@ export *args:
 search *args:
     {{prm}} search {{args}}
 
+# Show what the MCP (AI) surface would return for a contact — the data-floor check. Sealed fields never
+# show; shareable fields show only after you grant access in the AI-access tab. E.g. `just floor-check "Aaron Frank"`.
+[group('dev')]
+floor-check name *args:
+    {{python}} scripts/floor_check.py "{{name}}" {{args}}
+
 # Free port 8770 if a previous `just serve` didn't shut down cleanly.
 [group('dev')]
 port:
