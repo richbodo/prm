@@ -1143,6 +1143,7 @@ document.querySelectorAll(".navitem[data-view]").forEach((n) =>
     if (n.dataset.view === "duplicates") loadDuplicates();   // re-enter at the fresh home, not a stale step
     if (n.dataset.view === "schema") loadSchema();
     if (n.dataset.view === "data") loadData();
+    if (n.dataset.view === "access") loadAccessView();
   }));
 const schemaNew = $("#schema-new");
 if (schemaNew) schemaNew.addEventListener("click", () => openFieldModal(null, loadSchema));
@@ -1266,6 +1267,7 @@ const bootWatchdog = setTimeout(() => {
   try {
     const ready = await refreshStats();
     booted = true; clearTimeout(bootWatchdog);               // the API answered — boot succeeded
+    loadDisclosure();                                        // banners + PNA-mode markers (works pre-import too)
     if (!ready) {
       els.statContacts.textContent = "0";
       emptyState('Import a file or folder to get started — or seed the demo with <code>prm init --demo</code>.');
@@ -1278,3 +1280,211 @@ const bootWatchdog = setTimeout(() => {
     emptyState(`Couldn’t reach the workspace API (${esc(err.message)}). Open <a href="?diag">?diag</a> for diagnostics.`);
   }
 })();
+
+
+// ============================================================================
+// AI access / disclosure — the EX-CLOUD-LLM workspace handler (banners, the gate,
+// the Settings hub explainer + strength profile, return-to-PNA). State is served by
+// /api/disclosure + /api/connections; consent writes go through the daemon under the lock.
+// ============================================================================
+let disclosureState = null;
+
+const BANNER_DEFS = {
+  "cloud-exception": { cls: "danger", lead: "Not a PNA right now.",
+    text: "You granted a cloud AI access to your private data, so it can leave this device (EX-CLOUD-LLM)." },
+  "local-ai": { cls: "warn", lead: "Local AI access is on.",
+    text: "A local model can read the fields you marked shareable. It stays on this device — but a local model could still relay it on; only you can vouch for it." },
+  "network-exposed": { cls: "danger", lead: "Your contacts are reachable on your network.",
+    text: "The workspace is bound to a non-loopback address, so other devices on your network can reach it." },
+};
+
+// EX-CLOUD-LLM per-dimension strength profile (PNT spec/exceptions.md) + the EX-H9 blast-radius row.
+const STRENGTH = [
+  ["Consent precedes turning it on", "enforced", "Sharing is blocked until you grant it here in the workspace."],
+  ["A non-PNA signal shows while active", "enforced", "A persistent banner shows until you return to PNA mode."],
+  ["The mode is reversible", "enforced", "“Return to PNA mode” clears the grant — the next AI read is withheld."],
+  ["Which fields can cross (blast radius)", "enforced", "Sealed fields never cross; only the shareable projection you curated, and only with consent."],
+  ["Servers are read-only over your data", "verifiable", "Open source; the MCP read tools never write your store."],
+  ["Consent reaches you, not a proxy", "best-effort", "A cloud client is asked to relay it (MCP instructions); it can’t be compelled."],
+  ["The provider won’t train on / keep it", "provider-asserted", "The provider’s policy; PRM can’t verify it."],
+  ["Data already sent to the cloud", "none", "Irreversible once it has crossed — return-to-PNA can’t recall it."],
+];
+
+// Banner dismissal is client-side and keyed to the current grant, so a NEW grant re-shows it. Dismiss
+// only acknowledges (EX-H3) — the grant stays on, and the AI-access view always shows it.
+function bannerToken(b) {
+  if (!disclosureState) return "";
+  if (b === "network-exposed") return "net";
+  return `${disclosureState.mode}:${disclosureState.consented_at || ""}`;
+}
+function isDismissed(b) { try { return localStorage.getItem(`prm_banner_${b}`) === bannerToken(b); } catch { return false; } }
+function setDismissed(b) { try { localStorage.setItem(`prm_banner_${b}`, bannerToken(b)); } catch {} renderBanners(); }
+
+function syncPnaMarkers() {
+  const m = disclosureState ? disclosureState.mode : "pna";
+  document.body.dataset.pnaMode = m === "cloud-exception" ? "non-pna" : "pna";
+  document.body.dataset.pnaExceptions = m === "cloud-exception" ? "EX-CLOUD-LLM" : "";
+  const badge = $("#access-badge");
+  if (badge) badge.hidden = m === "pna";
+}
+
+function renderBanners() {
+  const host = $("#banners");
+  if (!host) return;
+  const active = (disclosureState && disclosureState.banners) || [];
+  host.innerHTML = active.filter((b) => BANNER_DEFS[b] && !isDismissed(b)).map((b) => {
+    const d = BANNER_DEFS[b];
+    return `<div class="pbanner ${d.cls}" role="status"${b === "cloud-exception" ? ' data-pna-exception="EX-CLOUD-LLM"' : ""}>` +
+      `<span class="pb-text"><b>${esc(d.lead)}</b> ${esc(d.text)}</span>` +
+      `<span class="pb-actions">` +
+      `<button class="pb-link" data-access>What this means →</button>` +
+      `<button class="pb-x" data-dismiss="${b}" title="Acknowledge — it stays on; manage it in AI access">Dismiss</button>` +
+      `</span></div>`;
+  }).join("");
+  host.querySelectorAll("[data-dismiss]").forEach((x) => x.addEventListener("click", () => setDismissed(x.dataset.dismiss)));
+  host.querySelectorAll("[data-access]").forEach((x) => x.addEventListener("click", () => { show("access"); loadAccessView(); }));
+}
+
+async function loadDisclosure() {
+  try { disclosureState = await api("/api/disclosure"); } catch { disclosureState = null; }
+  syncPnaMarkers();
+  renderBanners();
+}
+
+async function loadAccessView() {
+  const body = $("#access-body");
+  if (body) body.innerHTML = `<p class="ph">Loading…</p>`;
+  const [d, conn] = await Promise.all([
+    api("/api/disclosure").catch(() => null),
+    api("/api/connections").catch(() => null),
+  ]);
+  disclosureState = d;
+  syncPnaMarkers();
+  renderBanners();
+  renderAccessView(d, conn);
+}
+
+function strengthRows() {
+  return STRENGTH.map(([dim, cls, why]) =>
+    `<tr><td class="sd">${esc(dim)}</td><td><span class="spill ${cls}">${esc(cls)}</span></td><td class="sw">${esc(why)}</td></tr>`).join("");
+}
+
+function renderAccessView(d, conn) {
+  const body = $("#access-body");
+  if (!body) return;
+  if (!d) { body.innerHTML = `<div class="datacard"><p class="lede-sub">Couldn’t load AI-access state.</p></div>`; return; }
+  const mode = d.mode;
+  const counts = d.shareable_counts || { contacts: 0, values: 0 };
+  const fields = d.shareable_fields || [];
+  const modeLabel = mode === "cloud-exception" ? "Cloud AI — data leaves this device"
+    : mode === "local-ai" ? "Local AI — data stays on this device"
+    : "Local-only (PNA) — nothing private leaves";
+
+  const grantBtn = `<button class="btn primary" id="ax-grant">${mode === "pna" ? "Grant AI access…" : "Change…"}</button>`;
+  const returnBtn = mode !== "pna" ? `<button class="btn" id="ax-return">Return to PNA mode</button>` : "";
+  const scopeGrew = d.scope_grew
+    ? `<p class="axnote warn">You marked new fields shareable since you consented — review and re-confirm to include them.</p>` : "";
+  const access =
+    `<div class="datacard"><h2 class="serif dh">Current access</h2>` +
+    `<div class="axmode axmode-${mode}"><span class="axdot"></span><b>${esc(modeLabel)}</b>` +
+    (d.consented_at ? `<span class="axwhen">since ${esc(String(d.consented_at).slice(0, 10))}</span>` : "") + `</div>` +
+    `<p class="lede-sub" style="margin:12px 0">An AI reads your data over the local MCP servers. ` +
+    (mode === "pna"
+      ? `Right now <b>nothing private crosses</b> — sealed fields never do, and shareable fields wait for your consent.`
+      : `It can read your <b>${counts.values}</b> shareable value(s) across <b>${counts.contacts}</b> contact(s). Sealed fields never cross.`) +
+    `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div></div>`;
+
+  const fieldList = fields.length
+    ? `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>`
+    : `<p class="lede-sub">No fields are marked shareable — everything is sealed. Mark a field shareable in <b>Schema</b> to let an AI read it (with your consent).</p>`;
+  const floor =
+    `<div class="datacard"><h2 class="serif dh">The data-floor</h2>` +
+    `<p class="lede-sub">Every relationship field is <b>sealed by default</b> and never reaches an AI. Only fields you mark ` +
+    `<b>shareable-on-consent</b> can cross — and only after you grant access above.</p>${fieldList}</div>`;
+
+  const exActive = mode === "cloud-exception";
+  const exHead = exActive
+    ? `<p class="axnote danger"><b>Active now.</b> This app is not a PNA while a cloud AI has access.</p>`
+    : `<p class="lede-sub">Not active. This is what would happen if you grant a cloud AI access.</p>`;
+  const ex =
+    `<div class="datacard"><h2 class="serif dh">EX-CLOUD-LLM — what it means</h2>${exHead}` +
+    `<table class="stable"><thead><tr><th>Guarantee</th><th>Strength</th><th></th></tr></thead><tbody>${strengthRows()}</tbody></table>` +
+    `<p class="axnote">Reversibility is <b>mode only</b>: returning to PNA mode stops future sharing but cannot recall data already sent.</p></div>`;
+
+  const reg = (conn && conn.mcp_registered && conn.mcp_registered.claude_desktop) || [];
+  const net = !!(conn && conn.network_exposed);
+  const connCard =
+    `<div class="datacard"><h2 class="serif dh">Connections</h2>` +
+    `<div class="axrow"><span>Workspace network exposure</span><b class="${net ? "bad" : "ok"}">${net ? "on your network" : "this device only (loopback)"}</b></div>` +
+    `<div class="axrow"><span>MCP servers registered in Claude Desktop</span><b>${reg.length ? esc(reg.join(", ")) : "none detected"}</b></div>` +
+    `<p class="lede-sub" style="margin-top:10px">PRM can only show what it can see — it can’t detect a client it isn’t told about. Disconnect PRM’s servers with <code>just mcp-uninstall</code>.</p></div>`;
+
+  body.innerHTML = access + floor + ex + connCard;
+  const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
+  const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
+}
+
+function gatePreviewHTML() {
+  const d = disclosureState || {};
+  const fields = d.shareable_fields || [];
+  const counts = d.shareable_counts || { contacts: 0, values: 0 };
+  if (!fields.length)
+    return `<p class="gate-prev">No fields are marked <b>shareable</b> yet, so an AI would read <b>nothing</b> private — sealed fields never cross. (Mark a field shareable in <b>Schema</b> first.)</p>`;
+  return `<p class="gate-prev">Granting access lets an AI read <b>${counts.values}</b> value(s) in these shareable fields, across <b>${counts.contacts}</b> contact(s):</p>` +
+    `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>` +
+    `<p class="gate-sealed">Everything else stays <b>sealed</b> and never crosses.</p>`;
+}
+
+function openGateModal() {
+  const el = document.createElement("div");
+  el.className = "aboutoverlay";
+  el.innerHTML =
+    `<div class="aboutcard gatecard"><div class="abouthead"><b class="serif">Grant AI access</b>` +
+    `<span class="spacer"></span><button class="btn" id="gate-close">Close</button></div>` +
+    `<div class="aboutbody"></div></div>`;
+  document.body.appendChild(el);
+  const close = () => el.remove();
+  el.querySelector("#gate-close").addEventListener("click", close);
+  el.addEventListener("click", (e) => { if (e.target === el) close(); });
+  renderGateChoose(el, close);
+}
+
+function renderGateChoose(el, close) {
+  el.querySelector(".aboutbody").innerHTML =
+    gatePreviewHTML() +
+    `<div class="gate-opts">` +
+    `<button class="gate-opt" id="gate-local"><span class="go-h">Local model — data stays on this device</span>` +
+    `<span class="go-s">No exception; you’re still a PNA. (A local model could still relay data on — only you can vouch for it.)</span></button>` +
+    `<button class="gate-opt cloud" id="gate-cloud"><span class="go-h">Cloud model — data leaves this device</span>` +
+    `<span class="go-s">Raises EX-CLOUD-LLM; a persistent “not a PNA” banner shows until you return to PNA mode.</span></button>` +
+    `</div>`;
+  el.querySelector("#gate-local").addEventListener("click", () => grant("local-ai", close));
+  el.querySelector("#gate-cloud").addEventListener("click", () => renderGateCloud(el, close));
+}
+
+function renderGateCloud(el, close) {
+  el.querySelector(".aboutbody").innerHTML =
+    `<p class="gate-prev"><b>Cloud model — data will leave this device.</b> Connecting a cloud AI raises the <b>EX-CLOUD-LLM</b> ` +
+    `exception: this app is no longer a PNA while it’s active. You can return to PNA mode anytime — but that stops only future ` +
+    `sharing; it can’t recall data already sent.</p>` +
+    gatePreviewHTML() +
+    `<label class="gate-check"><input type="checkbox" id="gate-ack"> I understand my contacts will be sent to a cloud provider.</label>` +
+    `<div class="editbar"><button class="btn" id="gate-back">← Back</button><span class="spacer"></span>` +
+    `<button class="btn primary" id="gate-confirm" disabled>Turn on cloud access</button></div>`;
+  el.querySelector("#gate-ack").addEventListener("change", (e) => { el.querySelector("#gate-confirm").disabled = !e.target.checked; });
+  el.querySelector("#gate-back").addEventListener("click", () => renderGateChoose(el, close));
+  el.querySelector("#gate-confirm").addEventListener("click", () => grant("cloud-exception", close));
+}
+
+async function grant(mode, done) {
+  try { await postJSON("/api/disclosure/consent", { mode }); }
+  catch (e) { alert("Couldn’t grant access: " + e.message); return; }
+  if (done) done();
+  loadAccessView();
+}
+
+async function returnToPna() {
+  try { await postJSON("/api/disclosure/return-to-pna", {}); }
+  catch (e) { alert("Couldn’t return to PNA mode: " + e.message); return; }
+  loadAccessView();
+}
