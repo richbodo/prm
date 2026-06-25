@@ -1543,6 +1543,8 @@ function renderAccessView(d, conn, requests, approvals) {
     `<div class="axrow"><span>Workspace network exposure</span><b class="${net ? "bad" : "ok"}">${net ? "on your network" : "this device only (loopback)"}</b></div>` +
     `<div class="axrow"><span>MCP servers registered in Claude Desktop</span><b>${reg.length ? esc(reg.join(", ")) : "none detected"}</b></div>` +
     lastRow +
+    `<div class="axmcp"><button class="btn ghost tiny" id="ax-mcptest">Test MCP servers</button>` +
+    `<span class="axmcpout" id="ax-mcptest-out"></span></div>` +
     `<p class="lede-sub" style="margin-top:10px">PRM can only show what it can see — it can’t detect a client it isn’t told about. Disconnect PRM’s servers with <code>just mcp-uninstall</code>.</p>`;
 
   body.innerHTML =
@@ -1561,6 +1563,7 @@ function renderAccessView(d, conn, requests, approvals) {
   const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
   const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
   const rv = $("#ax-review"); if (rv) rv.addEventListener("change", () => setReview(rv.checked));
+  const mt = $("#ax-mcptest"); if (mt) mt.addEventListener("click", testMcpServers);
   body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.approve, "approve")));
   body.querySelectorAll("[data-deny]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.deny, "deny")));
   body.querySelectorAll("[data-revoke]").forEach((b) => b.addEventListener("click", () => revokeRead(b.dataset.revoke)));
@@ -1653,4 +1656,38 @@ async function revokeRead(contactId) {
   try { await postJSON("/api/disclosure/revoke", { contact_id: contactId }); }
   catch (e) { alert("Couldn’t revoke: " + e.message); return; }
   loadAccessView();
+}
+
+// "Test MCP servers": spawn-probe the registered servers (responsive + on-disk build) and show the build
+// the *running* server last served from (the staleness signal). Honest about the two being different.
+async function testMcpServers() {
+  const out = $("#ax-mcptest-out");
+  if (out) out.innerHTML = `<span class="muted">testing…</span>`;
+  let r;
+  try { r = await postJSON("/api/mcp/selftest", {}); }
+  catch (e) { if (out) out.innerHTML = `<span class="bad">couldn’t test: ${esc(e.message)}</span>`; return; }
+  if (out) out.innerHTML = mcpTestHTML(r);
+}
+
+function mcpTestHTML(r) {
+  const servers = r.servers || [];
+  const rows = servers.length
+    ? servers.map((s) => {
+        if (!s.responsive)
+          return `<div class="axmcprow"><b>${esc(s.name)}</b> <span class="bad">not responsive</span> ` +
+            `<span class="gn">— couldn’t launch its configured command</span></div>`;
+        const cur = s.matches
+          ? `<span class="ok">✓ current</span>`
+          : `<span class="bad">⚠ differs from this app (${esc(r.app_build)})</span>`;
+        return `<div class="axmcprow"><b>${esc(s.name)}</b> <span class="ok">responsive</span> · ` +
+          `on-disk build <code>${esc(s.build || "?")}</code> ${cur}</div>`;
+      }).join("")
+    : `<div class="axmcprow gn">No PRM servers in your AI client's config — run <code>just mcp-install</code>.</div>`;
+  const lr = r.last_read
+    ? `<div class="axmcprow">Last live read was served by build <code>${esc(r.last_read.build)}</code> ` +
+      (r.last_read.matches
+        ? `<span class="ok">✓ matches this app</span>`
+        : `<span class="bad">⚠ stale — your AI client is running an old server; fully quit &amp; reopen it</span>`) + `</div>`
+    : `<div class="axmcprow gn">No AI read logged yet, so the running server's build is unknown — make a read, then test again.</div>`;
+  return rows + lr;
 }

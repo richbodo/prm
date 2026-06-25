@@ -14,15 +14,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # import core / cli without installing prm
 
-from mcp.server.fastmcp import FastMCP  # noqa: E402  (SDK; isolated venv — see just mcp-install-deps)
-
 from cli.config import resolve_home  # noqa: E402
-from core import relationships_db  # noqa: E402
+from core import build_label, relationships_db  # noqa: E402
 from mcp_servers import tools  # noqa: E402
 from mcp_servers.consent import CLOUD_LLM_NOTICE  # noqa: E402
 
 
 def build(home) -> "FastMCP":
+    from mcp.server.fastmcp import FastMCP   # lazy — so `--build` (self-check) runs without the SDK installed
     # `instructions` carries the EX-H7 best-effort cloud-LLM consent notice to a cooperating client.
     mcp = FastMCP("prm-shared-data-ops", instructions=CLOUD_LLM_NOTICE)
 
@@ -59,7 +58,12 @@ def main() -> None:
     ap.add_argument("--data-dir", help="PRM home (else $PRM_HOME, else ./prm-data/)")
     ap.add_argument("--print-config", action="store_true",
                     help="print the Claude Desktop JSON for this server and exit (don't run it)")
+    ap.add_argument("--build", action="store_true",
+                    help="print this server's build label and exit (the daemon's 'Test MCP servers' self-check)")
     args = ap.parse_args()
+    if args.build:                                           # self-check: no SDK, no home, no side effects
+        print(build_label.build_label())
+        return
     home = resolve_home(args.data_dir)
     relationships_db.migrate(home.relationships_db, home.legacy_private_db)   # v0.1→v0.2 rename + schema upgrade
     if args.print_config:
