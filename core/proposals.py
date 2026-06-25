@@ -15,7 +15,8 @@ import hashlib
 import json
 from datetime import datetime, timezone
 
-_VALID_OPS = {"merge", "resolve_field", "flag_conflict", "set_field_value", "clear_field_value"}
+_VALID_OPS = {"merge", "resolve_field", "flag_conflict", "set_field_value", "clear_field_value",
+              "append_field_value"}
 
 
 def _now_iso() -> str:
@@ -55,6 +56,15 @@ def clear_field_value_op(contact_id, field_id, value=None) -> dict:
     return {"op": "clear_field_value", "contact_id": contact_id, "field_id": field_id, "value": value}
 
 
+def append_field_value_op(contact_id, field_id, value, *, value_json=None,
+                          written_by="ai:unknown", source=None) -> dict:
+    # Like set_field_value but NON-destructive (R11a / AC-PRM-E): the apply path *appends* a row and never
+    # deletes a single-valued field's prior value, so an AI on the append-only tier only ever adds. Idempotent
+    # on (contact, field, value) via the value_id hash, so a re-found value is a no-op.
+    return {"op": "append_field_value", "contact_id": contact_id, "field_id": field_id, "value": value,
+            "value_json": value_json, "written_by": written_by, "source": source}
+
+
 # --------------------------------------------------------------------------- assembly + validation
 def build(operations, *, created_by: str, rationale: str = "") -> dict:
     """Assemble a changeset. The ``proposal_id`` is content-derived (stable for identical operations)."""
@@ -85,7 +95,7 @@ def validate(changeset: dict) -> None:
             raise ValueError("merge op needs source_record_ids + into")
         if kind in ("resolve_field", "flag_conflict") and (not op.get("contact_id") or not op.get("field")):
             raise ValueError(f"{kind} op needs contact_id + field")
-        if kind in ("set_field_value", "clear_field_value") and (not op.get("contact_id") or not op.get("field_id")):
+        if kind in ("set_field_value", "clear_field_value", "append_field_value") and (not op.get("contact_id") or not op.get("field_id")):
             raise ValueError(f"{kind} op needs contact_id + field_id")
 
 

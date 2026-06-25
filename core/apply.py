@@ -15,6 +15,18 @@ from datetime import datetime, timezone
 from core import audit, relationships_db, proposals, schema, snapshots
 from core.lock import file_lock
 
+# R11a — AI value-write tiers (AC-PRM-E). MAX_AI_VALUE_BYTES keeps a free-write field from bloating the
+# store; the per-session quota (settings `ai_write_quota`, default below) is the INV-13 runaway-loop bound on
+# a direct AI write. Both apply to an AI author (`written_by` = 'ai:<session>') only — a manual workspace edit
+# goes through set_field_value, not this dispatch path.
+MAX_AI_VALUE_BYTES = 8 * 1024
+DEFAULT_AI_WRITE_QUOTA = 50
+AI_WRITE_QUOTA_KEY = "ai_write_quota"
+
+
+class WritePolicyError(ValueError):
+    """An AI value write was refused by policy — unknown field, oversize value, or quota reached."""
+
 
 def build_merge_changeset(home, contact_ids, into, *, resolutions=None,
                           created_by="manual:user", rationale="") -> dict:
@@ -74,6 +86,73 @@ def clear_field_value(home, contact_id, field_id, value=None, *, written_by="man
     reversible, same path as ``set_field_value``."""
     op = proposals.clear_field_value_op(contact_id, field_id, value)
     return apply_changeset(home, proposals.build([op], created_by=written_by, rationale="clear field value"))
+
+
+def _ai_author(written_by) -> bool:
+    return isinstance(written_by, str) and written_by.startswith("ai:")
+
+
+def _value_bytes(value, value_json) -> int:
+    n = len(value.encode("utf-8")) if isinstance(value, str) else 0
+    if value_json is not None:
+        s = value_json if isinstance(value_json, str) else json.dumps(value_json)
+        n += len(s.encode("utf-8"))
+    return n
+
+
+def _ai_write_quota(home) -> int:
+    raw = relationships_db.get_setting(home.relationships_db, AI_WRITE_QUOTA_KEY)
+    try:
+        return int(raw) if raw is not None else DEFAULT_AI_WRITE_QUOTA
+    except (ValueError, TypeError):
+        return DEFAULT_AI_WRITE_QUOTA
+
+
+def write_field_value(home, contact_id, field_id, value, *, value_json=None,
+                      written_by, source=None) -> dict:
+    """The single entry point for an AI value write, **dispatched by the field's `ai_write_policy`** — the
+    structural lock the MCP `write_field_value` tool is a thin wrapper over (INV-11 / AC-PRM-E):
+
+      review-required (default) → **stage a proposal** (never writes directly) → {status:'staged', proposal_id}
+      append-only               → **append** a provenance-stamped row (size + quota checked) → {status:'appended'}
+      free-write                → **set** directly (size + quota checked)                     → {status:'set'}
+
+    Because review-required can only stage, no AI path commits a review-required write — the same guarantee as
+    the propose-only dedup surface. The size cap + per-session quota bound an AI author (`ai:<session>`); a
+    non-AI caller is routed by policy but unbounded. Field *definitions* are never written here (INV-3/4)."""
+    home.create()
+    field = schema.get_field(home.relationships_db, field_id)
+    if field is None:
+        raise WritePolicyError(f"no such field: {field_id!r}")
+    policy = field.get("ai_write_policy", "review-required")
+
+    if _ai_author(written_by) and _value_bytes(value, value_json) > MAX_AI_VALUE_BYTES:
+        raise WritePolicyError(f"value exceeds the {MAX_AI_VALUE_BYTES}-byte AI-write cap")
+
+    if policy == "review-required":                    # never a direct write — stage for human review (UM-1)
+        op = proposals.set_field_value_op(contact_id, field_id, value, value_json=value_json,
+                                          written_by=written_by, source=source)
+        cs = proposals.build([op], created_by=written_by, rationale="AI value write (review-required)")
+        return {"status": "staged", "policy": policy, "proposal_id": proposals.store(home, cs)}
+
+    if policy not in ("append-only", "free-write"):
+        raise WritePolicyError(f"unknown ai_write_policy: {policy!r}")
+
+    if _ai_author(written_by):                         # INV-13 per-session runaway bound on a direct AI write
+        cap = _ai_write_quota(home)
+        used = relationships_db.count_ai_writes(home.relationships_db, written_by)
+        if used >= cap:
+            raise WritePolicyError(f"AI write quota reached ({used}/{cap}) for {written_by!r}")
+
+    if policy == "append-only":
+        op = proposals.append_field_value_op(contact_id, field_id, value, value_json=value_json,
+                                             written_by=written_by, source=source)
+    else:                                              # free-write — a direct set into a low-stakes field
+        op = proposals.set_field_value_op(contact_id, field_id, value, value_json=value_json,
+                                          written_by=written_by, source=source)
+    result = apply_changeset(home, proposals.build([op], created_by=written_by,
+                                                    rationale=f"AI value write ({policy})"))
+    return {"status": "appended" if policy == "append-only" else "set", "policy": policy, **result}
 
 
 def resolve_field(home, contact_id, field, value, *, chosen_source=None, written_by="manual:user") -> dict:
