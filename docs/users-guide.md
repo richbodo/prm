@@ -438,7 +438,9 @@ exceptions list itemizes **every contact you've approved** — which fields, whe
 AI **last read** it — each with its own **Revoke** button (revoking one leaves the rest, unlike *Return to
 PNA* which clears them all). The **Connections** card shows that last AI read together with the **build** of
 the server that served it, and warns if it differs from the app's build — a quick way to catch an AI client
-still running an **old MCP server** after an update (fully quit and reopen it). Background:
+still running an **old MCP server** after an update (fully quit and reopen it). A **Test MCP servers** button
+there checks the registered servers are **responsive** and reports their build alongside the build the
+running server last served from — so you can confirm everything's current at a glance. Background:
 [`../mcp_servers/README.md`](../mcp_servers/README.md) and the [Roadmap](roadmap.md).
 
 ---

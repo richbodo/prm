@@ -109,3 +109,12 @@ values** — INV-1), and the **build label** of the server that served it — so
 code after an update (a real gotcha: ⌘Q + reopen Claude Desktop after pulling) is immediately visible.
 A leaf write (`core/access_log.py`), bounded like the snapshot ring. Read it with **`just access-log`**
 (or `just access-log 100`) — handy when manually verifying what a connected AI actually pulled.
+
+## Self-check — `--build` and the "Test MCP servers" button
+
+Each server accepts **`--build`**: it prints its build label and exits, **without loading the MCP SDK** (the
+SDK import is lazy), so it works from any Python. The workspace's **External Access → Connections → "Test MCP
+servers"** button uses it: the daemon spawns each registered server with `--build` to confirm it's
+**responsive** and report its **on-disk** build, and pairs that with the **last live read**'s build from the
+access log — the build the server your AI client is *actually* running stamped. (A fresh spawn always
+reflects current on-disk code, so the running-server staleness signal is the last-read build, not the spawn.)

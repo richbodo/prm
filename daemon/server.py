@@ -200,6 +200,8 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             return _json(400, {"error": "revoke needs contact_id"})
         apply.revoke_read(home, cid, by="manual:workspace")
         return _json(200, {"ok": True, "approvals": _disclosure_exceptions(home)})
+    if path == "/api/mcp/selftest":                          # P2 follow-on: spawn-probe the registered MCP servers
+        return _json(200, _mcp_selftest(home))
     if not home.shared_db.exists():
         return _json(409, {"error": "no shared.db yet"})
     try:
@@ -418,6 +420,45 @@ def _mcp_last_access(home: PrmHome) -> dict | None:
         return None
     return {"ts": last.get("ts"), "tool": last.get("tool"), "contact_id": last.get("contact_id"),
             "decision": last.get("decision"), "build": last.get("build")}
+
+
+def _mcp_selftest(home: PrmHome) -> dict:
+    """'Test MCP servers' (External Access → Connections): spawn each registered PRM MCP server with
+    ``--build`` to check it is **responsive** and what **build** it runs *on disk*, and report the **last
+    live read**'s build from the access log — the server an AI client is *actually* running. Both matter:
+    a fresh spawn always reflects current on-disk code, so the staleness signal a client cares about is the
+    last-read build, not the spawn. Best-effort: a missing/odd config or a hung server degrades to
+    'unresponsive', never an error (the ``--build`` self-check needs no SDK — see the servers' lazy import)."""
+    import subprocess
+    from core import access_log
+    app = build_label.build_label()
+    out: dict = {"app_build": app, "servers": [], "last_read": None}
+    try:
+        from mcp_servers import install
+        servers = (install.load_config(install.default_config_path()).get("mcpServers") or {})
+        keys = [k for k in install.PRM_KEYS if k in servers]
+    except Exception:  # noqa: BLE001 — a missing/odd config must never break the workspace
+        servers, keys = {}, []
+    for key in keys:
+        entry = servers.get(key) or {}
+        cmd = entry.get("command")
+        rec = {"name": key, "responsive": False, "build": None, "matches": None}
+        if cmd:
+            try:
+                r = subprocess.run([cmd, *(entry.get("args") or []), "--build"],
+                                   capture_output=True, text=True, timeout=15)
+                stdout = (r.stdout or "").strip()
+                b = stdout.splitlines()[-1].strip() if stdout else ""
+                rec.update(responsive=(r.returncode == 0 and bool(b)), build=(b or None),
+                           matches=((b == app) if b else None))
+            except (OSError, subprocess.SubprocessError):    # not launchable / hung past the timeout
+                pass
+        out["servers"].append(rec)
+    last = access_log.last_read(home)
+    if last and last.get("build"):
+        out["last_read"] = {"ts": last.get("ts"), "build": last.get("build"),
+                            "matches": last.get("build") == app}
+    return out
 
 
 def _mcp_registered() -> dict:

@@ -543,4 +543,11 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .axsubnote{font-size:12px;color:var(--muted);margin:0 0 11px;}
 .axappr .axfields{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;}
 .axappr .axmeta{display:block;font-size:11.5px;color:var(--faint);margin-top:3px;}
+/* Test MCP servers (Connections) */
+.axmcp{display:flex;flex-direction:column;gap:8px;padding:10px 0 2px;}
+.axmcp .btn{align-self:flex-start;}
+.axmcprow{font-size:12.5px;color:var(--ink-2);line-height:1.6;}
+.axmcprow code{font-size:11.5px;}
+.axmcprow .ok{color:var(--accent-d);}
+.axmcprow .bad{color:var(--danger);}
 .axnote.warn{color:var(--clay);}
