@@ -1487,17 +1487,20 @@ function renderAccessView(d, conn, requests, approvals) {
     `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div>${reviewToggle}`;
 
   const apprRows = (approvals || []).map((a) => {
-    const fl = (a.fields || []).join(", ") || "—";
+    const fa = a.fields || [];
+    const fl = fa.join(", ") || "—";
+    const fieldLabel = fa.length === 1 ? "Field" : "Fields";   // singular when exactly one
     const meta = `${a.approved_at ? "approved " + esc(fmtWhen(a.approved_at)) : "approved"}` +
       `${a.last_read_at ? " · last read " + esc(fmtWhen(a.last_read_at)) : " · not yet read"}`;
     return `<div class="axrow axappr"><span class="axreqwho"><b>${esc(a.name || "(no name)")}</b>` +
-      `<span class="muted"> · ${esc(fl)}</span><span class="axmeta">${meta}</span></span>` +
+      `<span class="axfields">${fieldLabel}: ${esc(fl)}</span><span class="axmeta">${meta}</span></span>` +
       `<span class="axreqbtns"><button class="btn ghost tiny" data-revoke="${esc(a.contact_id)}">Revoke</button></span></div>`;
   }).join("");
+  const apprHead = `<div class="axsubhead">Per-contact approvals</div>`;   // a real subsection header (matches the mode heading's weight)
   const apprBlock = (approvals && approvals.length)
-    ? `<div class="axsub">Per-contact approvals <span class="gn">— each stays readable until you revoke it or the mode changes</span></div>${apprRows}`
+    ? apprHead + `<p class="axsubnote">Each stays readable until you revoke it, or the mode changes.</p>${apprRows}`
     : (mode !== "pna" && d.review
-        ? `<p class="lede-sub axsub">No per-contact approvals yet — with review on, each AI read waits for your approval (see Pending, below).</p>` : "");
+        ? apprHead + `<p class="axsubnote">None yet — with review on, each AI read waits for your approval (see Pending, below).</p>` : "");
   const netRow = net
     ? `<div class="axsub">Network</div><div class="axrow"><span>Your contacts are reachable on your network</span><b class="bad">non-loopback</b></div>` : "";
   const exceptionsInner = modeGrant + apprBlock + netRow;
