@@ -28,7 +28,7 @@ multi-source dedup contract).
 | Axis | Pick | Why |
 |---|---|---|
 | [Distribution](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#distribution) | `never-distributed-single-user` | Built from source by the user themselves; no server, no auth, no service worker. The **independently-verifiable** end of the distribution spectrum — a friend builds it and runs this conformance flow before trusting it. |
-| [Storage substrate](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#storage-substrate) | `native-sqlite-via-filesystem` | Native `sqlite3` over OS files, WAL + advisory file-lock. Triggers **AC-PRM-C**. |
+| [Storage substrate](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#storage-substrate) | `native-sqlite-via-filesystem` | Native `sqlite3` over OS files, WAL + advisory file-lock. Brings realization **RZ-5**. |
 | [Ingestion shape](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#ingestion-shape) | `multi-source-merge-with-dedup` | vCard / Google Takeout / LinkedIn / Google CSV / Facebook merged with stable IDs + per-field provenance. Triggers **AC-PRM-B**. |
 | [Workspace shell](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#workspace-shell) | `vanilla-js-spa` | `workspace/` — hand-written JS SPA, no framework/bundler, served by a stdlib `http.server` daemon — **loopback-bound, with a per-process session token + Host/Origin guard** so other local programs can't read contacts through it ([`design-notes/local-daemon-trust-surface.md`](design-notes/local-daemon-trust-surface.md), "Surface 1"). |
 | [Comms transport set](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#comms-transport-set) | `none` | v0.1 has no outreach surface (→ AC-16/18/19/MCP-B not-applicable). |
@@ -68,12 +68,12 @@ proves it), and a **Status** (`conformant` / `partial-conformance` / `not-applic
 | [AC-MCP-A (cloud AI clients require consent for Private DB)](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/PNA_Spec.md#ac-mcp-a) | The MCP surface returns **Private-DB** (relationship-overlay) rows only behind an explicit **per-session opt-in**: it is **projection-bound** — `private-sealed` fields are never SELECTed at the query layer, so they cannot cross even with consent (`core/relationships_db.py:shareable_field_values`) — and **consent-gated** — `private-shareable-on-consent` fields cross only after the user records disclosure consent in the workspace (`core/disclosure.py` + `core/apply.py:set_disclosure_mode`; default **fail-closed**; `mcp_servers/tools.py` reads via `projection.get_contact(audience="mcp")`). Because the LLM can't be identified, the gate is applied **uniformly** (stronger than gating cloud only). The dedup surface stays **propose-only** (no apply tool, INV-11). Shared-contact PII is *Shared* DB (AC-17), under AC-PRM-A's "local AI recommended" posture. | `tests/unit/test_mcp_data_floor.py::test_sealed_never_crosses_and_shareable_needs_consent`, `tests/unit/test_mcp_data_floor.py::test_sealed_absent_from_mcp_projection_in_every_mode`; `tests/unit/test_daemon_disclosure.py::test_default_state_then_consent_cycle`; `tests/e2e/test_disclosure_flow.py::test_consent_gate_governs_the_mcp_floor_end_to_end`; `tests/unit/test_mcp_tools.py::test_submit_is_propose_only` | conformant |
 | [AC-MCP-B (MCP Communications stages; workspace launches)](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/PNA_Spec.md#ac-mcp-b) | Not applicable — no Communications MCP surface (`comms: none`). | — | not-applicable |
 
-### Flavor-derived ACs triggered by PRM's picks
+### Flavor-derived ACs and realizations triggered by PRM's picks
 
 | AC | Triggered by | Realization | Verification | Status |
 |---|---|---|---|---|
 | [AC-PRM-B (multi-source dedup contract)](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#ac-prm-b) | `ingestion:multi-source-merge-with-dedup` | A **stable id survives merge and re-import** (`cli/identity.py` fallback chain → `core/relationships_db.py:identity_map`, re-attached by `source_uid`); conflicts are **surfaced, never silently resolved** (`core/candidates.py` tiers + `core/projection.py:preview_merge` flag-don't-guess; name-only/name+company are propose-only, never auto-merged); **per-field provenance** recorded (`field_provenance`). | `tests/unit/test_candidates.py::test_detect_clusters_and_tiers`, `tests/unit/test_candidates.py::test_transitive_overmerge_guard`; `tests/unit/test_relationships_store.py::test_preview_merge_marks_conflicts`; `tests/unit/test_reimport.py::test_reimport_preserves_merges`; `tests/e2e/test_dedup_flow.py::test_bulk_flow_scenario` | conformant |
-| [AC-PRM-C (single-instance file-lock)](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#ac-prm-c) | `storage:native-sqlite-via-filesystem` | `core/lock.py:file_lock` — advisory `flock` per PRM home; a second process **refuses cleanly with a specific message** naming the held lock, rather than racing the canonical writer. | `tests/unit/test_lock.py::test_second_holder_refused_with_message`, `tests/unit/test_lock.py::test_release_allows_reacquire` | conformant |
+| [RZ-5 (single-instance file-lock)](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md#rz-5) | `storage:native-sqlite-via-filesystem` | `core/lock.py:file_lock` — advisory `flock` per PRM home; a second process **refuses cleanly with a specific message** naming the held lock, rather than racing the canonical writer. | `tests/unit/test_lock.py::test_second_holder_refused_with_message`, `tests/unit/test_lock.py::test_release_allows_reacquire` | conformant |
 
 Picks PRM did not take on the other axes carry their own flavor-derived ACs in
 [axes.md](https://github.com/richbodo/personal_network_toolkit/blob/main/spec/axes.md); none fire here
@@ -94,8 +94,8 @@ cloud surface** (the data-floor) + honest signaling — never by trying to ident
 
 A **constraint** (`CST-*`) is a platform ceiling inherited by an axis pick. PRM's `native-sqlite-via-filesystem`
 storage **inherits no PWA constraints** (the `CST-PWA-*` family attaches to `opfs-sqlite-wasm` + `web-bundle`,
-which PRM does not pick). The single-instance write ceiling native SQLite imposes is captured as **AC-PRM-C**
-(an AC, not a CST). PRM therefore declares **no constraint attestation rows** for Toolkit-Version 0.2.
+which PRM does not pick). The single-instance write ceiling native SQLite imposes is captured as **RZ-5**
+(a Layer-2 realization of AC-11, not a CST). PRM therefore declares **no constraint attestation rows** for Toolkit-Version 0.2.
 
 ### User-mediation attestation
 
