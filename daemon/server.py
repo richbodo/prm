@@ -88,6 +88,8 @@ def _get(path: str, query: dict, home: PrmHome, network_exposed: bool = False) -
         return _json(200, _connections(home, network_exposed))
     if path == "/api/disclosure/requests":                   # P4: pending per-request AI-read approvals
         return _json(200, {"requests": disclosure.list_requests(home)})
+    if path == "/api/disclosure/exceptions":                 # P2: itemized Current Access Exceptions (approvals)
+        return _json(200, {"approvals": _disclosure_exceptions(home)})
 
     if not db.exists():
         return _json(409, {"error": "no shared.db yet — run `prm import` first"})
@@ -192,6 +194,12 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             return _json(400, {"error": "needs contact_id + action in {approve, deny}"})
         (apply.approve_read if action == "approve" else apply.deny_read)(home, cid, by="manual:workspace")
         return _json(200, {"ok": True, "requests": disclosure.list_requests(home)})
+    if path == "/api/disclosure/revoke":                     # P2: revoke ONE contact's AI-read approval
+        cid = (body or {}).get("contact_id")
+        if not cid:
+            return _json(400, {"error": "revoke needs contact_id"})
+        apply.revoke_read(home, cid, by="manual:workspace")
+        return _json(200, {"ok": True, "approvals": _disclosure_exceptions(home)})
     if not home.shared_db.exists():
         return _json(409, {"error": "no shared.db yet"})
     try:
@@ -363,6 +371,31 @@ def _disclosure_state(home: PrmHome, network_exposed: bool = False) -> dict:
         "review": disclosure.review_required(home),
         "pending_requests": len(pending),
     }
+
+
+def _disclosure_exceptions(home: PrmHome) -> list:
+    """The itemized 'Current Access Exceptions' detail (P2): one entry per **approved** contact (P4),
+    enriched for the External Access list — its name, the shareable fields in scope, when it was approved
+    (from the audit log), and when an AI last read it (from the access log). Empty until a contact is
+    approved. Read-only; joins ``disclosure.approvals`` × ``audit`` × ``access_log`` × the projection."""
+    from core import access_log, audit, projection
+    approved = disclosure.approvals(home)
+    if not approved or not home.shared_db.exists():
+        return []
+    approved_at: dict = {}
+    for e in audit.read(home):                               # oldest→newest, so the last write wins
+        if e.get("kind") == "disclosure_approve_read" and e.get("contact_id"):
+            approved_at[e["contact_id"]] = e.get("at")
+    out = []
+    for cid in approved:
+        c = projection.get_contact(home, cid, audience="local")
+        fields = sorted(f["name"] for f in (c or {}).get("fields", [])
+                        if f.get("custom") and f.get("disclosure_tier") == "private-shareable-on-consent")
+        last = access_log.last_read(home, cid)
+        out.append({"contact_id": cid, "name": (c or {}).get("fn") or "",
+                    "fields": fields, "approved_at": approved_at.get(cid),
+                    "last_read_at": (last or {}).get("ts"), "last_read_decision": (last or {}).get("decision")})
+    return out
 
 
 def _connections(home: PrmHome, network_exposed: bool = False) -> dict:

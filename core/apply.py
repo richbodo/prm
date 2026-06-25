@@ -330,3 +330,17 @@ def deny_read(home, contact_id, *, by="manual:workspace") -> dict:
     with file_lock(home.lock_file):
         disclosure.clear_request(home, contact_id)
         return audit.append(home, {"kind": "disclosure_deny_read", "contact_id": contact_id, "by": by})
+
+
+def revoke_read(home, contact_id, *, by="manual:workspace") -> dict:
+    """Revoke ONE contact's AI-read approval — the inverse of ``approve_read``: drop it from the approvals
+    set so the next MCP read of that contact re-stages for review. Unlike ``return_to_pna`` it leaves every
+    *other* approval and the disclosure mode intact (the per-item control behind the Current Access
+    Exceptions list). Lock + audit. Idempotent — a no-op revoke (already absent) still audits the intent."""
+    from core import disclosure
+    home.create()
+    with file_lock(home.lock_file):
+        relationships_db.ensure(home.relationships_db)
+        appr = [c for c in disclosure.approvals(home) if c != contact_id]
+        relationships_db.set_setting(home.relationships_db, disclosure.APPROVALS_KEY, json.dumps(appr))
+        return audit.append(home, {"kind": "disclosure_revoke_read", "contact_id": contact_id, "by": by})
