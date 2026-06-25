@@ -159,3 +159,18 @@ def write_field_value(home, contact_id: str, field_id: str, value, *, written_by
                                        written_by=written_by, source=source)
     except apply.WritePolicyError as exc:
         return {"error": str(exc), "contact_id": contact_id, "field_id": field_id}
+
+
+def observe_contact_field(home, contact_id: str, field: str, value, *, written_by: str,
+                          source=None, confidence=None) -> dict:
+    """File an AI **observation** for a CANONICAL contact field (R11b) — additive, attributed, and NEVER
+    canonical. It lands as a *suggestion* the user promotes in the workspace; there is **no promote tool**
+    on this surface, so an AI can't make a contact-identity value the default (the structural lock that
+    keeps "the human is the actuator" true for contact data). Bounded by the per-session quota + size cap.
+    A refusal (non-enrichable field / size cap / quota) returns an ``error`` dict rather than raising.
+    Returns ``core.apply.observe_field``'s result."""
+    try:
+        return apply.observe_field(home, contact_id, field, value, written_by=written_by,
+                                   source=source, confidence=confidence)
+    except apply.WritePolicyError as exc:
+        return {"error": str(exc), "contact_id": contact_id, "field": field}

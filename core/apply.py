@@ -155,6 +155,41 @@ def write_field_value(home, contact_id, field_id, value, *, value_json=None,
     return {"status": "appended" if policy == "append-only" else "set", "policy": policy, **result}
 
 
+# Canonical contact fields an AI may file an OBSERVATION for (R11b) — the vCard namespace worth enriching.
+# Identity fields (fn/n/photo/gender/kind) are deliberately excluded: an AI never guesses *who* someone is.
+ENRICHABLE_CANONICAL_FIELDS = {"tel", "email", "adr", "url", "org", "title", "bday", "nickname", "impp", "role"}
+
+
+def observe_field(home, contact_id, field, value, *, written_by, value_json=None, source=None,
+                  confidence=None) -> dict:
+    """File an AI **observation** for a CANONICAL contact field (R11b) — additive, attributed, and NEVER
+    canonical: it lands as a *suggestion* (status ``observed``) the user later promotes in the workspace
+    (R11c). There is no promote path on the MCP surface, so an AI can't make a contact-identity value the
+    default. Bounded by the per-session quota + size cap, like an append-only write. Writes take a lighter
+    **append + audit, no snapshot** path — a gathering run can't thrash the snapshot ring, and an observation
+    is inert until promoted, so it needs no snapshot to be reversible. Returns ``{status:'observed', obs_id, new}``."""
+    field = (field or "").strip().lower()
+    if field not in ENRICHABLE_CANONICAL_FIELDS:
+        raise WritePolicyError(f"not an enrichable canonical field: {field!r} "
+                               f"(allowed: {', '.join(sorted(ENRICHABLE_CANONICAL_FIELDS))})")
+    if _ai_author(written_by) and _value_bytes(value, value_json) > MAX_AI_VALUE_BYTES:
+        raise WritePolicyError(f"value exceeds the {MAX_AI_VALUE_BYTES}-byte AI-write cap")
+    home.create()
+    if _ai_author(written_by):                         # INV-13 per-session runaway bound on observations
+        cap = _ai_write_quota(home)
+        used = relationships_db.count_ai_observations(home.relationships_db, written_by)
+        if used >= cap:
+            raise WritePolicyError(f"AI observation quota reached ({used}/{cap}) for {written_by!r}")
+    with file_lock(home.lock_file):
+        relationships_db.ensure(home.relationships_db)
+        obs_id, inserted = relationships_db.add_observation(
+            home.relationships_db, contact_id, field, value, value_json=value_json,
+            written_by=written_by, source=source, confidence=confidence)
+        audit.append(home, {"kind": "observe", "contact_id": contact_id, "field": field,
+                            "obs_id": obs_id, "written_by": written_by, "source": source, "new": inserted})
+    return {"status": "observed", "obs_id": obs_id, "field": field, "new": inserted}
+
+
 def resolve_field(home, contact_id, field, value, *, chosen_source=None, written_by="manual:user") -> dict:
     """Override a single-valued (reconcile) *source* field on one contact — a manual edit (``rule="user"``,
     so it beats survivorship and survives re-import). Writes ``field_resolutions``; the projection layers

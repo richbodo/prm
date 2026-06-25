@@ -22,7 +22,7 @@ from core import relationships_db, schema  # noqa: E402
 
 def _store(tmp: str) -> Path:
     db = Path(tmp) / "relationships.db"
-    relationships_db.ensure(db)                 # schema v2 + built-in fields seeded
+    relationships_db.ensure(db)                 # current schema + built-in fields seeded
     relationships_db.seed_identities(db, ["c1"])  # a real contact, for the value FK
     return db
 
@@ -145,27 +145,47 @@ def test_field_value_foreign_key_lock():
             con.close()
 
 
-# ------------------------------------------------------------------ v1 → v2 migration
-def test_v1_store_is_migrated_to_v2():
+# ------------------------------------------------------------------ migration up to the current schema
+def test_v1_store_is_migrated_to_current():
     with tempfile.TemporaryDirectory() as tmp:
         db = Path(tmp) / "relationships.db"
         relationships_db.ensure(db)
-        # roll the store back to a v0.1 shape: drop the v2 tables, stamp user_version = 1
+        # roll the store back to a v0.1 shape: drop every post-v1 table, stamp user_version = 1
         con = sqlite3.connect(db)
-        con.executescript("DROP TABLE field_values; DROP TABLE field_definitions; PRAGMA user_version = 1;")
+        con.executescript("DROP TABLE observations; DROP TABLE field_values; DROP TABLE field_definitions; "
+                           "PRAGMA user_version = 1;")
         con.commit()
         con.close()
-        assert relationships_db.SCHEMA_VERSION == 2
 
-        relationships_db.ensure(db)                          # ensure() must migrate v1 → v2
+        relationships_db.ensure(db)                          # ensure() must migrate v1 → current
         con = sqlite3.connect(db)
         try:
-            assert con.execute("PRAGMA user_version").fetchone()[0] == 2
+            assert con.execute("PRAGMA user_version").fetchone()[0] == relationships_db.SCHEMA_VERSION
             tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-            assert {"field_definitions", "field_values"} <= tables
+            assert {"field_definitions", "field_values", "observations"} <= tables
         finally:
             con.close()
         assert {f["field_id"] for f in schema.list_fields(db)} >= {"photo", "tags", "notes"}
+
+
+def test_v2_store_gains_observations():
+    # A v0.2 store (relationship schema present, no observations table) is migrated to v3 in place — the
+    # R11b delta, applied idempotently with no destructive ALTERs.
+    with tempfile.TemporaryDirectory() as tmp:
+        db = Path(tmp) / "relationships.db"
+        relationships_db.ensure(db)
+        con = sqlite3.connect(db)
+        con.executescript("DROP TABLE observations; PRAGMA user_version = 2;")    # roll back to a v2 shape
+        con.commit()
+        con.close()
+
+        relationships_db.ensure(db)                          # ensure() adds the observations table → v3
+        con = sqlite3.connect(db)
+        try:
+            assert con.execute("PRAGMA user_version").fetchone()[0] == relationships_db.SCHEMA_VERSION
+            assert "observations" in {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        finally:
+            con.close()
 
 
 def main() -> int:

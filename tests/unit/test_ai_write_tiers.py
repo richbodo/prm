@@ -129,6 +129,59 @@ def test_unknown_field_is_refused():
             pass
 
 
+# ------------------------------------------------------------------ R11b: observations (canonical enrichment)
+def test_observe_files_a_pending_observation_idempotently():
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home_with_contact(tmp)
+        res = apply.observe_field(home, cid, "tel", "+1-555-0100", written_by="ai:s1", source="web")
+        assert res["status"] == "observed" and res["new"] is True
+        obs = relationships_db.observations_for(home.relationships_db, cid)
+        assert len(obs) == 1 and obs[0]["field"] == "tel" and obs[0]["status"] == "observed"
+        assert obs[0]["written_by"] == "ai:s1"
+        again = apply.observe_field(home, cid, "tel", "+1-555-0100", written_by="ai:s1", source="web")
+        assert again["new"] is False                                       # re-find from same source = no-op
+        assert len(relationships_db.observations_for(home.relationships_db, cid)) == 1
+
+
+def test_observe_does_not_touch_the_canonical_view():
+    # An observation is a suggestion: it must NOT become a field value or a resolution (no promote path).
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home_with_contact(tmp)
+        apply.observe_field(home, cid, "org", "Globex", written_by="ai:s1")
+        assert relationships_db.field_values_for(home.relationships_db, cid) == []     # not a field value
+        assert relationships_db.field_resolutions(home.relationships_db) == {}         # not a resolution
+
+
+def test_observe_rejects_non_enrichable_field():
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home_with_contact(tmp)
+        for bad in ("fn", "photo", "made_up"):                             # identity fields + junk are refused
+            try:
+                apply.observe_field(home, cid, bad, "x", written_by="ai:s1")
+                raise AssertionError(f"expected WritePolicyError for {bad!r}")
+            except apply.WritePolicyError:
+                pass
+
+
+def test_observe_quota_and_size_cap():
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home_with_contact(tmp)
+        relationships_db.set_setting(home.relationships_db, apply.AI_WRITE_QUOTA_KEY, "2")
+        apply.observe_field(home, cid, "tel", "a", written_by="ai:s1")     # 1
+        apply.observe_field(home, cid, "tel", "b", written_by="ai:s1")     # 2
+        try:
+            apply.observe_field(home, cid, "tel", "c", written_by="ai:s1")  # 3 — over the per-session cap
+            raise AssertionError("expected the observation quota to refuse")
+        except apply.WritePolicyError:
+            pass
+        big = "x" * (apply.MAX_AI_VALUE_BYTES + 1)
+        try:
+            apply.observe_field(home, cid, "email", big, written_by="ai:s2")
+            raise AssertionError("expected the size cap to refuse")
+        except apply.WritePolicyError:
+            pass
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []
