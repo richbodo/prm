@@ -108,3 +108,25 @@ VALUES
         strftime('%Y-%m-%dT%H:%M:%SZ','now'), strftime('%Y-%m-%dT%H:%M:%SZ','now')),
     ('notes', 'Notes', 'long_text',    '{}',               'builtin', 20,
         strftime('%Y-%m-%dT%H:%M:%SZ','now'), strftime('%Y-%m-%dT%H:%M:%SZ','now'));
+
+-- ============================== v3: AI-gathered observations (R11b) ==============================
+-- Additive, attributed, NEVER-canonical suggestions an AI files for a contact's *canonical* (jCard)
+-- fields — the holding pen delegated gathering writes into (docs/design-notes/ai-writes-and-gathered-data.md).
+-- `field` is a canonical property name (tel/email/org/title/adr/url/bday/nickname/impp), which has no
+-- field_definition, so this can't live in field_values. The projection treats an observation as a
+-- *suggestion* until the user PROMOTES it (R11c); shared.db stays the immutable mirror (INV-2). status:
+-- observed (pending) → accepted (promoted) → superseded (the one-deep previous) | rejected (dismissed).
+CREATE TABLE IF NOT EXISTS observations (
+    obs_id      TEXT PRIMARY KEY,                  -- sha1(contact_id ∥ field ∥ value ∥ source): idempotent re-find
+    contact_id  TEXT NOT NULL REFERENCES contacts(contact_id) ON DELETE CASCADE,
+    field       TEXT NOT NULL,
+    value       TEXT,
+    value_json  TEXT,
+    written_by  TEXT NOT NULL,                     -- 'ai:<session>'
+    source      TEXT,                              -- where the AI found it (e.g. 'web', 'github')
+    confidence  REAL,                              -- the gatherer's self-reported confidence (advisory)
+    status      TEXT NOT NULL DEFAULT 'observed'
+        CHECK (status IN ('observed','accepted','superseded','rejected')),
+    written_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_observations_contact ON observations(contact_id);

@@ -124,6 +124,21 @@ def test_write_tool_refusal_returns_error_dict():
         assert "error" in res and res["field_id"] == "no_such_field"
 
 
+# ------------------------------------------------------------------ observe tool (R11b, canonical enrichment)
+def test_observe_tool_files_observation_and_cannot_promote():
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _one_contact_home(tmp)
+        res = tools.observe_contact_field(home, cid, "tel", "+1-555-0199", written_by="ai:test", source="web")
+        assert res["status"] == "observed" and res["obs_id"]
+        obs = relationships_db.observations_for(home.relationships_db, cid)
+        assert len(obs) == 1 and obs[0]["field"] == "tel"                 # filed as a suggestion
+        # the observation is NOT canonical — no field value, no resolution (the human promotes, in workspace)
+        assert relationships_db.field_values_for(home.relationships_db, cid) == []
+        assert relationships_db.field_resolutions(home.relationships_db) == {}
+        # a refusal (identity field) is an error dict, not an exception
+        assert "error" in tools.observe_contact_field(home, cid, "fn", "Nope", written_by="ai:test")
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

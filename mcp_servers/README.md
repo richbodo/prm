@@ -8,7 +8,7 @@ approving merges — and any `review-required` write — stays in the PRM worksp
 | --- | --- | --- |
 | `shared_data_ops.py` | `search_contacts`, `list_contacts`, `get_contact`, `get_provenance`, `find_duplicate_candidates` | **read-only** |
 | `dedup_ops.py` | `find_duplicate_candidates`, `submit_merge_proposal`, `list_proposals`, `get_proposal` | **propose-only** (no apply tool — INV-11 / AC-PRM-F) |
-| `private_data_ops.py` | `write_field_value` | **write-values-only**, policy-gated (R11a / AC-PRM-E): `review-required` **stages** a proposal · `append-only` **appends** · `free-write` **sets**. No field-definition tool (INV-3/4); bounded by a per-session quota + size cap. |
+| `private_data_ops.py` | `write_field_value`, `observe_contact_field` | **write-only**, policy-gated (R11a/b · AC-PRM-E). `write_field_value`: `review-required` **stages** · `append-only` **appends** · `free-write` **sets**. `observe_contact_field`: files an additive, NEVER-canonical **observation** for a contact's missing fields (the delegated-gathering seam) — the user promotes it in the workspace. No field-definition tool (INV-3/4); no promote tool; bounded by a per-session quota + size cap. |
 
 ## Install into Claude Desktop — one command
 
