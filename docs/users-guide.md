@@ -432,8 +432,14 @@ while it's on, an AI's read of a contact's shareable fields is **held for your a
 shows up in **External Access** to **Approve** (readable for this session) or **Deny**, one contact at a
 time. The same tab opens with a plain-language map of your **two databases** — your mirrored **contacts**
 (`shared.db`) versus the **private notes and fields you author** (`relationships.db`) — and exactly what's
-enforced for each. Background: [`../mcp_servers/README.md`](../mcp_servers/README.md) and the
-[Roadmap](roadmap.md).
+enforced for each. The page is organized as **Baseline** (the default access floor) above **Current Access
+Exceptions** (everything granted on top), so you can always see *what access external systems have*: the
+exceptions list itemizes **every contact you've approved** — which fields, when you approved it, and when an
+AI **last read** it — each with its own **Revoke** button (revoking one leaves the rest, unlike *Return to
+PNA* which clears them all). The **Connections** card shows that last AI read together with the **build** of
+the server that served it, and warns if it differs from the app's build — a quick way to catch an AI client
+still running an **old MCP server** after an update (fully quit and reopen it). Background:
+[`../mcp_servers/README.md`](../mcp_servers/README.md) and the [Roadmap](roadmap.md).
 
 ---
 

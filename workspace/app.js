@@ -1268,6 +1268,7 @@ const bootWatchdog = setTimeout(() => {
     const ready = await refreshStats();
     booted = true; clearTimeout(bootWatchdog);               // the API answered — boot succeeded
     loadDisclosure();                                        // banners + PNA-mode markers (works pre-import too)
+    setInterval(pollDisclosure, 6000);                       // live updates — surface AI-staged requests without a reload
     if (!ready) {
       els.statContacts.textContent = "0";
       emptyState('Import a file or folder to get started — or seed the demo with <code>prm init --demo</code>.');
@@ -1354,18 +1355,36 @@ async function loadDisclosure() {
   renderBanners();
 }
 
+// Live updates: a request staged by an *external* process (the MCP server when an AI client reads a
+// contact) changes state PRM didn't initiate, so poll for it. The review-pending banner then appears on
+// its own, and if the External Access view is open it refreshes in place (cards stay as the user left
+// them). Without this you'd only see a staged request after manually reloading the page.
+async function pollDisclosure() {
+  let d;
+  try { d = await api("/api/disclosure"); } catch { return; }
+  if (!d) return;
+  disclosureState = d;
+  syncPnaMarkers();
+  renderBanners();
+  const onAccess = $("#access") && $("#access").classList.contains("show");
+  const sig = disclosureSig(d);
+  if (onAccess && sig !== _disclosureSig) loadAccessView();   // changed while viewing → refresh (open state preserved)
+  else _disclosureSig = sig;
+}
+
 async function loadAccessView() {
   const body = $("#access-body");
   if (body) body.innerHTML = `<p class="ph">Loading…</p>`;
-  const [d, conn, reqs] = await Promise.all([
+  const [d, conn, reqs, exc] = await Promise.all([
     api("/api/disclosure").catch(() => null),
     api("/api/connections").catch(() => null),
     api("/api/disclosure/requests").catch(() => ({ requests: [] })),
+    api("/api/disclosure/exceptions").catch(() => ({ approvals: [] })),
   ]);
   disclosureState = d;
   syncPnaMarkers();
   renderBanners();
-  renderAccessView(d, conn, (reqs && reqs.requests) || []);
+  renderAccessView(d, conn, (reqs && reqs.requests) || [], (exc && exc.approvals) || []);
 }
 
 function strengthRows() {
@@ -1373,85 +1392,55 @@ function strengthRows() {
     `<tr><td class="sd">${esc(dim)}</td><td><span class="spill ${cls}">${esc(cls)}</span></td><td class="sw">${esc(why)}</td></tr>`).join("");
 }
 
-function renderAccessView(d, conn, requests) {
+// Compact "YYYY-MM-DD HH:MM" from an ISO-Z stamp (no timezone math — the stamps are already UTC).
+function fmtWhen(iso) {
+  const s = String(iso || "");
+  return s.length >= 16 ? `${s.slice(0, 10)} ${s.slice(11, 16)}` : s;
+}
+
+// A collapsible card: <details> with a serif title + a one-line summary shown when collapsed. `inner` is
+// trusted HTML the caller built; `summary` is a short trusted label (no untrusted data). Open/closed state
+// is keyed by `key` and persisted in `axOpen` so a background poll-refresh (live updates, below) keeps the
+// cards the user expanded/collapsed exactly as they left them.
+const AX_OPEN_DEFAULT = ["exceptions", "pending"];   // open on first render; the rest collapsed
+let axOpen = null;
+function axCard(key, title, summary, inner) {
+  if (axOpen === null) axOpen = new Set(AX_OPEN_DEFAULT);
+  const open = axOpen.has(key);
+  return `<details class="axcard" data-axkey="${key}"${open ? " open" : ""}><summary>` +
+    `<span class="axct serif">${title}</span>${summary ? `<span class="axcs">${summary}</span>` : ""}` +
+    `</summary><div class="axcb">${inner}</div></details>`;
+}
+
+// A cheap signature of the disclosure state — the background poll re-renders the open access view only when
+// this changes (e.g. an AI staged a request → pending_requests went up), so live updates don't churn.
+function disclosureSig(d) {
+  return d ? `${d.mode}|${d.review}|${d.pending_requests}|${d.consented_at || ""}|${d.scope_grew}` : "";
+}
+let _disclosureSig = "";
+
+function renderAccessView(d, conn, requests, approvals) {
   const body = $("#access-body");
   if (!body) return;
-  if (!d) { body.innerHTML = `<div class="datacard"><p class="lede-sub">Couldn’t load External Access state.</p></div>`; return; }
+  if (!d) { body.innerHTML = `<div class="axcard"><div class="axcb"><p class="lede-sub">Couldn’t load External Access state.</p></div></div>`; return; }
   const mode = d.mode;
   const counts = d.shareable_counts || { contacts: 0, values: 0 };
   const fields = d.shareable_fields || [];
+  const net = !!(conn && conn.network_exposed);
   const modeLabel = mode === "cloud-exception" ? "Cloud AI — data leaves this device"
     : mode === "local-ai" ? "Local AI — data stays on this device"
     : "Local-only (PNA) — nothing private leaves";
+  const modeShort = mode === "cloud-exception" ? "Cloud AI" : mode === "local-ai" ? "Local AI" : "Local-only";
 
-  const grantBtn = `<button class="btn primary" id="ax-grant">${mode === "pna" ? "Grant AI access…" : "Change…"}</button>`;
-  const returnBtn = mode !== "pna" ? `<button class="btn" id="ax-return">Return to PNA mode</button>` : "";
-  const scopeGrew = d.scope_grew
-    ? `<p class="axnote warn">You marked new fields shareable since you consented — review and re-confirm to include them.</p>` : "";
-  const reviewToggle = mode !== "pna"
-    ? `<label class="axreview"><input type="checkbox" id="ax-review"${d.review ? " checked" : ""}> ` +
-      `Require my approval for each AI read of private data` +
-      (d.pending_requests ? ` <span class="axpending">${d.pending_requests} pending</span>` : "") + `</label>`
-    : "";
-  const access =
-    `<div class="datacard"><h2 class="serif dh">Current access</h2>` +
-    `<div class="axmode axmode-${mode}"><span class="axdot"></span><b>${esc(modeLabel)}</b>` +
-    (d.consented_at ? `<span class="axwhen">since ${esc(String(d.consented_at).slice(0, 10))}</span>` : "") + `</div>` +
-    `<p class="lede-sub" style="margin:12px 0">An AI reads your data over the local MCP servers. ` +
-    (mode === "pna"
-      ? `Right now <b>nothing private crosses</b> — sealed fields never do, and shareable fields wait for your consent.`
-      : `It can read your <b>${counts.values}</b> shareable value(s) across <b>${counts.contacts}</b> contact(s). Sealed fields never cross.`) +
-    `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div>${reviewToggle}</div>`;
-
-  const fieldList = fields.length
-    ? `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>`
-    : `<p class="lede-sub">No fields are marked shareable — everything is sealed. Mark a field shareable in <b>Schema</b> to let an AI read it (with your consent).</p>`;
-  const floor =
-    `<div class="datacard"><h2 class="serif dh">The data-floor — fields from your private <code>relationships.db</code> you can share</h2>` +
-    `<p class="lede-sub">A “data-floor” is the lowest level of what an AI can see. Every relationship field is ` +
-    `<b>sealed by default</b> and never reaches an AI. Only fields you mark <b>shareable-on-consent</b> can cross — ` +
-    `and only after you grant access above.</p>${fieldList}</div>`;
-
-  const exActive = mode === "cloud-exception";
-  const exHead = exActive
-    ? `<p class="axnote danger"><b>Active now.</b> A cloud AI can read your shareable data, so it has left this device — ` +
-      `PRM is not a local-only app right now.</p>`
-    : `<p class="lede-sub"><b>Not active.</b> “EX-CLOUD-LLM” is what happens if you connect a <b>cloud</b> AI: your ` +
-      `shareable data is sent off this device to a provider, so PRM is no longer local-only until you return to PNA mode. ` +
-      `Here is exactly what that does — and doesn’t — protect:</p>`;
-  const ex =
-    `<div class="datacard"><h2 class="serif dh">Connecting a cloud AI (EX-CLOUD-LLM)</h2>${exHead}` +
-    `<table class="stable"><thead><tr><th>Guarantee</th><th>Strength</th><th></th></tr></thead><tbody>${strengthRows()}</tbody></table>` +
-    `<p class="axnote">Reversibility is <b>mode only</b>: returning to PNA mode stops future sharing but cannot recall data already sent.</p></div>`;
-
-  const reg = (conn && conn.mcp_registered && conn.mcp_registered.claude_desktop) || [];
-  const net = !!(conn && conn.network_exposed);
-  const connCard =
-    `<div class="datacard"><h2 class="serif dh">Connections</h2>` +
-    `<div class="axrow"><span>Workspace network exposure</span><b class="${net ? "bad" : "ok"}">${net ? "on your network" : "this device only (loopback)"}</b></div>` +
-    `<div class="axrow"><span>MCP servers registered in Claude Desktop</span><b>${reg.length ? esc(reg.join(", ")) : "none detected"}</b></div>` +
-    `<p class="lede-sub" style="margin-top:10px">PRM can only show what it can see — it can’t detect a client it isn’t told about. Disconnect PRM’s servers with <code>just mcp-uninstall</code>.</p></div>`;
-
-  const reqRows = (requests || []).map((rq) =>
-    `<div class="axrow axreq"><span class="axreqwho"><b>${esc(rq.name || "(no name)")}</b>` +
-    `<span class="muted"> · ${esc((rq.fields || []).join(", "))}</span></span>` +
-    `<span class="axreqbtns"><button class="btn ghost tiny" data-deny="${esc(rq.contact_id)}">Deny</button>` +
-    `<button class="btn primary tiny" data-approve="${esc(rq.contact_id)}">Approve</button></span></div>`).join("");
-  const reqCard = (requests && requests.length)
-    ? `<div class="datacard"><h2 class="serif dh">Pending AI-read requests</h2>` +
-      `<p class="lede-sub">A connected AI asked to read these contacts’ shareable fields. Approve to let it read them this session, or deny.</p>` +
-      reqRows + `</div>`
-    : "";
-
-  const dbCard =
-    `<div class="datacard"><h2 class="serif dh">Your two databases</h2>` +
+  // ---------- Baseline ----------
+  const dbInner =
     `<p class="lede-sub">PRM keeps your data in two separate stores. They are protected differently, so it’s worth knowing which is which.</p>` +
     `<div class="dbsplit">` +
     `<div class="dbcol"><div class="dbname">Shared database <span class="dbfile">shared.db</span></div>` +
     `<p>Your <b>contacts</b>, mirrored from your sources (Google, Apple, LinkedIn, Facebook, vCard/CSV). PRM only reads these — they’re never changed except by an import you run.</p></div>` +
     `<div class="dbcol"><div class="dbname">Private database <span class="dbfile">relationships.db</span></div>` +
     `<p>The private <b>notes, tags, and relationship fields you write</b> about your contacts, plus your merge decisions. Authored only by you, here in the workspace.</p></div>` +
-    `</div></div>`;
+    `</div>`;
 
   const grows = [
     ["Who can change it",
@@ -1464,19 +1453,118 @@ function renderAccessView(d, conn, requests) {
       `<span class="spill best-effort">signaled</span> <span class="gn">“local AI recommended”</span>`,
       `<span class="spill enforced">enforced</span> <span class="gn">consent gate + sealed floor</span>`],
   ];
-  const guarantees =
-    `<div class="datacard"><h2 class="serif dh">What’s enforced for each</h2>` +
+  const guaranteesInner =
     `<p class="lede-sub">Your contacts and your private notes are guarded differently — a connected AI can read your contacts under the “local AI recommended” posture, while your private overlay is consent-gated and sealed by default.</p>` +
     `<table class="stable gtable"><thead><tr><th>Guarantee</th><th>Shared contacts</th><th>Private overlay</th></tr></thead><tbody>` +
     grows.map(([g, s, p]) => `<tr><td class="sd">${g}</td><td>${s}</td><td>${p}</td></tr>`).join("") +
-    `</tbody></table></div>`;
+    `</tbody></table>`;
 
-  body.innerHTML = dbCard + guarantees + access + reqCard + floor + ex + connCard;
+  const fieldList = fields.length
+    ? `<div class="axchips">${fields.map((f) => `<span class="fbadge share">${esc(f)}</span>`).join("")}</div>`
+    : `<p class="lede-sub">No fields are marked shareable — everything is sealed. Mark a field shareable in <b>Schema</b> to let an AI read it (with your consent).</p>`;
+  const floorInner =
+    `<p class="lede-sub">A “data-floor” is the lowest level of what an AI can see. Every relationship field is ` +
+    `<b>sealed by default</b> and never reaches an AI. Only fields you mark <b>shareable-on-consent</b> can cross — ` +
+    `and only after you grant access (an <b>exception</b>, below).</p>${fieldList}`;
+
+  // ---------- Exceptions: the mode grant + per-contact approvals + network exposure ----------
+  const grantBtn = `<button class="btn primary" id="ax-grant">${mode === "pna" ? "Grant AI access…" : "Change…"}</button>`;
+  const returnBtn = mode !== "pna" ? `<button class="btn" id="ax-return">Return to PNA mode</button>` : "";
+  const scopeGrew = d.scope_grew
+    ? `<p class="axnote warn">You marked new fields shareable since you consented — review and re-confirm to include them.</p>` : "";
+  const reviewToggle = mode !== "pna"
+    ? `<label class="axreview"><input type="checkbox" id="ax-review"${d.review ? " checked" : ""}> ` +
+      `Require my approval for each AI read of private data` +
+      (d.pending_requests ? ` <span class="axpending">${d.pending_requests} pending</span>` : "") + `</label>`
+    : "";
+  const modeGrant =
+    `<div class="axmode axmode-${mode}"><span class="axdot"></span><b>${esc(modeLabel)}</b>` +
+    (d.consented_at ? `<span class="axwhen">since ${esc(String(d.consented_at).slice(0, 10))}</span>` : "") + `</div>` +
+    `<p class="lede-sub" style="margin:12px 0">An AI reads your data over the local MCP servers. ` +
+    (mode === "pna"
+      ? `Right now <b>nothing private crosses</b> — sealed fields never do, and shareable fields wait for your consent.`
+      : `It can read your <b>${counts.values}</b> shareable value(s) across <b>${counts.contacts}</b> contact(s). Sealed fields never cross.`) +
+    `</p>${scopeGrew}<div class="axctl">${grantBtn}${returnBtn}</div>${reviewToggle}`;
+
+  const apprRows = (approvals || []).map((a) => {
+    const fl = (a.fields || []).join(", ") || "—";
+    const meta = `${a.approved_at ? "approved " + esc(fmtWhen(a.approved_at)) : "approved"}` +
+      `${a.last_read_at ? " · last read " + esc(fmtWhen(a.last_read_at)) : " · not yet read"}`;
+    return `<div class="axrow axappr"><span class="axreqwho"><b>${esc(a.name || "(no name)")}</b>` +
+      `<span class="muted"> · ${esc(fl)}</span><span class="axmeta">${meta}</span></span>` +
+      `<span class="axreqbtns"><button class="btn ghost tiny" data-revoke="${esc(a.contact_id)}">Revoke</button></span></div>`;
+  }).join("");
+  const apprBlock = (approvals && approvals.length)
+    ? `<div class="axsub">Per-contact approvals <span class="gn">— each stays readable until you revoke it or the mode changes</span></div>${apprRows}`
+    : (mode !== "pna" && d.review
+        ? `<p class="lede-sub axsub">No per-contact approvals yet — with review on, each AI read waits for your approval (see Pending, below).</p>` : "");
+  const netRow = net
+    ? `<div class="axsub">Network</div><div class="axrow"><span>Your contacts are reachable on your network</span><b class="bad">non-loopback</b></div>` : "";
+  const exceptionsInner = modeGrant + apprBlock + netRow;
+  const exCount = (approvals || []).length;
+  const exSummary = mode === "pna"
+    ? (net ? "network-exposed" : "none — local-only")
+    : `${modeShort}${exCount ? ` · ${exCount} approved contact${exCount > 1 ? "s" : ""}` : ""}`;
+
+  const reqRows = (requests || []).map((rq) =>
+    `<div class="axrow axreq"><span class="axreqwho"><b>${esc(rq.name || "(no name)")}</b>` +
+    `<span class="muted"> · ${esc((rq.fields || []).join(", "))}</span></span>` +
+    `<span class="axreqbtns"><button class="btn ghost tiny" data-deny="${esc(rq.contact_id)}">Deny</button>` +
+    `<button class="btn primary tiny" data-approve="${esc(rq.contact_id)}">Approve</button></span></div>`).join("");
+  const reqCard = (requests && requests.length)
+    ? axCard("pending", "Pending AI-read requests", `${requests.length} waiting`,
+        `<p class="lede-sub">A connected AI asked to read these contacts’ shareable fields. Approve to let it read them this session, or deny.</p>${reqRows}`)
+    : "";
+
+  // ---------- Reference ----------
+  const exActive = mode === "cloud-exception";
+  const exHead = exActive
+    ? `<p class="axnote danger"><b>Active now.</b> A cloud AI can read your shareable data, so it has left this device — ` +
+      `PRM is not a local-only app right now.</p>`
+    : `<p class="lede-sub"><b>Not active.</b> “EX-CLOUD-LLM” is what happens if you connect a <b>cloud</b> AI: your ` +
+      `shareable data is sent off this device to a provider, so PRM is no longer local-only until you return to PNA mode. ` +
+      `Here is exactly what that does — and doesn’t — protect:</p>`;
+  const exInner = exHead +
+    `<table class="stable"><thead><tr><th>Guarantee</th><th>Strength</th><th></th></tr></thead><tbody>${strengthRows()}</tbody></table>` +
+    `<p class="axnote">Reversibility is <b>mode only</b>: returning to PNA mode stops future sharing but cannot recall data already sent.</p>`;
+
+  const reg = (conn && conn.mcp_registered && conn.mcp_registered.claude_desktop) || [];
+  const last = conn && conn.mcp_last_access;
+  const curBuild = (($("#stat-build") && $("#stat-build").textContent) || "").trim();
+  const stale = last && last.build && curBuild && last.build !== curBuild;
+  const lastRow = last
+    ? `<div class="axrow"><span>Last AI read</span><b>${esc(fmtWhen(last.ts))} · ${esc(last.decision || "")} · build ${esc(last.build || "?")}</b></div>` +
+      (stale ? `<p class="axnote warn">⚠ The last AI read was served by build <b>${esc(last.build)}</b>, but this app is <b>${esc(curBuild)}</b> — your AI client may be running an old server. Fully quit and reopen it.</p>` : "")
+    : `<div class="axrow"><span>Last AI read</span><b>none yet</b></div>`;
+  const connInner =
+    `<div class="axrow"><span>Workspace network exposure</span><b class="${net ? "bad" : "ok"}">${net ? "on your network" : "this device only (loopback)"}</b></div>` +
+    `<div class="axrow"><span>MCP servers registered in Claude Desktop</span><b>${reg.length ? esc(reg.join(", ")) : "none detected"}</b></div>` +
+    lastRow +
+    `<p class="lede-sub" style="margin-top:10px">PRM can only show what it can see — it can’t detect a client it isn’t told about. Disconnect PRM’s servers with <code>just mcp-uninstall</code>.</p>`;
+
+  body.innerHTML =
+    `<div class="axsec">Baseline — the default posture for any external system</div>` +
+    axCard("db", "Your two databases", "shared.db · relationships.db", dbInner) +
+    axCard("guarantees", "What’s enforced for each", "shared vs private overlay", guaranteesInner) +
+    axCard("floor", "The data-floor", `${fields.length} shareable · the rest sealed`, floorInner) +
+    `<div class="axsec">Exceptions — access granted on top of the baseline</div>` +
+    axCard("exceptions", "Current Access Exceptions", exSummary, exceptionsInner) +
+    reqCard +
+    `<div class="axsec">Reference</div>` +
+    axCard("ex", "Connecting a cloud AI (EX-CLOUD-LLM)", exActive ? "active now" : "not active", exInner) +
+    axCard("conn", "Connections", last ? `last read ${fmtWhen(last.ts)}` : "no reads yet", connInner);
+  _disclosureSig = disclosureSig(d);                          // mark this state as rendered (so the poll won't needlessly re-render)
+
   const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
   const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
   const rv = $("#ax-review"); if (rv) rv.addEventListener("change", () => setReview(rv.checked));
   body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.approve, "approve")));
   body.querySelectorAll("[data-deny]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.deny, "deny")));
+  body.querySelectorAll("[data-revoke]").forEach((b) => b.addEventListener("click", () => revokeRead(b.dataset.revoke)));
+  // remember which cards the user expands/collapses, so the background poll-refresh preserves them
+  body.querySelectorAll("details.axcard").forEach((dt) => dt.addEventListener("toggle", () => {
+    if (dt.open) axOpen.add(dt.dataset.axkey); else axOpen.delete(dt.dataset.axkey);
+  }));
 }
 
 function gatePreviewHTML() {
@@ -1554,5 +1642,12 @@ async function setReview(enabled) {
 async function resolveRead(contactId, action) {
   try { await postJSON("/api/disclosure/requests", { contact_id: contactId, action }); }
   catch (e) { alert(`Couldn’t ${action}: ` + e.message); return; }
+  loadAccessView();
+}
+
+// per-item Revoke (Phase 2): drop ONE contact's standing approval (the next AI read of it re-stages)
+async function revokeRead(contactId) {
+  try { await postJSON("/api/disclosure/revoke", { contact_id: contactId }); }
+  catch (e) { alert("Couldn’t revoke: " + e.message); return; }
   loadAccessView();
 }
