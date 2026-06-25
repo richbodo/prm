@@ -1268,6 +1268,7 @@ const bootWatchdog = setTimeout(() => {
     const ready = await refreshStats();
     booted = true; clearTimeout(bootWatchdog);               // the API answered — boot succeeded
     loadDisclosure();                                        // banners + PNA-mode markers (works pre-import too)
+    setInterval(pollDisclosure, 6000);                       // live updates — surface AI-staged requests without a reload
     if (!ready) {
       els.statContacts.textContent = "0";
       emptyState('Import a file or folder to get started — or seed the demo with <code>prm init --demo</code>.');
@@ -1354,6 +1355,23 @@ async function loadDisclosure() {
   renderBanners();
 }
 
+// Live updates: a request staged by an *external* process (the MCP server when an AI client reads a
+// contact) changes state PRM didn't initiate, so poll for it. The review-pending banner then appears on
+// its own, and if the External Access view is open it refreshes in place (cards stay as the user left
+// them). Without this you'd only see a staged request after manually reloading the page.
+async function pollDisclosure() {
+  let d;
+  try { d = await api("/api/disclosure"); } catch { return; }
+  if (!d) return;
+  disclosureState = d;
+  syncPnaMarkers();
+  renderBanners();
+  const onAccess = $("#access") && $("#access").classList.contains("show");
+  const sig = disclosureSig(d);
+  if (onAccess && sig !== _disclosureSig) loadAccessView();   // changed while viewing → refresh (open state preserved)
+  else _disclosureSig = sig;
+}
+
 async function loadAccessView() {
   const body = $("#access-body");
   if (body) body.innerHTML = `<p class="ph">Loading…</p>`;
@@ -1381,12 +1399,25 @@ function fmtWhen(iso) {
 }
 
 // A collapsible card: <details> with a serif title + a one-line summary shown when collapsed. `inner` is
-// trusted HTML the caller built; `summary` is a short trusted label (no untrusted data).
-function axCard(title, summary, inner, open) {
-  return `<details class="axcard"${open ? " open" : ""}><summary>` +
+// trusted HTML the caller built; `summary` is a short trusted label (no untrusted data). Open/closed state
+// is keyed by `key` and persisted in `axOpen` so a background poll-refresh (live updates, below) keeps the
+// cards the user expanded/collapsed exactly as they left them.
+const AX_OPEN_DEFAULT = ["exceptions", "pending"];   // open on first render; the rest collapsed
+let axOpen = null;
+function axCard(key, title, summary, inner) {
+  if (axOpen === null) axOpen = new Set(AX_OPEN_DEFAULT);
+  const open = axOpen.has(key);
+  return `<details class="axcard" data-axkey="${key}"${open ? " open" : ""}><summary>` +
     `<span class="axct serif">${title}</span>${summary ? `<span class="axcs">${summary}</span>` : ""}` +
     `</summary><div class="axcb">${inner}</div></details>`;
 }
+
+// A cheap signature of the disclosure state — the background poll re-renders the open access view only when
+// this changes (e.g. an AI staged a request → pending_requests went up), so live updates don't churn.
+function disclosureSig(d) {
+  return d ? `${d.mode}|${d.review}|${d.pending_requests}|${d.consented_at || ""}|${d.scope_grew}` : "";
+}
+let _disclosureSig = "";
 
 function renderAccessView(d, conn, requests, approvals) {
   const body = $("#access-body");
@@ -1481,8 +1512,8 @@ function renderAccessView(d, conn, requests, approvals) {
     `<span class="axreqbtns"><button class="btn ghost tiny" data-deny="${esc(rq.contact_id)}">Deny</button>` +
     `<button class="btn primary tiny" data-approve="${esc(rq.contact_id)}">Approve</button></span></div>`).join("");
   const reqCard = (requests && requests.length)
-    ? axCard("Pending AI-read requests", `${requests.length} waiting`,
-        `<p class="lede-sub">A connected AI asked to read these contacts’ shareable fields. Approve to let it read them this session, or deny.</p>${reqRows}`, true)
+    ? axCard("pending", "Pending AI-read requests", `${requests.length} waiting`,
+        `<p class="lede-sub">A connected AI asked to read these contacts’ shareable fields. Approve to let it read them this session, or deny.</p>${reqRows}`)
     : "";
 
   // ---------- Reference ----------
@@ -1513,15 +1544,16 @@ function renderAccessView(d, conn, requests, approvals) {
 
   body.innerHTML =
     `<div class="axsec">Baseline — the default posture for any external system</div>` +
-    axCard("Your two databases", "shared.db · relationships.db", dbInner, false) +
-    axCard("What’s enforced for each", "shared vs private overlay", guaranteesInner, false) +
-    axCard("The data-floor", `${fields.length} shareable · the rest sealed`, floorInner, false) +
+    axCard("db", "Your two databases", "shared.db · relationships.db", dbInner) +
+    axCard("guarantees", "What’s enforced for each", "shared vs private overlay", guaranteesInner) +
+    axCard("floor", "The data-floor", `${fields.length} shareable · the rest sealed`, floorInner) +
     `<div class="axsec">Exceptions — access granted on top of the baseline</div>` +
-    axCard("Current Access Exceptions", exSummary, exceptionsInner, true) +
+    axCard("exceptions", "Current Access Exceptions", exSummary, exceptionsInner) +
     reqCard +
     `<div class="axsec">Reference</div>` +
-    axCard("Connecting a cloud AI (EX-CLOUD-LLM)", exActive ? "active now" : "not active", exInner, false) +
-    axCard("Connections", last ? `last read ${fmtWhen(last.ts)}` : "no reads yet", connInner, false);
+    axCard("ex", "Connecting a cloud AI (EX-CLOUD-LLM)", exActive ? "active now" : "not active", exInner) +
+    axCard("conn", "Connections", last ? `last read ${fmtWhen(last.ts)}` : "no reads yet", connInner);
+  _disclosureSig = disclosureSig(d);                          // mark this state as rendered (so the poll won't needlessly re-render)
 
   const g = $("#ax-grant"); if (g) g.addEventListener("click", openGateModal);
   const r = $("#ax-return"); if (r) r.addEventListener("click", returnToPna);
@@ -1529,6 +1561,10 @@ function renderAccessView(d, conn, requests, approvals) {
   body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.approve, "approve")));
   body.querySelectorAll("[data-deny]").forEach((b) => b.addEventListener("click", () => resolveRead(b.dataset.deny, "deny")));
   body.querySelectorAll("[data-revoke]").forEach((b) => b.addEventListener("click", () => revokeRead(b.dataset.revoke)));
+  // remember which cards the user expands/collapses, so the background poll-refresh preserves them
+  body.querySelectorAll("details.axcard").forEach((dt) => dt.addEventListener("toggle", () => {
+    if (dt.open) axOpen.add(dt.dataset.axkey); else axOpen.delete(dt.dataset.axkey);
+  }));
 }
 
 function gatePreviewHTML() {
