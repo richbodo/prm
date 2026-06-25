@@ -35,7 +35,7 @@ AXIS_PICKS = {
     "mcp-exposure": "shared-only",
 }
 REPO_URL = "https://github.com/richbodo/prm"
-PNA_SPEC_VERSION = "0.1"
+PNA_SPEC_VERSION = "0.2"
 # ACs that bear on a top-level Goal (informational; drives leading_concerns ordering). Optional per schema.
 _GOALS = {"AC-1": [1], "AC-4": [4], "AC-9": [4], "AC-10": [2, 4], "AC-11": [4], "AC-17": [2],
           "AC-PRM-A": [3], "AC-PRM-D": [1, 4], "AC-MCP-A": [1, 3], "AC-PRM-B": [2], "AC-PRM-C": [4]}

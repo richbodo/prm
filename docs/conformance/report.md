@@ -2,9 +2,9 @@
 
 > Derived from [`../Architecture.md`](../Architecture.md) by `scripts/conformance_report.py`. The machine-readable form is [`evaluate-report.json`](evaluate-report.json) (`scripts/evaluate_report.py`). Regenerate both with `just evaluate-report`.
 
-## 🟢 Conformant to the PNA Spec (PNT 0.1 (draft)) for PRM's declared flavor
+## 🟢 Conformant to the PNA Spec (PNT 0.2) for PRM's declared flavor
 
-- **Conformant rows:** 13
+- **Conformant rows:** 15
 - **Partial-conformance (human-review):** 1
 - **Not-applicable (flavor):** 4
 - **Findings:** 0 ✅
@@ -23,6 +23,8 @@
 | AC-15 | universal | conformant | `tests/unit/test_build_label.py::test_running_label_is_git_date_sha` → live; `tests/unit/test_build_label.py::test_archived_source_uses_stamp_file` → live; `tests/unit/test_build_label.py::test_no_git_no_stamp_is_non_empty_fallback` → live |
 | AC-16 | universal | not-applicable | — |
 | AC-17 | universal | conformant | `tests/db/test_shared_db.py::test_load_writes_records_provenance_and_fts` → live |
+| AC-22 | universal | conformant | `tests/unit/test_doctor.py::test_doctor_dump_runs` → live; `tests/unit/test_diag.py::test_state_dump_is_sanitized_metadata` → live |
+| AC-23 | universal | conformant | by construction |
 | AC-18 | universal | not-applicable | — |
 | AC-19 | universal | not-applicable | — |
 | AC-PRM-A | universal | partial-conformance | `tests/unit/test_mcp_consent.py` → live |

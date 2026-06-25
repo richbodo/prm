@@ -4,8 +4,8 @@
   "candidate": {
     "name": "prm",
     "repo_url": "https://github.com/richbodo/prm",
-    "commit": "ed4502dffea9bc92f7ef5618fa48521ee0870b96",
-    "pna_spec_version": "0.1",
+    "commit": "a86c3f036afdebf58ff5f23f94a3bb2aadb7418d",
+    "pna_spec_version": "0.2",
     "picks_source": "declared",
     "axis_picks": {
       "distribution": "never-distributed-single-user",
@@ -18,7 +18,7 @@
   },
   "summary": {
     "posture": "conformant",
-    "headline": "PRM is deterministically attested conformant to PNA Spec 0.1 for its declared flavor: 13 conformant, 4 not-applicable, 0 non-conformant across 18 evaluated ACs. 1 AC(s) carry self-attested partial-conformance flagged for human review (AC-PRM-A); the EX-CLOUD-LLM exception is handled by a workspace consent gate + persistent signal + reversible return-to-PNA over a projection-bound, consent-gated cloud surface (the data-floor) — the residual boundary is consent + honest signaling, since an MCP server cannot identify the consuming LLM).",
+    "headline": "PRM is deterministically attested conformant to PNA Spec 0.2 for its declared flavor: 15 conformant, 4 not-applicable, 0 non-conformant across 20 evaluated ACs. 1 AC(s) carry self-attested partial-conformance flagged for human review (AC-PRM-A); the EX-CLOUD-LLM exception is handled by a workspace consent gate + persistent signal + reversible return-to-PNA over a projection-bound, consent-gated cloud surface (the data-floor) — the residual boundary is consent + honest signaling, since an MCP server cannot identify the consuming LLM).",
     "leading_concerns": [
       "AC-PRM-A"
     ]
@@ -259,6 +259,46 @@
           "source": "deterministic",
           "tool": "attestation-evidence-lint",
           "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/db/test_shared_db.py::test_load_writes_records_provenance_and_fts."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-22",
+      "ac_source": "universal",
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "tests/unit/test_doctor.py",
+          "note": "cited test: test_doctor_dump_runs"
+        },
+        {
+          "path": "tests/unit/test_diag.py",
+          "note": "cited test: test_state_dump_is_sanitized_metadata"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): tests/unit/test_doctor.py::test_doctor_dump_runs, tests/unit/test_diag.py::test_state_dump_is_sanitized_metadata."
+        }
+      ]
+    },
+    {
+      "ac_id": "AC-23",
+      "ac_source": "universal",
+      "status": "conformant",
+      "citations": [
+        {
+          "path": "docs/Architecture.md",
+          "note": "attestation row (review-kind evidence)"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "deterministic",
+          "tool": "attestation-evidence-lint",
+          "detail": "Architecture.md attestation row; cited test ref(s) resolve and are non-deferred (conformance_lib.resolve_test_ref): review-kind."
         }
       ]
     },

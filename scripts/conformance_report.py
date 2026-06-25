@@ -31,7 +31,7 @@ def build_md() -> str:
         "machine-readable form is [`evaluate-report.json`](evaluate-report.json) "
         "(`scripts/evaluate_report.py`). Regenerate both with `just evaluate-report`.",
         "",
-        f"## {verdict} to the PNA Spec (PNT 0.1 (draft)) for PRM's declared flavor",
+        f"## {verdict} to the PNA Spec (PNT 0.2) for PRM's declared flavor",
         "",
         f"- **Conformant rows:** {n_conf}",
         f"- **Partial-conformance (human-review):** {n_part}",
