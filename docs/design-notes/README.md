@@ -48,10 +48,17 @@ and the stdlib detection algorithm.
 ## Relationship store & contact editing
 
 How PRM lets the user edit contacts and author private relationship data without breaking the read-only
-mirror — the seam where v0.2's overlay attaches to v0.1's immutable contacts.
+mirror — the seam where v0.2's overlay attaches to v0.1's immutable contacts, and how an AI may add to it
+safely.
 
 - [**Editable contacts without a writable Shared DB — the override model**](contact-edit-override-model.md)
   — why v0.2 contact edit mode (Update/Create/Delete) writes the private store and leaves `shared.db`
   immutable (INV-2 / AC-1): re-mirror stays safe, edits are reversible + audited, provenance stays
   honest; the writable-Shared-DB alternative and why it was rejected; and the one-store `relationships.db`
   rename.
+- [**AI writes and gathered data — the additive overlay and the write tiers**](ai-writes-and-gathered-data.md)
+  — how an AI may write the private store safely: the three write tiers (`review-required` /
+  `append-only` / `free-write`) for overlay fields, and — for delegated gathering (v0.3) — an additive
+  **observation** layer the AI files and the user **promotes** into the view, so a canonical contact field
+  is never AI-written directly. Reuses the dedup/override reversible projection; one-deep retention; the
+  rejected "gathered-as-a-synthetic-source" alternative.
