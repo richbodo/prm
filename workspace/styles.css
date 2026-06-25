@@ -512,3 +512,14 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .axreq{align-items:center;}
 .axreqwho{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .axreqbtns{display:flex;gap:8px;flex:none;}
+
+/* External Access: the two-databases card + per-database guarantees (#61) */
+.dbsplit{display:flex;gap:16px;margin-top:14px;}
+.dbcol{flex:1;min-width:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);}
+.dbcol p{font-size:13px;color:var(--muted);line-height:1.55;margin:7px 0 0;}
+.dbname{font-size:14px;font-weight:650;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.dbfile{font:11.5px/1 var(--mono,ui-monospace,SFMono-Regular,Menlo,monospace);color:var(--muted);background:var(--parch);border:1px solid var(--line-2);border-radius:5px;padding:2px 6px;font-weight:500;}
+.gtable td{vertical-align:top;}
+.gtable .sd{width:188px;}
+.gn{display:block;font-size:11.5px;color:var(--faint);margin-top:3px;}
+@media (max-width:620px){.dbsplit{flex-direction:column;}}
