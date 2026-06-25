@@ -32,8 +32,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # import cli / mc
 from cli.config import resolve_home  # noqa: E402
 from mcp_servers import claude_config  # noqa: E402
 
-# (server_key, script filename) — the two servers PRM registers. Order = display order.
-SERVERS = [("prm-shared-data", "shared_data_ops.py"), ("prm-dedup", "dedup_ops.py")]
+# (server_key, script filename) — the servers PRM registers. Order = display order.
+SERVERS = [("prm-shared-data", "shared_data_ops.py"), ("prm-dedup", "dedup_ops.py"),
+           ("prm-private-data", "private_data_ops.py")]
 PRM_KEYS = [k for k, _ in SERVERS]
 
 

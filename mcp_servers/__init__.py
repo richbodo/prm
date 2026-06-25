@@ -1,10 +1,12 @@
 """PRM MCP servers — the AI surface over the contact store.
 
-Two stdio servers, registered separately so their consent posture is independent:
-``shared_data_ops`` (read-only over canonical contacts + duplicate candidates) and ``dedup_ops``
+Three stdio servers, registered separately so their consent posture is independent:
+``shared_data_ops`` (read-only over canonical contacts + duplicate candidates); ``dedup_ops``
 (**propose-only**: the AI stages a merge changeset for the human to review and apply — it cannot
-apply, INV-11 / AC-PRM-F). Tool bodies live in ``tools`` (no SDK import, unit-tested); the server
-modules are thin ``mcp`` SDK wrappers.
+apply, INV-11 / AC-PRM-F); and ``private_data_ops`` (**write-values-only**: ``write_field_value``
+governed by the field's ``ai_write_policy`` — ``review-required`` stages, ``append-only`` appends,
+``free-write`` sets; no definition tool, INV-3/4; R11a / AC-PRM-E). Tool bodies live in ``tools`` (no
+SDK import, unit-tested); the server modules are thin ``mcp`` SDK wrappers.
 
 Named ``mcp_servers/`` (not ``mcp/``) because the official SDK's package *is* ``mcp`` — a ``mcp/``
 directory would shadow ``import mcp``. The SDK installs into an isolated ``mcp_servers/.venv`` (see

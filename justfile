@@ -354,3 +354,8 @@ mcp-shared-data-ops *args="--data-dir prm-data":
 [group('mcp')]
 mcp-dedup-ops *args="--data-dir prm-data":
     {{mcp_python}} mcp_servers/dedup_ops.py {{args}}
+
+# Run the write-values-only Private-Data-Ops MCP server over stdio (policy-gated AI value writes).
+[group('mcp')]
+mcp-private-data-ops *args="--data-dir prm-data":
+    {{mcp_python}} mcp_servers/private_data_ops.py {{args}}
