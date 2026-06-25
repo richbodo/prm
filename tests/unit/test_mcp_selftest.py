@@ -26,11 +26,12 @@ from mcp_servers import tools  # noqa: E402
 
 SHARED = str(REPO / "mcp_servers" / "shared_data_ops.py")
 DEDUP = str(REPO / "mcp_servers" / "dedup_ops.py")
+PRIVATE = str(REPO / "mcp_servers" / "private_data_ops.py")
 
 
 def test_build_flag_runs_without_sdk():
     # sys.executable is the project venv (no `mcp` SDK) — --build must still print the build via lazy import.
-    for script in (SHARED, DEDUP):
+    for script in (SHARED, DEDUP, PRIVATE):
         r = subprocess.run([sys.executable, script, "--build"], capture_output=True, text=True, timeout=30)
         assert r.returncode == 0, r.stderr
         assert r.stdout.strip() == build_label.build_label()

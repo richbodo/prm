@@ -141,3 +141,21 @@ def list_proposals(home, status: str = "pending") -> dict:
 
 def get_proposal(home, proposal_id: str) -> dict:
     return proposals.load(home, proposal_id) or {"error": "no such proposal", "proposal_id": proposal_id}
+
+
+# --------------------------------------------------------------------------- write values (private-data-ops)
+def write_field_value(home, contact_id: str, field_id: str, value, *, written_by: str,
+                      value_json=None, source=None) -> dict:
+    """Write one relationship-field VALUE through the policy dispatch (R11a / AC-PRM-E). The field's
+    ``ai_write_policy`` decides: ``review-required`` (default) **stages a proposal** the human approves in
+    the workspace — never a direct write (INV-11), the same "MCP stages, the workspace applies" rule as the
+    dedup surface; ``append-only`` **appends** a provenance-stamped row (non-destructive — a human value is
+    never overwritten); ``free-write`` **sets**. Field *definitions* are never written here (INV-3/4: no
+    definition tool + the FK lock). A policy refusal (unknown field / size cap / per-session quota) returns
+    an ``error`` dict rather than raising, so a cooperating client can recover. Returns the stage/apply
+    result (``core.apply.write_field_value``)."""
+    try:
+        return apply.write_field_value(home, contact_id, field_id, value, value_json=value_json,
+                                       written_by=written_by, source=source)
+    except apply.WritePolicyError as exc:
+        return {"error": str(exc), "contact_id": contact_id, "field_id": field_id}
