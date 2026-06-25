@@ -99,3 +99,13 @@ bounds *which* fields can (the per-field **data-floor** — sealed fields never 
 shows a persistent "not a PNA" banner while a cloud grant is active, and offers one-click return to
 local-only mode. See [`../docs/users-guide.md`](../docs/users-guide.md) ("Let an AI propose the merges")
 and the [`../docs/Architecture.md`](../docs/Architecture.md) exception attestation.
+
+## Access log — what an AI read, and when
+
+Every contact read the servers serve (`get_contact` / `get_provenance`) appends one line to
+`mcp_access.log.jsonl` in your PRM home: the contact, the disclosure mode, the per-request-review decision
+(`released` / `withheld` / `no-shareable`), the overlay field **names** returned vs withheld (**never
+values** — INV-1), and the **build label** of the server that served it — so a server still running stale
+code after an update (a real gotcha: ⌘Q + reopen Claude Desktop after pulling) is immediately visible.
+A leaf write (`core/access_log.py`), bounded like the snapshot ring. Read it with **`just access-log`**
+(or `just access-log 100`) — handy when manually verifying what a connected AI actually pulled.
