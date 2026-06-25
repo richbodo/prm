@@ -28,8 +28,10 @@ foundation, the user-authored **custom relationship schema** — arbitrary typed
 edited **only** in the workspace (INV-3). Each field carries an **AI-write policy**
 (`review-required` | `append-only` | `free-write`), defaulting to the most protective tier
 (INV-10). The MCP private surface gains **write access to field _values_** (never definitions),
-exercising the **append-only** tier. Multiple AI proposals are handled as separate queued
-changesets reviewed serially (apply-time conflict detection), not as branches to merge — keeping
+exercising the **append-only** tier — design sketch + scope in
+[`../plans/r11-append-only-tier.md`](../plans/r11-append-only-tier.md) (the AC-PRM-E demonstrator; **not yet
+built** — the MCP surface is read + propose-only-dedup today). Multiple AI proposals are handled as separate
+queued changesets reviewed serially (apply-time conflict detection), not as branches to merge — keeping
 v0.1's native append-only-log + snapshot-ring substrate (no VCS).
 
 Also in v0.2: a **config file** (records the active `data_dir`) + **platform data dirs** (XDG /
@@ -118,7 +120,10 @@ This reference design is expected to feed the toolkit. As each lands with its de
 
 - **AC-PRM-B** (multi-source dedup) — graduate from draft via v0.1's dedup + identity store.
 - **AC-PRM-E / AC-PRM-F (proposed)** — the tiered safe-AI-write model and the "MCP stages, workspace
-  applies" rule for data writes; the toolkit's MCP private surface is read-only today.
+  applies" rule for data writes; the toolkit's MCP private surface is read-only today. AC-PRM-F (no MCP path
+  commits a review-required write) is already subsumed upstream by user-mediation (UM); **AC-PRM-E** (the
+  additive **append-only** tier) is the one still awaiting a PRM demonstrator — design sketch +
+  fold-in-vs-fast-follow scope in [`../plans/r11-append-only-tier.md`](../plans/r11-append-only-tier.md).
 - **`EX-CLOUD-LLM`** — the **shipped** consent-gate + "not a PNA" signal + active-set explainer +
   return-to-PNA-mode handler gives PNT a **second** reference demonstration of the exception (the spec
   currently cites only `fellows_local_db`). See [`design-notes/mcp-cannot-identify-the-consuming-llm.md`](design-notes/mcp-cannot-identify-the-consuming-llm.md)
