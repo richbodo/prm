@@ -205,6 +205,20 @@ def apply_operations(db_path, operations) -> list:
                         (value_id(cid, fid, val), cid, fid, val, op.get("value_json"),
                          op.get("written_by", "manual:user"), op.get("source"), _now_iso()),
                     )
+                elif kind == "append_field_value":
+                    # Append-only (R11a / AC-PRM-E): add a provenance-stamped row WITHOUT deleting any prior
+                    # value — even for a single-valued kind — so a human value is never overwritten by an AI.
+                    # INSERT OR IGNORE on the value_id makes a re-found identical value a no-op.
+                    cid, fid, val = op["contact_id"], op["field_id"], op.get("value")
+                    if not cur.execute("SELECT 1 FROM field_definitions WHERE field_id = ?", (fid,)).fetchone():
+                        raise RelationshipsDbError(f"append_field_value: no such field {fid!r}")
+                    cur.execute(
+                        "INSERT OR IGNORE INTO field_values"
+                        "(value_id, contact_id, field_id, value, value_json, written_by, source, written_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (value_id(cid, fid, val), cid, fid, val, op.get("value_json"),
+                         op.get("written_by", "ai:unknown"), op.get("source"), _now_iso()),
+                    )
                 elif kind == "clear_field_value":
                     cid, fid, val = op["contact_id"], op["field_id"], op.get("value")
                     if val is None:
@@ -298,6 +312,19 @@ def field_values_for(db_path, contact_id: str) -> list:
     finally:
         con.close()
     return [_fv_row(r) for r in rows]
+
+
+def count_ai_writes(db_path, written_by: str) -> int:
+    """How many ``field_values`` rows a given AI session (``written_by``, e.g. ``ai:s1``) has written — the
+    per-session quota counter (INV-13). Counts landed rows; the audit log is the authoritative full history.
+    Read-only; 0 when there is no store."""
+    if not Path(db_path).exists():
+        return 0
+    con = connect(db_path, read_only=True)
+    try:
+        return con.execute("SELECT count(*) FROM field_values WHERE written_by = ?", (written_by,)).fetchone()[0]
+    finally:
+        con.close()
 
 
 _SHAREABLE_TIER = "private-shareable-on-consent"
