@@ -80,6 +80,50 @@ def test_submit_validates_into():
         assert "error" in tools.submit_merge_proposal(home, ["a", "b"], "nope")
 
 
+# ------------------------------------------------------------------ write-values tool (R11a, private-data-ops)
+def _one_contact_home(tmp: str):
+    home = resolve_home(Path(tmp) / "h")
+    v = Path(tmp) / "a.vcf"
+    v.write_text("BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ada\r\nEMAIL:ada@x.org\r\nEND:VCARD\r\n", encoding="utf-8")
+    ingest_mod.ingest([v], source="apple_icloud", home=home, dry_run=False)
+    return home, list(relationships_db.identity_map(home.relationships_db))[0]
+
+
+def _vals(home, cid, fid):
+    return [v["value"] for v in relationships_db.field_values_for(home.relationships_db, cid)
+            if v["field_id"] == fid]
+
+
+def test_write_tool_review_required_stages_not_writes():
+    # The surface-level INV-11 mirror: a review-required write through the tool STAGES, never writes directly.
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _one_contact_home(tmp)
+        fid = apply.define_field(home, label="Bio", kind="long_text")["field_id"]   # default review-required
+        res = tools.write_field_value(home, cid, fid, "AI bio", written_by="ai:test")
+        assert res["status"] == "staged" and res["proposal_id"]
+        assert _vals(home, cid, fid) == []                                          # nothing written directly
+        assert proposals.load(home, res["proposal_id"])["status"] == "pending"
+
+
+def test_write_tool_append_only_and_free_write():
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _one_contact_home(tmp)
+        ap_fid = apply.define_field(home, label="Findings", kind="text", ai_write_policy="append-only")["field_id"]
+        assert tools.write_field_value(home, cid, ap_fid, "x", written_by="ai:test")["status"] == "appended"
+        assert _vals(home, cid, ap_fid) == ["x"]
+        fw_fid = apply.define_field(home, label="Scratch", kind="text", ai_write_policy="free-write")["field_id"]
+        assert tools.write_field_value(home, cid, fw_fid, "y", written_by="ai:test")["status"] == "set"
+        assert _vals(home, cid, fw_fid) == ["y"]
+
+
+def test_write_tool_refusal_returns_error_dict():
+    # A policy refusal (here: unknown field) is a tool result, not an exception, so a client can recover.
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _one_contact_home(tmp)
+        res = tools.write_field_value(home, cid, "no_such_field", "v", written_by="ai:test")
+        assert "error" in res and res["field_id"] == "no_such_field"
+
+
 def main() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failures = []

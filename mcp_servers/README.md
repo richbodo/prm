@@ -1,12 +1,14 @@
 # PRM MCP servers
 
-Two stdio MCP servers that let an AI assistant read your contacts and **propose** merges — it can
-never apply them. Reviewing and approving merges stays in the PRM workspace.
+Three stdio MCP servers that let an AI assistant read your contacts, **propose** merges (it can never
+apply them), and write **values** into your relationship fields under a per-field policy. Reviewing and
+approving merges — and any `review-required` write — stays in the PRM workspace.
 
 | Server | Tools | Posture |
 | --- | --- | --- |
 | `shared_data_ops.py` | `search_contacts`, `list_contacts`, `get_contact`, `get_provenance`, `find_duplicate_candidates` | **read-only** |
 | `dedup_ops.py` | `find_duplicate_candidates`, `submit_merge_proposal`, `list_proposals`, `get_proposal` | **propose-only** (no apply tool — INV-11 / AC-PRM-F) |
+| `private_data_ops.py` | `write_field_value` | **write-values-only**, policy-gated (R11a / AC-PRM-E): `review-required` **stages** a proposal · `append-only` **appends** · `free-write` **sets**. No field-definition tool (INV-3/4); bounded by a per-session quota + size cap. |
 
 ## Install into Claude Desktop — one command
 
@@ -14,16 +16,16 @@ never apply them. Reviewing and approving merges stays in the PRM workspace.
 just mcp-install
 ```
 
-Sets up the SDK venv (if needed), then **safely registers both servers** in Claude Desktop's
+Sets up the SDK venv (if needed), then **safely registers all three servers** in Claude Desktop's
 `claude_desktop_config.json`. It is **non-destructive by construction**: it **backs the file up** first,
-**merges** PRM's two entries under `mcpServers` (every other server *and* Claude Desktop's own
+**merges** PRM's entries under `mcpServers` (every other server *and* Claude Desktop's own
 `preferences` / `coworkUserFilesPath` are left untouched), writes atomically, and is **idempotent** —
 re-run it anytime (e.g. if Claude Desktop resets `mcpServers` during an update) to restore them. It
 shows a preview and asks before writing.
 
 Then **fully quit Claude Desktop (⌘Q — closing the window isn't enough) and reopen it**; Settings ▸
-Developer ▸ *Local MCP servers* should list `prm-shared-data` and `prm-dedup`. Point the assistant at
-[`prompts/dedup.md`](prompts/dedup.md).
+Developer ▸ *Local MCP servers* should list `prm-shared-data`, `prm-dedup`, and `prm-private-data`. Point
+the assistant at [`prompts/dedup.md`](prompts/dedup.md).
 
 ```bash
 just mcp-install --data-dir DIR   # bind a non-default PRM home (else $PRM_HOME, else ./prm-data/)
@@ -39,6 +41,7 @@ filled in) and add it via Claude Desktop → Settings ▸ Developer ▸ **Edit C
 ```bash
 just mcp-shared-data-ops --print-config     # read-only server's entry
 just mcp-dedup-ops --print-config           # propose-only server's entry
+just mcp-private-data-ops --print-config    # write-values-only server's entry
 ```
 
 ```jsonc
@@ -60,6 +63,7 @@ Claude Desktop afterward.
 ```bash
 just mcp-shared-data-ops     # read-only server  (stdio)
 just mcp-dedup-ops           # propose-only server (stdio)
+just mcp-private-data-ops    # write-values-only server (stdio)
 ```
 
 By themselves these block on stdin waiting for JSON-RPC frames — useful for a protocol test harness,
@@ -90,9 +94,10 @@ AI is recommended.** An MCP server *cannot* detect or restrict which LLM consume
 [`../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md`](../docs/design-notes/mcp-cannot-identify-the-consuming-llm.md)),
 so this boundary is held by your consent and honest signaling — never by trying to identify the client.
 
-Both servers carry that signal at the protocol level: each is built with an MCP `instructions` handshake
+All three servers carry that signal at the protocol level: each is built with an MCP `instructions` handshake
 ([`consent.py`](consent.py), the EX-H7 best-effort clause) telling a *cooperating* cloud client to get
-your explicit consent before reading and to prefer a local model. It's honest signaling, not a gate — a
+your explicit consent before reading and to prefer a local model. (Writing is *ingress*, not egress — the
+write server appends a value but never reads contact data back out, so it sits outside the disclosure gate.) It's honest signaling, not a gate — a
 non-cooperating client can ignore it. The **full** cloud-AI consent handler is now **shipped**: the
 workspace **AI access** tab gates whether the private overlay crosses at all (declare *local* or *cloud*),
 bounds *which* fields can (the per-field **data-floor** — sealed fields never cross, even with consent),

@@ -129,6 +129,15 @@ def test_default_config_path_points_at_claude_config():
     assert install.default_config_path().name == "claude_desktop_config.json"
 
 
+def test_all_three_servers_are_registered():
+    # The write-values server (R11a) is wired into the same registry as install + the daemon selftest.
+    assert "prm-private-data" in install.PRM_KEYS
+    with tempfile.TemporaryDirectory() as tmp:
+        entries = _entries(tmp)
+        assert {"prm-shared-data", "prm-dedup", "prm-private-data"} <= set(entries)
+        assert entries["prm-private-data"]["args"][0].endswith("/mcp_servers/private_data_ops.py")
+
+
 # ------------------------------------------------------------------ end-to-end via main(), against a temp config
 def test_main_non_interactive_installs_and_is_idempotent():
     with tempfile.TemporaryDirectory() as tmp:
