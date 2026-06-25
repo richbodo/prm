@@ -301,6 +301,12 @@ search *args:
 floor-check name *args:
     {{python}} scripts/floor_check.py "{{name}}" {{args}}
 
+# Show the most recent reads the MCP (AI) surface has served — what an external system read, when, and the
+# server build that served it (a stale server is obvious). E.g. `just access-log` or `just access-log 100`.
+[group('dev')]
+access-log n="30":
+    {{python}} scripts/access_log.py -n {{n}}
+
 # Free port 8770 if a previous `just serve` didn't shut down cleanly.
 [group('dev')]
 port:

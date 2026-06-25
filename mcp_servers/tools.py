@@ -10,7 +10,37 @@ is never invoked here.
 
 from __future__ import annotations
 
-from core import apply, candidates, disclosure, relationships_db, projection, proposals, shared_db
+from datetime import datetime, timezone
+
+from core import access_log, apply, build_label, candidates, disclosure, relationships_db, projection, proposals, shared_db
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _custom_names(contact: dict) -> list:
+    """The overlay (custom / shareable-tier) field names present in a projected MCP contact."""
+    return [f["name"] for f in contact.get("fields", []) if f.get("custom")]
+
+
+def _log_read(home, tool: str, contact_id: str, *, returned: list, withheld: list) -> None:
+    """Record one served MCP read in the access log — best-effort, **never breaks the read**. Field *names*
+    only, never values (INV-1). ``decision`` summarizes the per-request-review outcome; ``build`` stamps the
+    serving code so a stale server is detectable (prm#65). See ``plans/external-access-visibility.md``."""
+    decision = "withheld" if withheld else ("released" if returned else "no-shareable")
+    access_log.append(home, {
+        "ts": _now_iso(),
+        "tool": tool,
+        "contact_id": contact_id,
+        "mode": disclosure.mode(home),
+        "review_on": disclosure.review_required(home),
+        "approved": disclosure.is_approved(home, contact_id),
+        "decision": decision,
+        "returned_overlay": sorted(returned),
+        "withheld_overlay": sorted(withheld),
+        "build": build_label.build_label(),
+    })
 
 
 # --------------------------------------------------------------------------- read (shared-data-ops)
@@ -65,14 +95,21 @@ def get_contact(home, contact_id: str) -> dict:
     c = projection.get_contact(home, contact_id, audience="mcp")
     if not c:
         return {"error": "no such contact", "id": contact_id}
-    return _review_gate(home, contact_id, c)
+    pre = _custom_names(c)
+    c = _review_gate(home, contact_id, c)
+    post = _custom_names(c)
+    _log_read(home, "get_contact", contact_id, returned=post, withheld=[f for f in pre if f not in post])
+    return c
 
 
 def get_provenance(home, contact_id: str) -> dict:
     c = projection.get_contact(home, contact_id, audience="mcp")
     if not c:
         return {"error": "no such contact", "id": contact_id}
+    pre = _custom_names(c)
     c = _review_gate(home, contact_id, c)
+    post = _custom_names(c)
+    _log_read(home, "get_provenance", contact_id, returned=post, withheld=[f for f in pre if f not in post])
     out = {"id": contact_id, "sources": c["sources"], "member_count": c["member_count"],
            "fields": [{"name": f["name"], "kind": f["kind"], "values": f["values"]} for f in c["fields"]]}
     if c.get("disclosure"):

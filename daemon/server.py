@@ -371,8 +371,20 @@ def _connections(home: PrmHome, network_exposed: bool = False) -> dict:
     return {
         "network_exposed": bool(network_exposed),
         "mcp_registered": _mcp_registered(),
-        "mcp_last_access": None,   # deferred: the MCP servers don't stamp a last-access marker yet
+        "mcp_last_access": _mcp_last_access(home),
     }
+
+
+def _mcp_last_access(home: PrmHome) -> dict | None:
+    """A best-effort 'last AI read' summary from the MCP access log (``core.access_log``) for the External
+    Access surface: when, which contact, the per-request-review decision, and the **build** that served it
+    (so a stale server shows). ``None`` if nothing has been read in this home yet."""
+    from core import access_log  # lazy — keep the ingest/serve import path light
+    last = access_log.last_read(home)
+    if not last:
+        return None
+    return {"ts": last.get("ts"), "tool": last.get("tool"), "contact_id": last.get("contact_id"),
+            "decision": last.get("decision"), "build": last.get("build")}
 
 
 def _mcp_registered() -> dict:

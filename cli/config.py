@@ -83,6 +83,15 @@ class PrmHome:
         return self.root / "audit.log.jsonl"
 
     @property
+    def access_log(self) -> Path:
+        """Append-only JSONL record of every read the MCP (AI) surface serves — which contact, the
+        disclosure decision, and the server **build label** (so a stale server is detectable). The "what did
+        an external system read, and when" log. Written by the MCP server (a file append, like
+        ``disclosure_requests/``); bounded like the snapshot ring. See ``core/access_log.py`` and
+        ``plans/external-access-visibility.md``."""
+        return self.root / "mcp_access.log.jsonl"
+
+    @property
     def config_file(self) -> Path:
         return self.root / "config.json"
 
