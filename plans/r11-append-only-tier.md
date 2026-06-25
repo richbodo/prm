@@ -169,20 +169,29 @@ the most-protective tier.
   + the non-destructive append branch in `relationships_db.apply_operations`; the `write_field_value` tool
   with policy dispatch (append for append-only, **stage** for review-required, set for free-write); the
   per-session quota + size cap. Tests prove *review-required can't be written directly* and *append-only
-  appends non-destructively*. **This alone graduates AC-PRM-E.**
+  appends non-destructively*. **This alone graduates AC-PRM-E.** *(≈2 PRs — the core append op + dispatch +
+  quota/size cap; then the writable MCP server + `just mcp-install` wiring + `--print-config`/`--build` parity.)*
 - **R11b — the observation substrate (the gathering seam).** The `observations` table (v2→v3 migration);
   the `observe_contact_field` tool; the projection fold (accepted → canonical, pending → `suggestions`,
   overlay-only fields surface). No promotion UI yet — observations land and are visible as suggestions.
+  *(≈2 PRs — table + v3 migration + `observe_contact_field`; then the projection fold + `suggestions` surface.)*
 - **R11c — promotion + reversibility.** Promote/un-promote endpoints (single-valued → `field_resolutions`;
   multi-valued → status flip) with one-deep retention; the workspace **"Gathered" review surface**
   (Accept / Reject / Skip per suggestion, attributed). A `frontend-design` pass, as Duplicates had.
+  *(≈2 PRs — promote/un-promote endpoints + one-deep retention; then the "Gathered" review UI + the design pass.)*
 - **R11d — free-write UI + revert-by-session + doctor.** Free-write field opt-in surface; a
   "revert AI writes (this session)" control; `prm doctor` observation/oversize reporting.
+  *(≈1–2 PRs — free-write opt-in + revert-by-session; doctor reporting may ride along.)*
 - **R11e — attestation.** `docs/Architecture.md` AC-PRM-E row + INV-10/12/13; regenerate
-  `docs/conformance/`; the dynamic egress probe (no observation/AI value crosses the MCP floor).
+  `docs/conformance/`; the dynamic egress probe (no observation/AI value crosses the MCP floor). *(≈1 PR.)*
 
 R11a is the smallest honest slice that graduates AC-PRM-E and can ship alone; R11b–c are the gathering seam
 the user asked to "build now"; R11d–e are usability + attestation.
+
+**Totals: ≈8–9 PRs** for the full plan, in three natural waves — **≈2** (R11a, graduates AC-PRM-E on its own)
+→ **≈6** (R11a–c, the gathering seam) → **≈8–9** (R11a–e, usable + attested). The two estimate swing points
+are the `frontend-design` pass (R11c) and the MCP-server wiring (R11a); a couple of small pieces (the quota,
+doctor reporting) may ride along rather than stand alone, which is what makes it a range.
 
 ## 11. Tests (when built)
 
