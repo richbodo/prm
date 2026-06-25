@@ -28,9 +28,11 @@ foundation, the user-authored **custom relationship schema** — arbitrary typed
 edited **only** in the workspace (INV-3). Each field carries an **AI-write policy**
 (`review-required` | `append-only` | `free-write`), defaulting to the most protective tier
 (INV-10). The MCP private surface gains **write access to field _values_** (never definitions),
-exercising the **append-only** tier — design sketch + scope in
-[`../plans/r11-append-only-tier.md`](../plans/r11-append-only-tier.md) (the AC-PRM-E demonstrator; **not yet
-built** — the MCP surface is read + propose-only-dedup today). Multiple AI proposals are handled as separate
+exercising the **append-only** tier; R11 also seeds the **gathered-data enrichment** substrate — an additive
+`observations` layer the AI files and the user **promotes** into the view — that v0.3 delegated gathering runs
+on. Full spec: [`../plans/r11-append-only-tier.md`](../plans/r11-append-only-tier.md); rationale:
+[`design-notes/ai-writes-and-gathered-data.md`](design-notes/ai-writes-and-gathered-data.md) (the AC-PRM-E
+demonstrator; **not yet built** — the MCP surface is read + propose-only-dedup today). Multiple AI proposals are handled as separate
 queued changesets reviewed serially (apply-time conflict detection), not as branches to merge — keeping
 v0.1's native append-only-log + snapshot-ring substrate (no VCS).
 
@@ -83,7 +85,10 @@ organization**: the user talks to the LLM about organizing contacts; it gathers 
 questions, proposes groupings, and appends notes. A natural first target is the **friend-reconciliation
 checklist** — the origin-tagged roster of dataless contacts (Facebook names, LinkedIn-URL-only) that
 v0.1 ingests and v0.2 lets the user annotate; here the AI researches and triages them down to the
-people the user actually knows. See the use-case note in [`prm-feature-spec.md`](prm-feature-spec.md).
+people the user actually knows. See the use-case note in [`prm-feature-spec.md`](prm-feature-spec.md). The
+**write substrate this runs on is seeded in v0.2's R11** — the additive `observations` layer the AI files and
+the user promotes, so a canonical contact field is never AI-written directly
+([`design-notes/ai-writes-and-gathered-data.md`](design-notes/ai-writes-and-gathered-data.md)).
 
 ## v0.4 — Delegated gathering: outreach (querier side)
 
