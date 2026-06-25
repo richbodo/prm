@@ -20,8 +20,11 @@ from pathlib import Path
 # multi-image lands (R7). Tags is a multi_select, so it is covered here.
 _MULTI_KINDS = {"multi_select"}
 
-SCHEMA_VERSION = 2
-_MIGRATABLE_FROM = {0, 1}   # 0 = a fresh store; 1 = a v0.1 store (pre relationship-schema) → bring up to v2
+SCHEMA_VERSION = 3
+# 0 = a fresh store; 1 = a v0.1 store (pre relationship-schema); 2 = a v0.2 store (pre observations) →
+# bring each up to the current schema. Every CREATE is IF NOT EXISTS + seeds are INSERT OR IGNORE, so the
+# whole script re-runs idempotently and a store only gains the tables it lacks.
+_MIGRATABLE_FROM = {0, 1, 2}
 _SCHEMA_SQL = (Path(__file__).resolve().parent / "schema" / "relationships.sql").read_text(encoding="utf-8")
 
 # Default reconcile order: user-curated address books (Apple/Google) outrank scraped professional /
@@ -40,6 +43,13 @@ def _now_iso() -> str:
 
 def value_id(contact_id: str, field_id: str, value) -> str:
     return hashlib.sha1(f"{contact_id}\x1f{field_id}\x1f{value}".encode("utf-8")).hexdigest()
+
+
+def observation_id(contact_id: str, field: str, value, source) -> str:
+    """Stable id for an AI observation (R11b): idempotent on (contact, field, value, source), so a value
+    re-found from the same source is a no-op append, while the same value from a *different* source is its
+    own attributed row."""
+    return hashlib.sha1(f"{contact_id}\x1f{field}\x1f{value}\x1f{source}".encode("utf-8")).hexdigest()
 
 
 # --------------------------------------------------------------------------- v0.1 → v0.2 migration
@@ -99,9 +109,9 @@ def _ensure_schema(con: sqlite3.Connection) -> None:
     version = con.execute("PRAGMA user_version").fetchone()[0]
     if version in _MIGRATABLE_FROM:
         # Idempotent: every CREATE is IF NOT EXISTS and every built-in seed is INSERT OR IGNORE, so a
-        # fresh store (v0) is built whole and a v0.1 store (v1) gets only the v2 delta — the new
-        # field_definitions / field_values tables + built-in fields — leaving its v1 data untouched.
-        # That is the v1→v2 migration; no destructive ALTERs.
+        # fresh store is built whole, a v1 (v0.1) store gains the field_definitions / field_values tables
+        # + built-ins, and a v2 store gains the observations table — each leaving prior data untouched.
+        # No destructive ALTERs; this is how every v→current migration applies.
         con.executescript(_SCHEMA_SQL)
         con.execute(
             "INSERT OR IGNORE INTO settings(key, value) VALUES ('source_priority', ?)",
@@ -238,6 +248,28 @@ def apply_operations(db_path, operations) -> list:
     return applied
 
 
+def add_observation(db_path, contact_id, field, value, *, value_json=None, written_by="ai:unknown",
+                    source=None, confidence=None) -> tuple:
+    """Append an AI observation (R11b) — additive, attributed, status ``observed`` (a *suggestion*, never
+    canonical). Idempotent on (contact, field, value, source) via ``obs_id`` (INSERT OR IGNORE), so a
+    re-found value is a no-op. The caller serializes via the AC-PRM-C file-lock (``core/apply.py:observe_field``).
+    Returns ``(obs_id, inserted)``."""
+    oid = observation_id(contact_id, field, value, source)
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        cur = con.execute(
+            "INSERT OR IGNORE INTO observations"
+            "(obs_id, contact_id, field, value, value_json, written_by, source, confidence, status, written_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'observed', ?)",
+            (oid, contact_id, field, value, value_json, written_by, source, confidence, _now_iso()),
+        )
+        con.commit()
+        return oid, cur.rowcount > 0
+    finally:
+        con.close()
+
+
 def record_decision(db_path, pair_key: str, decision: str) -> None:
     """Persist a dedup decision ('not_duplicate' | 'merged') keyed on the stable cluster key."""
     con = connect(db_path)
@@ -323,6 +355,39 @@ def count_ai_writes(db_path, written_by: str) -> int:
     con = connect(db_path, read_only=True)
     try:
         return con.execute("SELECT count(*) FROM field_values WHERE written_by = ?", (written_by,)).fetchone()[0]
+    finally:
+        con.close()
+
+
+_OBS_COLS = ("obs_id", "contact_id", "field", "value", "value_json", "written_by", "source",
+             "confidence", "status", "written_at")
+
+
+def observations_for(db_path, contact_id: str, *, status: str | None = None) -> list:
+    """A contact's AI observations (R11b), newest first; optionally filtered by ``status``. Read-only."""
+    if not Path(db_path).exists():
+        return []
+    con = connect(db_path, read_only=True)
+    try:
+        sql = f"SELECT {', '.join(_OBS_COLS)} FROM observations WHERE contact_id = ?"
+        params = [contact_id]
+        if status:
+            sql += " AND status = ?"
+            params.append(status)
+        rows = con.execute(sql + " ORDER BY written_at DESC", params).fetchall()
+    finally:
+        con.close()
+    return [dict(zip(_OBS_COLS, r)) for r in rows]
+
+
+def count_ai_observations(db_path, written_by: str) -> int:
+    """How many observations a given AI session (``written_by``) has filed — the per-session quota counter
+    for the observe path (INV-13), the observations-table counterpart of ``count_ai_writes``. Read-only."""
+    if not Path(db_path).exists():
+        return 0
+    con = connect(db_path, read_only=True)
+    try:
+        return con.execute("SELECT count(*) FROM observations WHERE written_by = ?", (written_by,)).fetchone()[0]
     finally:
         con.close()
 

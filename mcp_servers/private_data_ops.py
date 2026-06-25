@@ -47,6 +47,17 @@ def build(home) -> "FastMCP":
         return tools.write_field_value(home, contact_id, field_id, value,
                                        written_by=session, source=source or None)
 
+    @mcp.tool()
+    def observe_contact_field(contact_id: str, field: str, value: str, source: str = "",
+                              confidence: float = 0.0) -> dict:
+        """File an OBSERVATION for a canonical contact field (tel / email / org / title / adr / url / bday /
+        nickname / impp / role) — additive, attributed, and NEVER canonical. It lands as a *suggestion* the
+        user promotes in the workspace; there is no way to make it the default from here. Use this to fill in
+        a contact's missing reachability/identity fields — e.g. a phone for a name-only Facebook contact. A
+        refusal (non-enrichable field / size cap / per-session quota) returns an ``error``."""
+        return tools.observe_contact_field(home, contact_id, field, value, written_by=session,
+                                           source=source or None, confidence=confidence or None)
+
     return mcp
 
 
