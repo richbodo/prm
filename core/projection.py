@@ -44,6 +44,22 @@ def _props(raw_jcard: str) -> list:
     return data[1] if isinstance(data, list) and len(data) == 2 and data[0] == "vcard" else []
 
 
+def _obs_value(o: dict) -> str:
+    """An observation's display/compare string (R11b): the scalar ``value`` if present, else the
+    structured ``value_json`` flattened like a jCard value. '' when neither holds anything."""
+    v = o.get("value")
+    if v not in (None, ""):
+        return str(v)
+    vj = o.get("value_json")
+    if not vj:
+        return ""
+    try:
+        data = json.loads(vj) if isinstance(vj, str) else vj
+    except (ValueError, TypeError):
+        return ""
+    return _flatten(data if isinstance(data, list) else [data])
+
+
 # --------------------------------------------------------------------------- photos / avatar
 # A contact's avatar is never a text field — it is served as bytes by the local daemon (see
 # docs/design-notes/contact-images.md). We surface only a *presence marker* in the projected contact
@@ -212,9 +228,19 @@ def _relationship_fields(rel_values: list) -> list:
     return list(by_field.values())
 
 
-def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: list | None = None) -> dict:
+def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: list | None = None,
+           observations: list | None = None) -> dict:
     """Merge a contact's source records into one canonical contact, then append its relationship-overlay
-    fields (``rel_values`` — the field_values rows; empty/None pre-R2 or when none are set)."""
+    fields (``rel_values`` — the field_values rows; empty/None pre-R2 or when none are set).
+
+    R11b fold: ``observations`` (the AI-gathered holding pen) participate two ways. An **accepted**
+    observation enriches the canonical field — a UNION field gains its value (attributed to the AI
+    session), a RECONCILE field treats it as one more candidate a ``field_resolution`` can point at; an
+    AI source carries no source-priority rank, so it never *wins* a reconcile field on survivorship alone.
+    A **pending** (``observed``) observation is never folded — it surfaces in a separate ``suggestions``
+    block for the workspace "Gathered" review (R11c). Pass ``None`` (the MCP/cloud path) to fold nothing
+    and emit no suggestions: gathered data never crosses the ``audience="mcp"`` floor (plan §9)."""
+    obs = observations or []
     by_name: dict[str, list] = {}
     sources: list[str] = []
     for rec in members:
@@ -229,18 +255,34 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
                 continue
             by_name.setdefault(name, []).append({"value": value, "source": rec["source"], "at": rec["ingested_at"] or ""})
 
+    for o in obs:                                           # fold accepted observations into the canonical field
+        if o.get("status") != "accepted":
+            continue
+        name = (o.get("field") or "").lower()
+        value = _obs_value(o)
+        if name in _HIDDEN or not value:
+            continue
+        by_name.setdefault(name, []).append({"value": value, "source": o.get("written_by") or "ai",
+                                             "at": o.get("written_at") or ""})
+
     fields = []
-    for name, items in by_name.items():
+    # Source/observation fields, PLUS any reconcile field present ONLY as a resolution — a user override
+    # with no source value (e.g. an org set on a name-only Facebook contact) must still surface (plan §5).
+    res_only = [f for (c, f) in resolutions if c == cid and f not in by_name]
+    for name in [*by_name, *res_only]:
+        items = by_name.get(name, [])
         if name in RECONCILE_FIELDS:
             res = resolutions.get((cid, name))
             if res and res[0] is not None:
                 chosen = {"value": res[0], "source": res[1] or "user"}
-            else:
+            elif items:
                 best_rank = min(rank.get(i["source"], 999) for i in items)
                 chosen = max((i for i in items if rank.get(i["source"], 999) == best_rank), key=lambda i: i["at"])
+            else:
+                continue                                   # resolution row with no value and nothing to reconcile
             fields.append({"name": name, "kind": "single",
                            "values": [{"value": chosen["value"], "source": chosen["source"]}]})
-        else:
+        elif items:
             seen: dict[str, dict] = {}
             for i in items:
                 seen.setdefault(i["value"], {"value": i["value"], "source": i["source"]})
@@ -254,6 +296,12 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
     photo = _photo_marker(members, rel_values)
     fields = [f for f in fields if f["name"] != _PHOTO]      # the avatar is served as bytes, never a text row
 
+    suggestions = [
+        {"field": (o.get("field") or "").lower(), "value": _obs_value(o), "source": o.get("source"),
+         "confidence": o.get("confidence"), "obs_id": o.get("obs_id")}
+        for o in obs if o.get("status") == "observed" and _obs_value(o)
+    ]
+
     return {
         "id": cid,
         "fn": pick("fn"),
@@ -264,6 +312,7 @@ def _merge(cid: str, members: list, rank: dict, resolutions: dict, rel_values: l
         "member_count": len(members),
         "photo": photo,
         "fields": fields,
+        "suggestions": suggestions,
     }
 
 
@@ -285,7 +334,9 @@ def _all(home) -> list:
                                        else relationships_db.DEFAULT_SOURCE_PRIORITY)}
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     rel = relationships_db.all_field_values(home.relationships_db) if home.relationships_db.exists() else {}
-    return [_merge(cid, members, rank, resolutions, rel.get(cid, [])) for cid, members in groups.items()]
+    obs = relationships_db.all_observations(home.relationships_db) if home.relationships_db.exists() else {}
+    return [_merge(cid, members, rank, resolutions, rel.get(cid, []), obs.get(cid, []))
+            for cid, members in groups.items()]
 
 
 def _sort_key(c):
@@ -425,11 +476,14 @@ def _clean_prop(prop: list) -> list:
     return [name, {k: v for k, v in (params or {}).items() if k != "group"}, vtype, *values]
 
 
-def _merge_props(cid: str, members: list, rank: dict, resolutions: dict) -> list:
+def _merge_props(cid: str, members: list, rank: dict, resolutions: dict,
+                 observations: list | None = None) -> list:
     """The merged property set for one canonical contact, **preserving jCard structure** — the
     structure-keeping inverse of ``_merge``'s flattened view. UNION names keep every distinct value;
     a RECONCILE name collapses to one (an explicit ``field_resolution`` wins, else survivorship:
-    source priority -> most-recent), exactly as the projection a user sees."""
+    source priority -> most-recent), exactly as the projection a user sees. R11b: **accepted**
+    observations fold in as synthetic text props so a portable export carries promoted gathered values
+    (pending ones are never exported — they aren't canonical)."""
     by_name: dict[str, list] = {}
     for rec in members:
         for prop in rec["props"]:
@@ -438,8 +492,20 @@ def _merge_props(cid: str, members: list, rank: dict, resolutions: dict) -> list
                 continue
             by_name.setdefault(name, []).append({"prop": prop, "source": rec["source"], "at": rec["ingested_at"] or ""})
 
+    for o in (observations or []):
+        if o.get("status") != "accepted":
+            continue
+        name = (o.get("field") or "").lower()
+        value = _obs_value(o)
+        if name in _HIDDEN or not value:
+            continue
+        by_name.setdefault(name, []).append({"prop": [name, {}, "text", value],
+                                             "source": o.get("written_by") or "ai", "at": o.get("written_at") or ""})
+
     out = []
-    for name, items in by_name.items():
+    res_only = [f for (c, f) in resolutions if c == cid and f not in by_name]
+    for name in [*by_name, *res_only]:
+        items = by_name.get(name, [])
         if name in RECONCILE_FIELDS:
             res = resolutions.get((cid, name))
             if res and res[0] is not None:
@@ -448,11 +514,11 @@ def _merge_props(cid: str, members: list, rank: dict, resolutions: dict) -> list
                 match = next((i["prop"] for i in items
                               if _flatten(i["prop"][3:] if len(i["prop"]) > 3 else []) == res[0]), None)
                 out.append(_clean_prop(match) if match is not None else [name, {}, "text", res[0]])
-            else:
+            elif items:
                 best_rank = min(rank.get(i["source"], 999) for i in items)
                 chosen = max((i for i in items if rank.get(i["source"], 999) == best_rank), key=lambda i: i["at"])
                 out.append(_clean_prop(chosen["prop"]))
-        else:
+        elif items:
             seen: dict[str, list] = {}
             for i in items:
                 seen.setdefault(_flatten(i["prop"][3:] if len(i["prop"]) > 3 else []), i["prop"])
@@ -482,9 +548,10 @@ def export_jcards(home) -> list:
     groups = _records_by_contact(home)
     rank = _rank(home)
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
+    obs = relationships_db.all_observations(home.relationships_db) if home.relationships_db.exists() else {}
     rows = []
     for cid, members in groups.items():
-        props = _merge_props(cid, members, rank, resolutions)
+        props = _merge_props(cid, members, rank, resolutions, obs.get(cid, []))
         props = [q for p in props for q in [(_export_photo_prop(home, p) if p[0].lower() == _PHOTO else p)] if q is not None]
         fn = next((_flatten(p[3:] if len(p) > 3 else []) for p in props if p[0].lower() == "fn"), "")
         rows.append((fn == "", fn.casefold(), cid, props))       # named first, A–Z, stable by id
@@ -511,8 +578,10 @@ def get_contact(home, contact_id: str, *, audience: str = "local") -> dict | Non
     resolutions = relationships_db.field_resolutions(home.relationships_db) if home.relationships_db.exists() else {}
     if audience == "mcp":
         return _contact_for_mcp(home, contact_id, members, rank, resolutions)
-    rel = relationships_db.field_values_for(home.relationships_db, contact_id) if home.relationships_db.exists() else []
-    return _merge(contact_id, members, rank, resolutions, rel)
+    has_store = home.relationships_db.exists()
+    rel = relationships_db.field_values_for(home.relationships_db, contact_id) if has_store else []
+    obs = relationships_db.observations_for(home.relationships_db, contact_id) if has_store else []
+    return _merge(contact_id, members, rank, resolutions, rel, obs)
 
 
 def _contact_for_mcp(home, contact_id, members, rank, resolutions) -> dict:
