@@ -270,6 +270,138 @@ def add_observation(db_path, contact_id, field, value, *, value_json=None, writt
         con.close()
 
 
+# --------------------------------------------------------------------------- promotion (R11c)
+# Promotion turns a gathered observation into a value the user sees, in the workspace — there is NO MCP
+# promote tool (INV-11), so an AI can never make a contact-identity value canonical on its own. The caller
+# (``core/apply.py``) holds the AC-PRM-C file-lock and (for promote/un-promote) snapshots first, so each is
+# reversible. One-deep retention: a single-valued field keeps the current accepted observation + at most one
+# ``superseded`` previous; the audit log is the full history. Rationale: plans/r11-append-only-tier.md §6.
+_PROMOTE_BY = "manual:promote"
+
+
+def _upsert_user_resolution(cur, contact_id, field, value, source) -> None:
+    """Write the user override the projection layers over the immutable source value (``rule='user'`` → beats
+    survivorship and survives re-import). The same shape ``apply_operations`` writes for a manual edit."""
+    cur.execute(
+        "INSERT OR REPLACE INTO field_resolutions"
+        "(contact_id, field, chosen_value, chosen_source, rule, status, resolved_by, resolved_at) "
+        "VALUES (?, ?, ?, ?, 'user', 'applied', ?, ?)",
+        (contact_id, field, value, source, _PROMOTE_BY, _now_iso()))
+
+
+def _the_superseded(cur, contact_id, field):
+    """The single ``superseded`` observation row ``(obs_id, value, source)`` for a (contact, field) under the
+    one-deep invariant, or ``None`` — the 'previous' a single-valued un-promote reverts to. (``LIMIT 1`` is
+    defensive; promotion keeps at most one.)"""
+    return cur.execute(
+        "SELECT obs_id, value, source FROM observations "
+        "WHERE contact_id=? AND field=? AND status='superseded' LIMIT 1", (contact_id, field)).fetchone()
+
+
+def promote_observation(db_path, obs_id: str, *, single_valued: bool) -> dict:
+    """Promote one observation to ``accepted`` (R11c). For a single-valued (reconcile) field this also writes
+    a user ``field_resolution`` pointing at the gathered value, **supersedes** the (at most one) other accepted
+    observation for that (contact, field) as the one-deep 'previous', and **deletes** any older ``superseded``.
+    A multi-valued field just flips to ``accepted`` and the projection unions it in. One transaction; the
+    caller holds the file-lock + snapshot + audit. Returns ``{contact_id, field, value, superseded, deleted}``.
+
+    The 'previous' is keyed off the *just-superseded prior accepted* (always unique for a single-valued
+    field), never off ``written_at`` — observations filed in the same second would tie, so a timestamp sort
+    could keep the wrong previous."""
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        cur = con.cursor()
+        try:
+            row = cur.execute(
+                "SELECT contact_id, field, value, source FROM observations WHERE obs_id=?", (obs_id,)).fetchone()
+            if row is None:
+                raise RelationshipsDbError(f"no such observation: {obs_id!r}")
+            cid, field, value, source = row
+            superseded = None
+            if single_valued:
+                _upsert_user_resolution(cur, cid, field, value, source)
+                prev = cur.execute("SELECT obs_id FROM observations WHERE contact_id=? AND field=? "
+                                   "AND status='accepted' AND obs_id<>?", (cid, field, obs_id)).fetchone()
+                if prev:                                         # the prior accepted becomes the one-deep previous
+                    superseded = prev[0]
+                    cur.execute("UPDATE observations SET status='superseded' WHERE obs_id=?", (superseded,))
+            cur.execute("UPDATE observations SET status='accepted' WHERE obs_id=?", (obs_id,))
+            deleted = 0
+            if single_valued:                                    # one-deep: drop any superseded except the new previous
+                if superseded:
+                    cur.execute("DELETE FROM observations WHERE contact_id=? AND field=? AND status='superseded' "
+                                "AND obs_id<>?", (cid, field, superseded))
+                else:
+                    cur.execute("DELETE FROM observations WHERE contact_id=? AND field=? AND status='superseded'",
+                                (cid, field))
+                deleted = cur.rowcount
+            con.commit()
+            return {"contact_id": cid, "field": field, "value": value, "superseded": superseded, "deleted": deleted}
+        except Exception:
+            con.rollback()
+            raise
+    finally:
+        con.close()
+
+
+def unpromote_observation(db_path, obs_id: str, *, single_valued: bool) -> dict:
+    """Reverse a promotion: flip the observation back to ``observed`` (a pending suggestion again). For a
+    single-valued field, **drop** its ``field_resolution``; if a one-deep ``superseded`` previous exists,
+    restore it (``accepted`` + re-write its resolution), so the field reverts to the prior gathered value
+    rather than straight to the source. One transaction; caller holds lock + snapshot + audit. Returns
+    ``{contact_id, field, restored}`` (``restored`` = the previous obs_id brought back, or ``None``)."""
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        cur = con.cursor()
+        try:
+            row = cur.execute("SELECT contact_id, field FROM observations WHERE obs_id=?", (obs_id,)).fetchone()
+            if row is None:
+                raise RelationshipsDbError(f"no such observation: {obs_id!r}")
+            cid, field = row
+            cur.execute("UPDATE observations SET status='observed' WHERE obs_id=?", (obs_id,))
+            restored = None
+            if single_valued:
+                cur.execute("DELETE FROM field_resolutions WHERE contact_id=? AND field=?", (cid, field))
+                prev = _the_superseded(cur, cid, field)
+                if prev:
+                    p_id, p_val, p_src = prev
+                    cur.execute("UPDATE observations SET status='accepted' WHERE obs_id=?", (p_id,))
+                    _upsert_user_resolution(cur, cid, field, p_val, p_src)
+                    restored = p_id
+            con.commit()
+            return {"contact_id": cid, "field": field, "restored": restored}
+        except Exception:
+            con.rollback()
+            raise
+    finally:
+        con.close()
+
+
+def reject_observation(db_path, obs_id: str) -> dict:
+    """Dismiss a **pending** observation (``rejected`` — won't resurface; ``add_observation`` is idempotent on
+    ``obs_id``, so a re-found identical value stays rejected). Pure status flip — the caller refuses to reject
+    an ``accepted`` observation (un-promote it first), so this never touches a ``field_resolution`` and needs
+    no snapshot. Returns ``{contact_id, field}``."""
+    con = connect(db_path)
+    try:
+        _ensure_schema(con)
+        cur = con.cursor()
+        try:
+            row = cur.execute("SELECT contact_id, field FROM observations WHERE obs_id=?", (obs_id,)).fetchone()
+            if row is None:
+                raise RelationshipsDbError(f"no such observation: {obs_id!r}")
+            cur.execute("UPDATE observations SET status='rejected' WHERE obs_id=?", (obs_id,))
+            con.commit()
+            return {"contact_id": row[0], "field": row[1]}
+        except Exception:
+            con.rollback()
+            raise
+    finally:
+        con.close()
+
+
 def record_decision(db_path, pair_key: str, decision: str) -> None:
     """Persist a dedup decision ('not_duplicate' | 'merged') keyed on the stable cluster key."""
     con = connect(db_path)
@@ -378,6 +510,20 @@ def observations_for(db_path, contact_id: str, *, status: str | None = None) -> 
     finally:
         con.close()
     return [dict(zip(_OBS_COLS, r)) for r in rows]
+
+
+def get_observation(db_path, obs_id: str) -> dict | None:
+    """One observation by id, or ``None`` (no store / unknown id). Read-only."""
+    if not Path(db_path).exists():
+        return None
+    con = connect(db_path, read_only=True)
+    try:
+        row = con.execute(
+            f"SELECT {', '.join(_OBS_COLS)} FROM observations WHERE obs_id = ?", (obs_id,)
+        ).fetchone()
+    finally:
+        con.close()
+    return dict(zip(_OBS_COLS, row)) if row else None
 
 
 def all_observations(db_path) -> dict:
