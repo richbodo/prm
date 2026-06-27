@@ -306,6 +306,16 @@ def _post(path: str, home: PrmHome, body: dict) -> tuple[int, str, bytes]:
             apply.resolve_field(home, cid, field, body.get("value"), written_by="manual:workspace")
             return _json(200, {"ok": True})
 
+        if path == "/api/observation":                           # R11c: promote / un-promote / reject a gathered observation
+            oid, action = body.get("obs_id"), body.get("action")
+            if not oid or action not in ("promote", "unpromote", "reject"):
+                return _json(400, {"error": "observation needs obs_id + action in {promote, unpromote, reject}"})
+            if relationships_db.get_observation(home.relationships_db, oid) is None:
+                return _json(404, {"error": "no such observation"})
+            fn = {"promote": apply.promote_observation, "unpromote": apply.unpromote_observation,
+                  "reject": apply.reject_observation}[action]    # ValueError (e.g. reject-accepted) → clean 400
+            return _json(200, {"ok": True, **fn(home, oid, by="manual:workspace")})
+
         if path == "/api/edit-contact":                          # all of a contact's edits → one atomic changeset
             cid = body.get("contact_id")
             if not cid:

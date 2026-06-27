@@ -190,6 +190,77 @@ def observe_field(home, contact_id, field, value, *, written_by, value_json=None
     return {"status": "observed", "obs_id": obs_id, "field": field, "new": inserted}
 
 
+# R11c — promotion: turn a gathered observation into a value the user sees, in the WORKSPACE. There is no
+# MCP promote tool (INV-11), so an AI can never make a contact-identity value canonical on its own. A
+# single-valued (reconcile) canonical field is promoted via a user field_resolution; a multi-valued one
+# (tel/email/…) by a status flip the projection unions in. Single vs multi is read from the projection's
+# RECONCILE classification — the one source of truth — so display and promotion never disagree.
+def _single_valued_canonical(field: str) -> bool:
+    from core.projection import RECONCILE_FIELDS    # local import keeps the module-load (ingest) path light
+    return (field or "").strip().lower() in RECONCILE_FIELDS
+
+
+def promote_observation(home, obs_id, *, by="manual:workspace") -> dict:
+    """Promote one AI observation into the canonical contact view (R11c) — a workspace act, no MCP path.
+    Single-valued field → a user ``field_resolution`` at the gathered value (supersedes a prior accepted
+    observation, one-deep); multi-valued → the projection unions it in. Lock → snapshot → mutate → audit, so
+    it is reversible by ``unpromote_observation`` or a global Undo. Raises ``ValueError`` for an unknown id."""
+    obs = relationships_db.get_observation(home.relationships_db, obs_id)
+    if obs is None:
+        raise ValueError(f"no such observation: {obs_id!r}")
+    single = _single_valued_canonical(obs.get("field"))
+    home.create()
+    with file_lock(home.lock_file):
+        snap = snapshots.snapshot(home)                          # pre-promote Undo point
+        try:
+            result = relationships_db.promote_observation(home.relationships_db, obs_id, single_valued=single)
+        except Exception:
+            snapshots.restore(home, snap)
+            raise
+        audit.append(home, {"kind": "promote_observation", "obs_id": obs_id, "contact_id": obs.get("contact_id"),
+                            "field": obs.get("field"), "single_valued": single, "by": by, "snapshot": snap.name})
+    return {"status": "accepted", "obs_id": obs_id, "single_valued": single, "snapshot": str(snap), **result}
+
+
+def unpromote_observation(home, obs_id, *, by="manual:workspace") -> dict:
+    """Reverse a promotion (R11c) — flip the observation back to a pending suggestion; a single-valued field
+    drops its resolution and restores the one-deep ``superseded`` previous. Lock → snapshot → mutate → audit.
+    Raises ``ValueError`` for an unknown id."""
+    obs = relationships_db.get_observation(home.relationships_db, obs_id)
+    if obs is None:
+        raise ValueError(f"no such observation: {obs_id!r}")
+    single = _single_valued_canonical(obs.get("field"))
+    home.create()
+    with file_lock(home.lock_file):
+        snap = snapshots.snapshot(home)                          # pre-revert Undo point
+        try:
+            result = relationships_db.unpromote_observation(home.relationships_db, obs_id, single_valued=single)
+        except Exception:
+            snapshots.restore(home, snap)
+            raise
+        audit.append(home, {"kind": "unpromote_observation", "obs_id": obs_id, "contact_id": obs.get("contact_id"),
+                            "field": obs.get("field"), "single_valued": single, "by": by, "snapshot": snap.name})
+    return {"status": "observed", "obs_id": obs_id, "single_valued": single, "snapshot": str(snap), **result}
+
+
+def reject_observation(home, obs_id, *, by="manual:workspace") -> dict:
+    """Dismiss a **pending** observation (R11c) — ``rejected``, won't resurface. A low-stakes status flip:
+    lock + audit, **no snapshot** (like ``reject_cluster`` — so triaging many suggestions can't thrash the
+    snapshot ring). Refuses an ``accepted`` observation (un-promote it first, which is the snapshotted
+    reverse). Raises ``ValueError`` for an unknown id or an accepted target."""
+    obs = relationships_db.get_observation(home.relationships_db, obs_id)
+    if obs is None:
+        raise ValueError(f"no such observation: {obs_id!r}")
+    if obs.get("status") == "accepted":
+        raise ValueError("cannot reject an accepted observation — un-promote it first")
+    home.create()
+    with file_lock(home.lock_file):
+        result = relationships_db.reject_observation(home.relationships_db, obs_id)
+        audit.append(home, {"kind": "reject_observation", "obs_id": obs_id, "contact_id": obs.get("contact_id"),
+                            "field": obs.get("field"), "by": by})
+    return {"status": "rejected", "obs_id": obs_id, **result}
+
+
 def resolve_field(home, contact_id, field, value, *, chosen_source=None, written_by="manual:user") -> dict:
     """Override a single-valued (reconcile) *source* field on one contact — a manual edit (``rule="user"``,
     so it beats survivorship and survives re-import). Writes ``field_resolutions``; the projection layers

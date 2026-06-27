@@ -36,7 +36,10 @@ def _home(tmp: str, *, vcard: str | None = None):
 
 
 def _accept(home, obs_id: str) -> None:
-    """Simulate R11c promotion (no promote API yet): flip an observation to ``accepted`` in place."""
+    """Flip an observation to ``accepted`` in place — status only, deliberately NOT the real promote API
+    (``apply.promote_observation``, R11c), which would also write a field_resolution. This isolates the
+    projection's *fold* behavior (how an accepted observation competes) from the promotion *workflow*; the
+    promote/un-promote/reject path is covered in ``test_observations_promote.py``."""
     con = relationships_db.connect(home.relationships_db)
     try:
         con.execute("UPDATE observations SET status='accepted' WHERE obs_id=?", (obs_id,))
