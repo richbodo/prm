@@ -170,6 +170,21 @@ def test_reject_accepted_is_refused():
         assert _status(home, oid) == "accepted", "the refused reject left the observation untouched"
 
 
+# --------------------------------------------------------------------------- list discoverability marker
+def test_list_has_suggestions_flag_tracks_pending():
+    """The contacts list flags a contact with pending gathered data (the 🤖 row marker) — true only while
+    an observation is pending, false again once it's accepted or rejected."""
+    def row(home, cid):
+        return next(r for r in projection.list_contacts(home)["records"] if r["id"] == cid)
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home(tmp)
+        assert row(home, cid)["has_suggestions"] is False
+        oid = _observe(home, cid, "tel", "+1-555-0100")
+        assert row(home, cid)["has_suggestions"] is True
+        apply.promote_observation(home, oid)                     # accepted → no longer pending
+        assert row(home, cid)["has_suggestions"] is False
+
+
 # --------------------------------------------------------------------------- audit
 def test_promote_and_unpromote_are_audited():
     with tempfile.TemporaryDirectory() as tmp:

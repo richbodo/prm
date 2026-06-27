@@ -20,7 +20,9 @@ const SOURCE_LABEL = {
   apple_icloud: "apple", google_takeout: "google", google_csv: "google csv",
   linkedin: "linkedin", facebook: "facebook", vcard: "vcard",
 };
-const srcLabel = (s) => SOURCE_LABEL[s] || s || "";
+// An `ai:<session>` provenance (a promoted gathered observation, R11c) shows as "gathered", not the raw
+// session id, so a folded value reads honestly without leaking the session string.
+const srcLabel = (s) => (typeof s === "string" && s.startsWith("ai:")) ? "gathered" : (SOURCE_LABEL[s] || s || "");
 const NOISE = new Set(["version", "x-ablabel"]);   // structural / vendor-label fields, hidden in detail
 
 async function api(path) {
@@ -61,9 +63,10 @@ function rowItem(c) {
   const sources = (c.sources && c.sources.length) ? c.sources : (c.source ? [c.source] : []);
   const chips = sources.slice(0, 3).map((s) => `<span class="chip src">${esc(srcLabel(s))}</span>`).join("");
   const merged = c.member_count > 1 ? `<span class="chip merged">${c.member_count}×</span>` : "";
+  const gathered = c.has_suggestions ? `<span class="chip gathered" title="An AI gathered new info for your review">🤖</span>` : "";
   li.innerHTML =
     avatarHTML(c.id, c.name, c.has_photo) +
-    `<span class="nm">${esc(c.name || "(no name)")}${merged}</span>` +
+    `<span class="nm">${esc(c.name || "(no name)")}${merged}${gathered}</span>` +
     `<span class="sub">${esc(c.email || c.org || "—")}</span>` +
     `<span class="srcs">${chips}</span>`;
   li.addEventListener("click", () => selectContact(c.id, li));
@@ -134,20 +137,76 @@ function renderContactRead(c) {
     return `<tr><th>${esc(f.label || f.name)}</th><td>${body}</td></tr>`;
   }).join("");
 
-  // R11b: AI-gathered observations awaiting promotion — read-only here (the Accept/Reject "Gathered"
-  // review surface is R11c). Shown so the user can *see* what an AI gathered before any promote UI exists.
-  const suggRows = (c.suggestions || []).map((s) =>
-    `<tr><th>${esc(s.field)}</th><td><div class="fval">${esc(s.value)}` +
-    `${s.source ? ` <span class="vsrc mono">${esc(s.source)}</span>` : ""}</div></td></tr>`).join("");
-
   els.detail.innerHTML =
     dHead(c, false) +
     `<div class="seg">Fields · with provenance</div><table class="kv">${srcRows}</table>` +
     (relRows ? `<div class="seg">Your notes &amp; fields</div><table class="kv">${relRows}</table>` : "") +
-    (suggRows ? `<div class="seg">Gathered — pending your review</div><table class="kv">${suggRows}</table>` : "");
+    gatheredHTML(c.suggestions || []);
   const eb = $("#edit-contact");
   if (eb) eb.addEventListener("click", () => enterEditMode(c.id));
+  wireGathered(c.id);                                        // R11c: Accept / Reject the AI-gathered suggestions
   wireAvatarClick(c.id, false);                              // click the avatar to set/change the photo
+}
+
+// ---- R11c: the "Gathered" review surface — Accept / Reject (or leave = Skip) an AI-gathered observation,
+// inline on the contact. Accept promotes it into the canonical view as a reversible user override (never
+// touching your imported source records); Reject dismisses it for good. The promote/reject path is the
+// daemon's /api/observation route; there is NO MCP promote tool (INV-11), so nothing here was auto-applied.
+const CANON_LABEL = { tel: "phone", email: "email", adr: "address", url: "link", org: "organization",
+  title: "title", bday: "birthday", nickname: "nickname", impp: "messaging", role: "role" };
+const canonLabel = (f) => CANON_LABEL[f] || f;
+
+function confChip(conf) {
+  if (typeof conf !== "number" || !(conf >= 0)) return "";
+  const pct = Math.round(Math.max(0, Math.min(1, conf)) * 100);
+  return `<span class="gconf" title="the AI's self-reported confidence">${pct}% sure</span>`;
+}
+
+function gatheredHTML(suggestions) {
+  if (!suggestions.length) return "";
+  const cards = suggestions.map((s) => {
+    const meta = `<span class="gtag">🤖 gathered</span>` +
+      (s.source ? `<span class="gsrc mono">via ${esc(s.source)}</span>` : "") + confChip(s.confidence);
+    return `<div class="gcard" data-obs="${esc(s.obs_id)}">` +
+      `<div class="gbody"><div class="gfield">${esc(canonLabel(s.field))}</div>` +
+      `<div class="gval">${esc(s.value)}</div><div class="gmeta">${meta}</div></div>` +
+      `<div class="gact"><button class="btn ghost tiny" data-greject="${esc(s.obs_id)}">Reject</button>` +
+      `<button class="btn primary tiny" data-gaccept="${esc(s.obs_id)}">Accept</button></div></div>`;
+  }).join("");
+  return `<div class="seg gseg">Gathered — pending your review<span class="gcount">${suggestions.length}</span></div>` +
+    `<div class="gathered">${cards}` +
+    `<p class="ghint">Accept folds it into your view — a private override, so your imported records are never ` +
+    `changed and it's reversible. Reject dismisses it for good. Leave it to decide later.</p></div>`;
+}
+
+function wireGathered(contactId) {
+  els.detail.querySelectorAll("[data-gaccept]").forEach((b) =>
+    b.addEventListener("click", () => actOnSuggestion(contactId, b.dataset.gaccept, "promote")));
+  els.detail.querySelectorAll("[data-greject]").forEach((b) =>
+    b.addEventListener("click", () => actOnSuggestion(contactId, b.dataset.greject, "reject")));
+}
+
+async function actOnSuggestion(contactId, obsId, action) {
+  try { await postJSON("/api/observation", { obs_id: obsId, action }); }
+  catch (e) { alert(`Couldn't ${action === "promote" ? "accept" : "reject"} that — ${e.message}`); return; }
+  renderContactRead(await api(`/api/contact/${encodeURIComponent(contactId)}`));   // re-render: the suggestion is gone
+  if (action === "promote") flashUndo(contactId, obsId);    // an inline one-tap Undo for the just-promoted value
+  refreshStats(); browse();                                 // a promoted org/email can change the list summary + marker
+}
+
+// After an Accept, surface a one-tap Undo (the snapshot-backed un-promote) at the top of the detail, so
+// reversing a mistaken promotion stays discoverable without leaving the contact.
+function flashUndo(contactId, obsId) {
+  const flash = document.createElement("div");
+  flash.className = "gflash";
+  flash.innerHTML = `<span>✓ Promoted into your view.</span><button class="btn ghost tiny" id="gundo">↩ Undo</button>`;
+  els.detail.insertBefore(flash, els.detail.firstChild);
+  flash.querySelector("#gundo").addEventListener("click", async () => {
+    try { await postJSON("/api/observation", { obs_id: obsId, action: "unpromote" }); }
+    catch (e) { alert("Undo failed — " + e.message); return; }
+    renderContactRead(await api(`/api/contact/${encodeURIComponent(contactId)}`));
+    refreshStats(); browse();
+  });
 }
 
 async function enterEditMode(id) {

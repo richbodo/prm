@@ -551,3 +551,22 @@ td .hint{font-size:11.5px;color:var(--faint);margin-top:3px;}
 .axmcprow .ok{color:var(--accent-d);}
 .axmcprow .bad{color:var(--danger);}
 .axnote.warn{color:var(--clay);}
+
+/* ===== R11c — the "Gathered" review surface: AI-gathered observations awaiting Accept/Reject, shown ===== */
+/* inline on a contact. Accent-green family signals "gathered, not yet yours"; matches .botbadge/.kindtag. */
+.chip.gathered{background:var(--accent-w);color:var(--accent-d);border-color:#d8e7e0;margin-left:7px;}
+.gseg{display:flex;align-items:center;gap:9px;}
+.gseg .gcount{font-size:10px;font-weight:600;color:var(--accent-d);background:var(--accent-w);border:1px solid #d8e7e0;border-radius:20px;padding:0 7px;letter-spacing:0;font-variant-numeric:tabular-nums;}
+.gathered{display:flex;flex-direction:column;gap:10px;}
+.gcard{display:flex;align-items:center;gap:14px;padding:12px 15px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:11px;background:linear-gradient(180deg,var(--panel),var(--accent-w));box-shadow:var(--shadow);}
+.gcard .gbody{flex:1;min-width:0;}
+.gcard .gfield{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);}
+.gcard .gval{font-size:15px;color:var(--ink);margin:2px 0 6px;word-break:break-word;}
+.gcard .gmeta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.gtag{font-size:11px;font-weight:600;color:var(--accent-d);}
+.gsrc{font-size:11px;color:var(--muted);}
+.gconf{font-size:10px;color:var(--muted);background:var(--parch);border:1px solid var(--line);border-radius:20px;padding:1px 8px;font-variant-numeric:tabular-nums;}
+.gact{display:flex;gap:8px;flex-shrink:0;}
+.ghint{font-size:11.5px;color:var(--faint);margin:5px 2px 0;line-height:1.5;}
+.gflash{display:flex;align-items:center;gap:12px;padding:9px 14px;margin-bottom:14px;border:1px solid #d8e7e0;border-radius:10px;background:var(--accent-w);font-size:13px;color:var(--accent-d);}
+.gflash span{flex:1;}
