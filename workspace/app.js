@@ -134,10 +134,17 @@ function renderContactRead(c) {
     return `<tr><th>${esc(f.label || f.name)}</th><td>${body}</td></tr>`;
   }).join("");
 
+  // R11b: AI-gathered observations awaiting promotion — read-only here (the Accept/Reject "Gathered"
+  // review surface is R11c). Shown so the user can *see* what an AI gathered before any promote UI exists.
+  const suggRows = (c.suggestions || []).map((s) =>
+    `<tr><th>${esc(s.field)}</th><td><div class="fval">${esc(s.value)}` +
+    `${s.source ? ` <span class="vsrc mono">${esc(s.source)}</span>` : ""}</div></td></tr>`).join("");
+
   els.detail.innerHTML =
     dHead(c, false) +
     `<div class="seg">Fields · with provenance</div><table class="kv">${srcRows}</table>` +
-    (relRows ? `<div class="seg">Your notes &amp; fields</div><table class="kv">${relRows}</table>` : "");
+    (relRows ? `<div class="seg">Your notes &amp; fields</div><table class="kv">${relRows}</table>` : "") +
+    (suggRows ? `<div class="seg">Gathered — pending your review</div><table class="kv">${suggRows}</table>` : "");
   const eb = $("#edit-contact");
   if (eb) eb.addEventListener("click", () => enterEditMode(c.id));
   wireAvatarClick(c.id, false);                              // click the avatar to set/change the photo

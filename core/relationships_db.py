@@ -380,6 +380,25 @@ def observations_for(db_path, contact_id: str, *, status: str | None = None) -> 
     return [dict(zip(_OBS_COLS, r)) for r in rows]
 
 
+def all_observations(db_path) -> dict:
+    """{contact_id: [observation dicts]}, newest first — the projection's bulk observation source (the
+    counterpart of ``all_field_values``, one query for the whole store). Read-only; {} when no store."""
+    if not Path(db_path).exists():
+        return {}
+    con = connect(db_path, read_only=True)
+    try:
+        rows = con.execute(
+            f"SELECT {', '.join(_OBS_COLS)} FROM observations ORDER BY written_at DESC"
+        ).fetchall()
+    finally:
+        con.close()
+    out: dict[str, list] = {}
+    for r in rows:
+        o = dict(zip(_OBS_COLS, r))
+        out.setdefault(o["contact_id"], []).append(o)
+    return out
+
+
 def count_ai_observations(db_path, written_by: str) -> int:
     """How many observations a given AI session (``written_by``) has filed — the per-session quota counter
     for the observe path (INV-13), the observations-table counterpart of ``count_ai_writes``. Read-only."""

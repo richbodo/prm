@@ -78,6 +78,33 @@ def test_local_audience_is_unaffected_by_the_floor():
         assert "notes" in names and "project" in names
 
 
+def test_observations_never_cross_the_mcp_floor():
+    """R11b negative invariant (plan §9): an AI-gathered observation — pending OR accepted — is overlay
+    data in the canonical namespace, so it must NEVER appear on the cloud-facing ``audience="mcp"``
+    projection, in any disclosure mode. Otherwise gathered data could leak back out through the same
+    surface that filed it."""
+    with tempfile.TemporaryDirectory() as tmp:
+        home, cid = _home(tmp)
+        pending = apply.observe_field(home, cid, "tel", "+1-555-0100", written_by="ai:test", source="web")
+        accepted = apply.observe_field(home, cid, "url", "https://ada.example", written_by="ai:test", source="web")
+        con = relationships_db.connect(home.relationships_db)        # simulate R11c promotion
+        try:
+            con.execute("UPDATE observations SET status='accepted' WHERE obs_id=?", (accepted["obs_id"],))
+            con.commit()
+        finally:
+            con.close()
+
+        for m in (disclosure.PNA, disclosure.LOCAL_AI, disclosure.CLOUD_EXCEPTION):
+            apply.set_disclosure_mode(home, m)
+            c = projection.get_contact(home, cid, audience="mcp")
+            assert not any(f["name"] in ("tel", "url") for f in c["fields"]), f"observation leaked in mode {m}"
+            assert not c.get("suggestions"), f"suggestions block leaked to MCP in mode {m}"
+            mc = tools.get_contact(home, cid)                       # the tool body, same floor
+            assert not any(f["name"] in ("tel", "url") for f in mc["fields"])
+            assert not mc.get("suggestions")
+        _ = pending
+
+
 def test_get_provenance_respects_the_floor():
     with tempfile.TemporaryDirectory() as tmp:
         home, cid = _home(tmp)
