@@ -363,7 +363,7 @@ def list_contacts(home, *, limit: int = 50, offset: int = 0) -> dict:
         "records": [
             {"id": c["id"], "name": c["fn"], "email": c["email"], "org": c["org"],
              "source": c["source"], "sources": c["sources"], "member_count": c["member_count"],
-             "has_photo": c["photo"]["present"]}
+             "has_photo": c["photo"]["present"], "has_suggestions": bool(c["suggestions"])}
             for c in page
         ],
     }

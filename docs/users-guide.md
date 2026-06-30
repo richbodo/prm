@@ -45,6 +45,7 @@ data never leaves your device.
 | **AI**-assisted dedup — an AI proposes merges (over MCP), you review them | ✅ works |
 | **Grant an AI access** under a consent gate — *local* vs *cloud* (`EX-CLOUD-LLM`), with a per-field **data-floor** (sealed fields never leave) + one-click return to local-only, in the **External Access** tab | ✅ works |
 | **Approve each AI read** of private data (optional) — hold every shareable-field read for per-contact Approve/Deny | ✅ works |
+| **Review AI-gathered suggestions** on a contact — **Accept** (folds in, reversible) / **Reject** each; a 🤖 marker flags contacts with data waiting | ✅ works |
 | **Export** your merged contacts to a portable vCard (`just export`) | ✅ works |
 | **Back up** all raw records to re-importable JSON (`just export --raw`) | ✅ works |
 | **Export contacts in the workspace** — download a portable vCard or a raw backup (no terminal) | ✅ works |
@@ -418,9 +419,11 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
    `prm-private-data`, which lets an AI **write values** into fields you mark AI-writable, and **gather
    missing contact fields** (e.g. a phone for a name-only Facebook contact) as additive, attributed
    **observations** — a newer, policy-gated capability (every field is sealed + review-required by default).
-   Gathered observations now show **read-only** on a contact under **“Gathered — pending your review”**
-   (nothing is folded into the contact until you promote it — the one-click promote UI is **still
-   landing**); you won't need any of this for dedup.
+   Gathered observations show on a contact under **“Gathered — pending your review”**, where you
+   **Accept** each one (it folds into your view as a reversible private override — your imported records are
+   never changed), **Reject** it (dismissed for good), or just leave it to decide later; a 🤖 marker on the
+   contact list flags whoever has gathered data waiting. Nothing is ever folded in until *you* accept it
+   (there is no AI “promote” path). You won't need any of this for dedup.
 2. **Hand the assistant the dedup prompt** in [`../mcp_servers/prompts/dedup.md`](../mcp_servers/prompts/dedup.md)
    — paste its contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
    scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
