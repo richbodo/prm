@@ -24,6 +24,13 @@ data never leaves your device.
 > local-only mode, and an optional **per-read approval** that holds each AI read of private data for your
 > sign-off (the **External Access** tab). This guide marks clearly what runs now vs. what's coming.
 
+> 📖 **New here, or want the picture behind the steps?** Two illustrated explainers walk the whole
+> thing with screenshots of every juncture:
+> **[How PRM's data works](explainers/how-prm-data-works.md)** (mirroring → the de-duplicated view →
+> dedup → AI writes) and **[AI reads & writes — a visual walkthrough](explainers/ai-reads-and-writes-walkthrough.md)**
+> (the consent gate, the data-floor, per-read approval, and the three AI-write flavors). This guide points
+> to the relevant one as each task comes up.
+
 ---
 
 ## What you can do today
@@ -258,7 +265,8 @@ just ingest ~/Downloads/exports/*               # import every export in that fo
 ### Re-importing an updated export
 
 When you re-download an export later (more contacts, edits, deletions), use **`just reimport`** to see
-exactly what would change before committing:
+exactly what would change before committing (for *why* a re-import can't clobber your edits or merges, see
+**[How PRM's data works](explainers/how-prm-data-works.md)**, §2):
 
 ```bash
 just reimport ~/Downloads/takeout-20260820.zip --source google_takeout --dry-run   # preview only
@@ -379,7 +387,9 @@ review surface are columns on each field today; their full enforcement lands in 
 (To stop the server, use `just stop` — or `Ctrl-C` in the terminal running it. If a *crashed* run left
 the port stuck, `just port` force-frees it.)
 
-**Duplicates** finds contacts that look like the same person and helps you merge them. It offers two
+**Duplicates** finds contacts that look like the same person and helps you merge them. (For what a merge
+actually does to the two stores — and how the clean, de-duplicated contact you see is assembled from your
+raw records — see **[How PRM's data works](explainers/how-prm-data-works.md)**, §3–4.) It offers two
 modes (toggle at the top):
 
 - **Review individually** — walk the candidates one at a time, most-confident first. Each is shown as a
@@ -409,7 +419,9 @@ Two guarantees worth knowing:
 
 An AI assistant can do the reviewing legwork: it scans for duplicates and **proposes** merges, which
 show up in this same Duplicates tab tagged **🤖 AI proposal** for you to approve or reject. The AI can
-only *propose* — it can never apply a merge.
+only *propose* — it can never apply a merge. (See it end to end, with screenshots, in
+**[AI reads & writes — a visual walkthrough](explainers/ai-reads-and-writes-walkthrough.md)**, "Dedup —
+the AI proposes, you dispose.")
 
 Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_servers/README.md):
 
@@ -423,7 +435,9 @@ Set this up in two steps, both detailed in [`../mcp_servers/README.md`](../mcp_s
    **Accept** each one (it folds into your view as a reversible private override — your imported records are
    never changed), **Reject** it (dismissed for good), or just leave it to decide later; a 🤖 marker on the
    contact list flags whoever has gathered data waiting. Nothing is ever folded in until *you* accept it
-   (there is no AI “promote” path). You won't need any of this for dedup.
+   (there is no AI “promote” path). You won't need any of this for dedup. (The three AI-write flavors —
+   dedup proposals, custom-field writes, and gathered observations you promote — are explained in
+   **[How PRM's data works](explainers/how-prm-data-works.md)**, §5.)
 2. **Hand the assistant the dedup prompt** in [`../mcp_servers/prompts/dedup.md`](../mcp_servers/prompts/dedup.md)
    — paste its contents (or attach the file) into the session; it is **not** auto-loaded. It drives the
    scan → clarify → propose loop; every proposal still lands here in the Duplicates tab for you to apply.
@@ -449,8 +463,11 @@ PNA* which clears them all). The **Connections** card shows that last AI read to
 the server that served it, and warns if it differs from the app's build — a quick way to catch an AI client
 still running an **old MCP server** after an update (fully quit and reopen it). A **Test MCP servers** button
 there checks the registered servers are **responsive** and reports their build alongside the build the
-running server last served from — so you can confirm everything's current at a glance. Background:
-[`../mcp_servers/README.md`](../mcp_servers/README.md) and the [Roadmap](roadmap.md).
+running server last served from — so you can confirm everything's current at a glance. For a screenshot
+tour of this whole tab — the consent gate, the local-vs-cloud paths, the data-floor, per-read approval,
+the exceptions ledger, and returning to PNA mode — see
+**[AI reads & writes — a visual walkthrough](explainers/ai-reads-and-writes-walkthrough.md)** (Part 1).
+Background: [`../mcp_servers/README.md`](../mcp_servers/README.md) and the [Roadmap](roadmap.md).
 
 ---
 
@@ -560,6 +577,10 @@ conformance attestation (the toolkit reference-design deliverable); then v0.2 br
 
 Key documents in this repo:
 
+- **Illustrated explainers** (accessible tours, with screenshots of every juncture):
+  **[How PRM's data works](explainers/how-prm-data-works.md)** — mirroring, the de-duplicated view, dedup,
+  and AI writes; and **[AI reads & writes — a visual walkthrough](explainers/ai-reads-and-writes-walkthrough.md)**
+  — the consent / approval / write-tier flows end to end.
 - **[Feature specification](prm-feature-spec.md)** — what the PRM is, its features (`F#`) and
   invariants (`INV#`), and the safe-AI-write model.
 - **[Roadmap](roadmap.md)** — versioned plan (v0.1 → v0.5+) and what each release adds.
